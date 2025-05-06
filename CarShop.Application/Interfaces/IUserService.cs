@@ -7,6 +7,7 @@ namespace CarShop.Application.Interfaces
         Task<string> RegisterAsync(RegisterDto model);
         Task<string> LoginAsync(LoginDto model);
         Task LogoutAsync();
+        Task<bool> CheckPasswordAsync(ApplicationUserDto userDto, string password);
         Task<bool> EmailExistsAsync(string email);
         Task<ApplicationUserDto?> GetUserByIdAsync(string userId);
         Task<ApplicationUserDto?> GetUserByEmailAsync(string email);

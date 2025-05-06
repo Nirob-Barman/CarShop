@@ -49,6 +49,20 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            var existingUser = await _userService.GetUserByEmailAsync(model.Email!);
+            if (existingUser is null)
+            {
+                ModelState.AddModelError(nameof(model.Email), "This email is not registered.");
+                return View(model);
+            }
+
+            var isPasswordMatch = await _userService.CheckPasswordAsync(existingUser, model.Password!);
+            if (!isPasswordMatch)
+            {
+                ModelState.AddModelError(nameof(model.Password), "Incorrect password.");
+                return View(model);
+            }
+
             try
             {
                 await _userService.LoginAsync(model);
@@ -56,7 +70,7 @@ namespace CarShop.Web.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
                 return View(model);
             }
         }

@@ -41,6 +41,11 @@ namespace CarShop.Infrastructure.Identity
         {
             await _signInManager.SignOutAsync();
         }
+        public async Task<bool> CheckPasswordAsync(ApplicationUserDto userDto, string password)
+        {
+            var user = await _userManager.FindByIdAsync(userDto.Id!);
+            return await _userManager.CheckPasswordAsync(user!, password);
+        }
 
         public async Task<bool> EmailExistsAsync(string email)
         {
