@@ -78,5 +78,27 @@ namespace CarShop.Infrastructure.Identity
             // Optional: Re-sign in to refresh security stamp/cookies
             await _signInManager.RefreshSignInAsync(user);
         }
+
+        public async Task<string> GeneratePasswordResetTokenAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) throw new Exception("User not found.");
+
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) throw new Exception("User not found.");
+
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!result.Succeeded)
+            {
+                var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Password reset failed: {errorMessage}");
+            }
+        }
+
     }
 }

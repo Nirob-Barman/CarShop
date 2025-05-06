@@ -104,5 +104,56 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
         }
+
+        [HttpGet]
+        public IActionResult ForgotPassword() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            try
+            {
+                var token = await _userService.GeneratePasswordResetTokenAsync(model.Email!);
+                var resetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
+
+                // TODO: Send resetLink via email (simulated below)
+                TempData["ResetLink"] = resetLink; // For dev/demo purpose
+                ViewBag.Message = "Reset link generated. (Check email)";
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+            }
+
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string email, string token)
+        {
+            return View(new ResetPasswordDto { Email = email, Token = token });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+        {
+            if (!ModelState.IsValid) return View(model);
+
+            try
+            {
+                await _userService.ResetPasswordAsync(model.Email!, model.Token!, model.NewPassword!);
+                TempData["Success"] = "Password has been reset successfully.";
+                return RedirectToAction("Login");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", ex.Message);
+                return View(model);
+            }
+        }
+
+
     }
 }

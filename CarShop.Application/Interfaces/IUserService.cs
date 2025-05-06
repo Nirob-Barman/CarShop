@@ -10,5 +10,8 @@ namespace CarShop.Application.Interfaces
         Task<EditProfileDto> GetProfileAsync(string userId);
         Task UpdateProfileAsync(string userId, EditProfileDto model);
         Task ChangePasswordAsync(string userId, ChangePasswordDto model);
+        Task<string> GeneratePasswordResetTokenAsync(string email);
+        Task ResetPasswordAsync(string email, string token, string newPassword);
+
     }
 }
