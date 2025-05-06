@@ -55,5 +55,28 @@ namespace CarShop.Infrastructure.Identity
             await _userManager.UpdateAsync(user);
         }
 
+        public async Task ChangePasswordAsync(string userId, ChangePasswordDto model)
+        {
+            if (string.IsNullOrWhiteSpace(model.CurrentPassword) ||
+                string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                throw new Exception("Password fields cannot be empty.");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found.");
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+                throw new Exception($"Password change failed: {errorMessage}");
+            }
+
+            // Optional: Re-sign in to refresh security stamp/cookies
+            await _signInManager.RefreshSignInAsync(user);
+        }
     }
 }

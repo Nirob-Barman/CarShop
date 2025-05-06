@@ -80,5 +80,29 @@ namespace CarShop.Web.Controllers
             await _userService.UpdateProfileAsync(userId, model);
             return RedirectToAction("Profile");
         }
+
+        public IActionResult ChangePassword() => View();
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+            try
+            {
+                await _userService.ChangePasswordAsync(userId, model);
+                TempData["Success"] = "Password changed successfully.";
+                return RedirectToAction("Profile");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(model);
+            }
+        }
     }
 }
