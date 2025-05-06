@@ -10,4 +10,8 @@
     <ProjectReference Include="..\CarShop.Domain\CarShop.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Mappers\" />
+  </ItemGroup>
+
 </Project>

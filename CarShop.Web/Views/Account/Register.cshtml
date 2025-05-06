@@ -8,7 +8,7 @@
 <div class="card shadow-lg border-0 rounded-4 p-4">
     <div class="card-body">
         <h2 class="text-center mb-4">Create Your CarShop Account</h2>
-        <form asp-action="Register" method="post" novalidate>
+        <form id="registerForm" asp-action="Register" method="post" novalidate>
             <div class="mb-3">
                 <label asp-for="FullName" class="form-label fw-semibold">Full Name</label>
                 <input asp-for="FullName" class="form-control form-control-lg" placeholder="John Doe" />
@@ -17,14 +17,23 @@
 
             <div class="mb-3">
                 <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
-                <input asp-for="Email" class="form-control form-control-lg" placeholder="example@email.com" />
+                <input asp-for="Email" class="form-control form-control-lg" placeholder="example@email.com" id="emailInput" />
                 <span asp-validation-for="Email" class="text-danger small"></span>
+                @* <div id="emailValidationError" class="text-danger small" style="display:none;"></div> *@
+                <div id="emailError" class="text-danger small" style="display:none;">This email is already taken.</div>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Password" class="form-label fw-semibold">Password</label>
                 <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="••••••••" />
                 <span asp-validation-for="Password" class="text-danger small"></span>
+                <ul id="passwordRequirements" class="text-danger small" style="display:none;">
+                    <li id="passwordLength">Password must be at least 6 characters long.</li>
+                    <li id="passwordDigit">Password must contain at least one digit.</li>
+                    <li id="passwordLower">Password must contain at least one lowercase letter.</li>
+                    <li id="passwordUpper">Password must contain at least one uppercase letter.</li>
+                    <li id="passwordSpecial">Password must contain at least one special character.</li>
+                </ul>
             </div>
 
             <div class="mb-4">
@@ -46,4 +55,108 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/emailValidation.js"></script>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@TempData["ErrorMessage"]',
+                @* position: 'top-end', *@
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
+
+    <script>
+        $(document).ready(function () {
+            // Password validation check
+            $('#registerForm').on('submit', function (event) {
+                let password = $('input[name="Password"]').val();
+                let valid = true;
+
+                // Clear previous errors
+                $('#passwordRequirements').hide();
+                $('#passwordLength').hide();
+                $('#passwordDigit').hide();
+                $('#passwordLower').hide();
+                $('#passwordUpper').hide();
+                $('#passwordSpecial').hide();
+
+                // Check if password meets requirements
+                if (password.length < 6) {
+                    $('#passwordLength').show();
+                    valid = false;
+                }
+                if (!/\d/.test(password)) {
+                    $('#passwordDigit').show();
+                    valid = false;
+                }
+                if (!/[a-z]/.test(password)) {
+                    $('#passwordLower').show();
+                    valid = false;
+                }
+                if (!/[A-Z]/.test(password)) {
+                    $('#passwordUpper').show();
+                    valid = false;
+                }
+                if (!/\W/.test(password)) {
+                    $('#passwordSpecial').show();
+                    valid = false;
+                }
+
+                // If not valid, prevent form submission
+                if (!valid) {
+                    $('#passwordRequirements').show();
+                    event.preventDefault();
+                }
+            });
+        });
+
+
+
+        $('#emailInput').on('blur', function () {
+            var email = $(this).val();
+            debugger
+            
+            debugger
+            if (email) {
+
+                if (!validateEmailFormat(email)) {
+                    // $('#emailValidationError').text("Please enter a valid email address.").show();
+                    // $('#registerForm button').prop('disabled', true);
+                }
+                else{
+                    $.ajax({
+                        url: '@Url.Action("CheckEmailExists", "Account")',
+                        type: 'POST',
+                        data: { email: email },
+                        success: function (response) {
+                            if (response) {
+                                $('#emailError').show();
+                                $('#registerForm button').prop('disabled', true);
+                            } else {
+                                $('#emailError').hide();
+                                $('#registerForm button').prop('disabled', false);
+                            }
+                        },
+                        error: function () {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: 'Error checking email',
+                                timer: 5000,
+                                toast: true,
+                                timerProgressBar: true
+                            });
+                        }
+                    });
+                }                
+            }
+        });
+    </script>
 }

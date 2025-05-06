@@ -22,14 +22,21 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            //bool emailExists = await _userService.EmailExistsAsync(model.Email!);
+            //if (emailExists)
+            //{
+            //    ModelState.AddModelError(nameof(model.Email), "This email is already registered.");
+            //    return View(model);
+            //}
+
             try
-            {
+            {                
                 await _userService.RegisterAsync(model);
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
                 return View(model);
             }
         }
@@ -59,6 +66,13 @@ namespace CarShop.Web.Controllers
         {
             await _userService.LogoutAsync();
             return RedirectToAction("Login");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CheckEmailExists(string email)
+        {
+            bool emailExists = await _userService.EmailExistsAsync(email);
+            return Json(emailExists);
         }
 
         [Authorize]

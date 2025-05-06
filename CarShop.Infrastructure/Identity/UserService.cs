@@ -1,5 +1,6 @@
 ﻿using CarShop.Application.DTOs.Identity;
 using CarShop.Application.Interfaces;
+using CarShop.Infrastructure.Identity.Mappers;
 using Microsoft.AspNetCore.Identity;
 
 namespace CarShop.Infrastructure.Identity
@@ -39,6 +40,22 @@ namespace CarShop.Infrastructure.Identity
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await _userManager.FindByEmailAsync(email) != null;
+        }
+        public async Task<ApplicationUserDto?> GetUserByIdAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            return user == null ? null : UserMapper.ToDto(user);
+        }
+
+        public async Task<ApplicationUserDto?> GetUserByEmailAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            return user == null ? null : UserMapper.ToDto(user);
         }
 
         public async Task<EditProfileDto> GetProfileAsync(string userId)
@@ -99,6 +116,5 @@ namespace CarShop.Infrastructure.Identity
                 throw new Exception($"Password reset failed: {errorMessage}");
             }
         }
-
     }
 }
