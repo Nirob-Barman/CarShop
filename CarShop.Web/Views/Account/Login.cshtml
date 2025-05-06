@@ -2,28 +2,35 @@
 
 @{
     ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/Account/_AuthLayout.cshtml";
 }
 
-<h2 class="text-center mb-4">Login</h2>
+<div class="card shadow-sm border-0 rounded-4 p-4">
+    <div class="card-body">
+        <h2 class="text-center mb-4">Welcome Back</h2>
+        <form asp-action="Login" method="post" novalidate>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-semibold">Email</label>
+                <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
 
-<form asp-action="Login" method="post" class="w-50 mx-auto">
-    <div class="form-group mb-3">
-        <label asp-for="Email"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+            <div class="mb-3">
+                <label asp-for="Password" class="form-label fw-semibold">Password</label>
+                <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="••••••••" />
+                <span asp-validation-for="Password" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg w-100">Login</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <small>
+                Don't have an account? <a asp-action="Register" class="text-decoration-none">Register here</a>
+            </small><br />
+            <a asp-action="ForgotPassword" class="btn btn-outline-warning btn-sm mt-2">Forgot Password</a>
+        </div>
     </div>
-
-    <div class="form-group mb-3">
-        <label asp-for="Password"></label>
-        <input asp-for="Password" class="form-control" type="password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-success w-100">Login</button>
-</form>
-
-<div class="text-center mt-3">
-    Don't have an account? <a asp-action="Register">Register here</a>.
 </div>
 
 @section Scripts {
