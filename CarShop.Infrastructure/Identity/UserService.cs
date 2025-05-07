@@ -72,6 +72,8 @@ namespace CarShop.Infrastructure.Identity
         public async Task UpdateProfileAsync(string userId, EditProfileDto model)
         {
             var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                throw new Exception("User not found.");
             user!.FullName = model.FullName;
             user.Address = model.Address;
             await _userManager.UpdateAsync(user);

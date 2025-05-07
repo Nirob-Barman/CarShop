@@ -105,8 +105,18 @@ namespace CarShop.Web.Controllers
                 return View("Profile", model);
 
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            await _userService.UpdateProfileAsync(userId, model);
-            return RedirectToAction("Profile");
+            try
+            {
+                await _userService.UpdateProfileAsync(userId, model);
+                TempData["SuccessMessage"] = "Profile Updated successfully.";
+                return RedirectToAction("Profile");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                //return View(model);
+                return View("Profile", model);
+            }
         }
 
         public IActionResult ChangePassword() => View();
