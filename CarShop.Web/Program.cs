@@ -1,6 +1,7 @@
 using CarShop.Application.Interfaces;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
+using CarShop.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IBrandService, BrandService>();
+builder.Services.AddScoped<ICarService, CarService>();
+
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

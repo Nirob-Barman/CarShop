@@ -1,0 +1,15 @@
+﻿@model CarShop.Application.DTOs.Car.CarDto
+
+<h2>@Model.Title</h2>
+
+<div class="card">
+    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Title" />
+    <div class="card-body">
+        <h5 class="card-title">@Model.Title</h5>
+        <p class="card-text">@Model.Description</p>
+        <p><strong>Brand:</strong> @Model.BrandName</p>
+        <p><strong>Price:</strong> $@Model.Price</p>
+        <p><strong>Quantity:</strong> @Model.Quantity</p>
+        <a href="/Car" class="btn btn-secondary">Back</a>
+    </div>
+</div>

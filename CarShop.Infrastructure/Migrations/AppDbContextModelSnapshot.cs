@@ -36,6 +36,28 @@ namespace CarShop.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Brands");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "Toyota"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "BMW"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "Tesla"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "Ford"
+                        });
                 });
 
             modelBuilder.Entity("CarShop.Domain.Entities.Car", b =>

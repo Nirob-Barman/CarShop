@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Brand";
+    Layout = "~/Views/Shared/Car/_CarLayout.cshtml";
+}
+
+
+@model IEnumerable<CarShop.Application.DTOs.Brand.BrandDto>
+
+<h2>Brands</h2>
+
+<a href="/Brand/Create" class="btn btn-primary mb-3">Add New Brand</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var brand in Model)
+        {
+            <tr>
+                <td>@brand.Name</td>
+                <td>
+                    <a href="/Brand/Edit/@brand.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <form method="post" action="/Brand/Delete/@brand.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

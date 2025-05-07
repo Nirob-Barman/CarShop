@@ -17,6 +17,9 @@ namespace CarShop.Infrastructure.Persistence
         {
             base.OnModelCreating(builder);
 
+            // Apply all IEntityTypeConfiguration from the current assembly
+            builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+
             // Brand-Car Relationship
             builder.Entity<Car>()
                 .HasOne(c => c.Brand)
