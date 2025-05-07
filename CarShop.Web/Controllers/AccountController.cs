@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Azure.Core;
 using CarShop.Application.DTOs.Identity;
 using CarShop.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -144,6 +145,8 @@ namespace CarShop.Web.Controllers
             try
             {
                 var token = await _userService.GeneratePasswordResetTokenAsync(model.Email!);
+                //It generates a full absolute URL(including protocol and domain) that points to the ResetPassword action on your AccountController, with query parameters for the email and token.
+                //Request.Scheme Ensures the generated link uses http:// or https:// depending on the request. This makes the URL absolute.
                 var resetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
 
                 // TODO: Send resetLink via email (simulated below)
@@ -152,7 +155,7 @@ namespace CarShop.Web.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
             }
 
             return View();
