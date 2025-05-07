@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using Azure.Core;
 using CarShop.Application.DTOs.Identity;
 using CarShop.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -124,12 +123,12 @@ namespace CarShop.Web.Controllers
             try
             {
                 await _userService.ChangePasswordAsync(userId, model);
-                TempData["Success"] = "Password changed successfully.";
+                TempData["SuccessMessage"] = "Password changed successfully.";
                 return RedirectToAction("Profile");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
                 return View(model);
             }
         }

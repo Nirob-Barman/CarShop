@@ -93,11 +93,12 @@ namespace CarShop.Infrastructure.Identity
 
             if (!result.Succeeded)
             {
-                var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
-                throw new Exception($"Password change failed: {errorMessage}");
+                //var errorMessage = string.Join("; ", result.Errors.Select(e => e.Description));
+                //throw new Exception($"Password change failed: {errorMessage}");
+                throw new Exception("Password change failed");
             }
 
-            // Optional: Re-sign in to refresh security stamp/cookies
+            // Re-sign in to refresh security stamp/cookies
             await _signInManager.RefreshSignInAsync(user);
         }
 
