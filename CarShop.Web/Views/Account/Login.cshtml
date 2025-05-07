@@ -35,7 +35,20 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'success',
+                text: '@TempData["Success"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
     @if (TempData["ErrorMessage"] != null)
     {
         <script>
@@ -50,4 +63,5 @@
             });
         </script>
     }
+    
 }

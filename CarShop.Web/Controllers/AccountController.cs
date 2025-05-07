@@ -175,12 +175,12 @@ namespace CarShop.Web.Controllers
             try
             {
                 await _userService.ResetPasswordAsync(model.Email!, model.Token!, model.NewPassword!);
-                TempData["Success"] = "Password has been reset successfully.";
+                TempData["SuccessMessage"] = "Password has been reset successfully.";
                 return RedirectToAction("Login");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
+                TempData["ErrorMessage"] = ex.Message;
                 return View(model);
             }
         }
