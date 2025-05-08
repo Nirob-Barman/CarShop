@@ -14,7 +14,14 @@ namespace CarShop.Web.Controllers
             _userService = userService;
         }
 
-        public IActionResult Register() => View();
+        public IActionResult Register()
+        {
+            if (User.Identity!.IsAuthenticated)
+            {
+                return RedirectToAction("Profile");
+            }
+            return View();
+        }
         
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDto model)
