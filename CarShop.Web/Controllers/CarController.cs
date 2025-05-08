@@ -9,12 +9,10 @@ namespace CarShop.Web.Controllers
     {
         private readonly ICarService _carService;
         private readonly IBrandService _brandService;
-        private readonly ImageService _imageService;
-        public CarController(ICarService carService, IBrandService brandService, ImageService imageService)
+        public CarController(ICarService carService, IBrandService brandService)
         {
             _carService = carService;
             _brandService = brandService;
-            _imageService = imageService;
         }
 
         public async Task<IActionResult> Index()
@@ -41,12 +39,24 @@ namespace CarShop.Web.Controllers
 
             if (image != null && image.Length > 0)
             {
-                var sanitizedTitle = model.Title!.Replace(" ", "_").ToLowerInvariant(); //String.ToLower() uses the default culture while String.ToLowerInvariant() uses the invariant culture
-                var fileName = $"car_{sanitizedTitle}_{DateTime.UtcNow.Ticks}{Path.GetExtension(image.FileName)}";
+                var titleFileSafe = model.Title!.ToLowerInvariant().Replace(" ", "_");
 
-                using var stream = image.OpenReadStream();
-                var imageUrl = await _imageService.UploadImageAsync(stream, fileName, image.ContentType);
-                model.ImageUrl = imageUrl;
+                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "car");
+                if (!Directory.Exists(uploadsRoot))
+                {
+                    Directory.CreateDirectory(uploadsRoot);
+                }
+                
+                string fileName = $"{titleFileSafe}{Path.GetExtension(image.FileName)}";
+                var filePath = Path.Combine(uploadsRoot, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+                // Optionally: store relative path in model (e.g., for use in views or saving in DB)
+                model.ImageUrl = Path.Combine("/uploads", "car", fileName).Replace("\\", "/");
             }
 
             await _carService.CreateCarAsync(model);
