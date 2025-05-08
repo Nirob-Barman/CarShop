@@ -194,6 +194,11 @@ namespace CarShop.Web.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
 
     }
 }
