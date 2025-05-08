@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Create New Role";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container mt-5">
+    <h2>Create New Role</h2>
+
+    <form asp-controller="Admin" asp-action="CreateRole" method="post">
+        <div class="mb-3">
+            <label for="roleName" class="form-label">Role Name</label>
+            <input type="text" id="roleName" name="roleName" class="form-control" placeholder="Enter role name" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Role</button>
+    </form>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'success',
+                text: '@TempData["SuccessMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@TempData["ErrorMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+}

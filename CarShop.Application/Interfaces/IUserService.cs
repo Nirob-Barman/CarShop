@@ -16,6 +16,11 @@ namespace CarShop.Application.Interfaces
         Task ChangePasswordAsync(string userId, ChangePasswordDto model);
         Task<string> GeneratePasswordResetTokenAsync(string email);
         Task ResetPasswordAsync(string email, string token, string newPassword);
-
+        Task<List<UserWithRoleDto>> GetAllUsersWithRolesAsync();
+        Task AssignRoleToUserAsync(string userId, string roleName);
+        Task<List<string>> GetAllRolesAsync();
+        Task<List<string>> GetAllRolesNonAdminAsync();
+        Task<List<UserWithRoleDto>> GetAllUsersNonAdminAsync();
+        Task CreateRoleAsync(string roleName);
     }
 }
