@@ -1,9 +1,11 @@
 ﻿using CarShop.Application.DTOs.Brand;
 using CarShop.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarShop.Web.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class BrandController : Controller
     {
         private readonly IBrandService _brandService;

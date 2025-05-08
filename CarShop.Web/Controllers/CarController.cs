@@ -1,9 +1,11 @@
 ﻿using CarShop.Application.DTOs.Car;
 using CarShop.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarShop.Web.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class CarController : Controller
     {
         private readonly ICarService _carService;
@@ -129,6 +131,17 @@ namespace CarShop.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
+            var car = await _carService.GetCarByIdAsync(id);
+
+            if (!string.IsNullOrEmpty(car.ImageUrl))
+            {
+                var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", car.ImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
+            }
+
             await _carService.DeleteCarAsync(id);
             return RedirectToAction("Index");
         }
