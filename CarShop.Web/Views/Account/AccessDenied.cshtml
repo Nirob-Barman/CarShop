@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Access Denied";
+    var returnUrl = ViewData["ReturnUrl"] as string;
 }
 
 <div class="container text-center mt-5">
@@ -13,6 +14,10 @@
                     <p>
                         If you believe this is an error, please contact the site administrator.
                     </p>
+                    @if (!string.IsNullOrEmpty(returnUrl))
+                    {
+                        <p><strong>You were trying to access:</strong> <em>@returnUrl</em></p>
+                    }
                     <a href="javascript:history.back()" class="btn btn-outline-secondary mt-3">
                         <i class="bi bi-arrow-left"></i> Go Back
                     </a>

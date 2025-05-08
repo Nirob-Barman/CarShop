@@ -9,6 +9,7 @@
     <div class="card-body">
         <h2 class="text-center mb-4">Welcome Back</h2>
         <form asp-action="Login" method="post" novalidate>
+            <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
             <div class="mb-3">
                 <label asp-for="Email" class="form-label fw-semibold">Email</label>
                 <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" />

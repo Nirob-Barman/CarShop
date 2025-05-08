@@ -41,17 +41,31 @@ namespace CarShop.Web.Controllers
             }
         }
 
-        public IActionResult Login() => View();
+        [HttpGet]
+        public IActionResult Login(string? returnUrl = null)
+        {
+            if (User.Identity!.IsAuthenticated)
+            {
+                return RedirectToLocal(returnUrl);
+            }
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginDto model)
+        public async Task<IActionResult> Login(LoginDto model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
+            {
+                ViewData["ReturnUrl"] = returnUrl;
                 return View(model);
+            }
 
             var existingUser = await _userService.GetUserByEmailAsync(model.Email!);
             if (existingUser is null)
             {
+                ViewData["ReturnUrl"] = returnUrl;
                 ModelState.AddModelError(nameof(model.Email), "This email is not registered.");
                 return View(model);
             }
@@ -60,17 +74,20 @@ namespace CarShop.Web.Controllers
             if (!isPasswordMatch)
             {
                 ModelState.AddModelError(nameof(model.Password), "Incorrect password.");
+                ViewData["ReturnUrl"] = returnUrl;
                 return View(model);
             }
 
             try
             {
                 await _userService.LoginAsync(model);
-                return RedirectToAction("Index", "Home");
+                //return RedirectToAction("Index", "Home");
+                return RedirectToLocal(returnUrl);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
+                ViewData["ReturnUrl"] = returnUrl;
                 return View(model);
             }
         }
@@ -195,10 +212,22 @@ namespace CarShop.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult AccessDenied()
+        public IActionResult AccessDenied(string? returnUrl)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
+        private IActionResult RedirectToLocal(string? returnUrl)
+        {
+            if (Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            else
+            {
+                return RedirectToAction("Index", "Home");
+            }
+        }
     }
 }
