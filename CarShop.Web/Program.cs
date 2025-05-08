@@ -31,6 +31,9 @@ builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Cookie will expire after 30 minutes
+    options.SlidingExpiration = true; // Refresh cookie expiration on each request
+    options.Cookie.HttpOnly = true; // Cookie can't be accessed by JavaScript
 });
 
 var app = builder.Build();
