@@ -1,15 +1,28 @@
 ﻿@model CarShop.Application.DTOs.Car.CarDto
 
-<h2>@Model.Title</h2>
+@{
+    ViewData["Title"] = "Car";
+    Layout = "~/Views/Shared/Car/_CarLayout.cshtml";
+}
 
-<div class="card">
-    <img src="@Model.ImageUrl" class="card-img-top" alt="@Model.Title" />
-    <div class="card-body">
-        <h5 class="card-title">@Model.Title</h5>
-        <p class="card-text">@Model.Description</p>
-        <p><strong>Brand:</strong> @Model.BrandName</p>
-        <p><strong>Price:</strong> $@Model.Price</p>
-        <p><strong>Quantity:</strong> @Model.Quantity</p>
-        <a href="/Car" class="btn btn-secondary">Back</a>
+<div class="d-flex justify-content-center">
+    <h2>@Model.Title</h2>
+</div>
+
+<div class="card shadow-sm" style="max-width: 950px; margin: 0 auto;">
+    <div class="row g-0">
+        <div class="col-md-6">
+            <img src="@Model.ImageUrl" class="img-fluid rounded-start" alt="@Model.Title" style="height: 100%; width: 100%; object-fit: cover;" />
+        </div>
+        <div class="col-md-6">
+            <div class="card-body">
+                @* <h5 class="card-title">@Model.Title</h5> *@
+                <p class="card-text">@Model.Description</p>
+                <p><strong>Brand:</strong> @Model.BrandName</p>
+                <p><strong>Price:</strong> $@Model.Price</p>
+                <p><strong>Quantity:</strong> @Model.Quantity</p>
+                <a href="/Car" class="btn btn-secondary">Back</a>
+            </div>
+        </div>
     </div>
 </div>

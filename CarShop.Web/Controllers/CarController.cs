@@ -1,6 +1,5 @@
 ﻿using CarShop.Application.DTOs.Car;
 using CarShop.Application.Interfaces;
-using CarShop.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarShop.Web.Controllers
@@ -72,13 +71,56 @@ namespace CarShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, CarDto model)
+        public async Task<IActionResult> Edit(int id, CarDto model, IFormFile? image)
         {
             if (!ModelState.IsValid)
             {
                 ViewBag.Brands = await _brandService.GetAllBrandsAsync();
                 return View(model);
             }
+
+
+            var car = await _carService.GetCarByIdAsync(id);
+
+            // Check if there is a new image uploaded and if the car already has an image
+            if (image != null && image.Length > 0)
+            {
+                // Remove the previous image if it exists
+                if (!string.IsNullOrEmpty(car.ImageUrl))
+                {
+                    var previousImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", car.ImageUrl.TrimStart('/'));
+                    if (System.IO.File.Exists(previousImagePath))
+                    {
+                        System.IO.File.Delete(previousImagePath);
+                    }
+                }
+
+                // Process and save the new image
+                var titleFileSafe = model.Title!.ToLowerInvariant().Replace(" ", "_");
+
+                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "car");
+                if (!Directory.Exists(uploadsRoot))
+                {
+                    Directory.CreateDirectory(uploadsRoot);
+                }
+
+                string fileName = $"{titleFileSafe}{Path.GetExtension(image.FileName)}";
+                var filePath = Path.Combine(uploadsRoot, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await image.CopyToAsync(stream);
+                }
+
+                // Update the ImageUrl in the model
+                model.ImageUrl = Path.Combine("/uploads", "car", fileName).Replace("\\", "/");
+            }
+            else
+            {
+                // If no new image was uploaded, retain the existing imageUrl
+                model.ImageUrl = car.ImageUrl;
+            }
+
 
             await _carService.UpdateCarAsync(id, model);
             return RedirectToAction("Index");
