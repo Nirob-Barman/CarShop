@@ -28,7 +28,22 @@ namespace CarShop.Infrastructure.Identity
             };
 
             var result = await _userManager.CreateAsync(user, model.Password!);
-            return result.Succeeded ? user.Id : throw new Exception("Registration failed");
+            //return result.Succeeded ? user.Id : throw new Exception("Registration failed");
+
+            if (!result.Succeeded)
+                throw new Exception("Registration failed");
+
+            // Assign default role ("User")
+            var roleResult = await _userManager.AddToRoleAsync(user, "User");
+
+            if (!roleResult.Succeeded)
+            {
+                // delete the user if role assignment fails
+                await _userManager.DeleteAsync(user);
+                throw new Exception("Failed to assign default role to user.");
+            }
+
+            return user.Id;
         }
 
         public async Task<string> LoginAsync(LoginDto model)

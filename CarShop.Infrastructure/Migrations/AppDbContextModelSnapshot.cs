@@ -216,6 +216,24 @@ namespace CarShop.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "9E22B5A0-3D5C-4F5D-B123-987654321DEF",
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "548028df-b9e6-4e84-b0a9-78b22ca4114c",
+                            Email = "admin@gmail.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@GMAIL.COM",
+                            NormalizedUserName = "ADMIN@GMAIL.COM",
+                            PasswordHash = "AQAAAAIAAYagAAAAEHWuXvbzTN7UNl034eTilM/xYR+dAlWhQZTBH1wtdsx4I3riYfQXZOqhWAttGZuFww==",
+                            PhoneNumberConfirmed = false,
+                            SecurityStamp = "e82df3d9-e9da-48ac-97d2-e7ad3c7f7dad",
+                            TwoFactorEnabled = false,
+                            UserName = "admin@gmail.com"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -243,6 +261,20 @@ namespace CarShop.Infrastructure.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "8D76A8C0-5E5C-4D12-A0C9-123456789ABC",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "BDE7B6A0-7F3D-4F5D-B123-987654321DEF",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -330,6 +362,13 @@ namespace CarShop.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = "9E22B5A0-3D5C-4F5D-B123-987654321DEF",
+                            RoleId = "8D76A8C0-5E5C-4D12-A0C9-123456789ABC"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
