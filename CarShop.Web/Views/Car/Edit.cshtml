@@ -7,15 +7,12 @@
 
 <div class="card shadow-lg rounded-3 border-light p-4">
     <form id="editCarForm" method="post" asp-action="Edit" enctype="multipart/form-data">
-        <div class="d-flex justify-content-center mb-4">
-            <h2>Edit Car</h2>
-        </div>
-
         <div class="mb-3 text-center">
             @if (!string.IsNullOrEmpty(Model.ImageUrl))
             {
                 <div>
                     <img src="@Model.ImageUrl" alt="Current Car Image" style="max-width: 300px; max-height: 300px; margin-bottom: 10px;" />
+                    @* <img src="@Model.ImageUrl" alt="Current Car Image" style="max-width: 800px; max-height: auto; margin-bottom: 10px;" /> *@
                 </div>
             }
         </div>
@@ -79,7 +76,7 @@
             $("#editCarForm").submit(function (e) {
                 var imageFile = $("#Image")[0].files[0];
                 var imageError = $("#imageError");
-                var allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+                var allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
                 var maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
 
                 // Clear previous error message
