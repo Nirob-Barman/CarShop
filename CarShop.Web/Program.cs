@@ -20,10 +20,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 }).AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
+builder.Services.AddHttpClient();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<ICarService, CarService>();
-
+builder.Services.AddScoped<ImageService, ImageService>();
+//builder.services.AddHttpClient(); // Required for HttpClientFactory
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

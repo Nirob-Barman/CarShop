@@ -7,7 +7,7 @@
 
 <h2>Create Car</h2>
 
-<form method="post">
+<form id="createCarForm" method="post" asp-action="Create" enctype="multipart/form-data">
     <div class="mb-3">
         <label asp-for="Title" class="form-label">Car Title</label>
         <input asp-for="Title" class="form-control" />
@@ -33,9 +33,12 @@
     </div>
 
     <div class="mb-3">
-        <label asp-for="ImageUrl" class="form-label">Image URL</label>
+        @* <label asp-for="ImageUrl" class="form-label">Image URL</label>
         <input asp-for="ImageUrl" class="form-control" />
-        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        <span asp-validation-for="ImageUrl" class="text-danger"></span> *@
+        <label for="Image" class="form-label">Car Image</label>
+        <input type="file" class="form-control" name="Image" id="Image" />
+        <span id="imageError" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
@@ -55,4 +58,50 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function () {
+
+            $("#createCarForm").submit(function (e) {
+                debugger
+                var imageFile = $("#Image")[0].files[0];
+                var imageError = $("#imageError");
+                var allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+                var maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+
+                // Clear previous error message
+                imageError.text("");
+                imageError.hide();
+
+                if (!imageFile) {
+                    // No file selected, show an error
+                    imageError.text("Please select an image file.");
+                    imageError.show();
+                    e.preventDefault(); // Prevent form submission
+                    return false;
+                }
+
+                if (imageFile) {
+                    // Check file type
+                    if (!allowedTypes.includes(imageFile.type)) {
+                        imageError.text("Please upload a valid image file (JPG, PNG, or GIF).");
+                        imageError.show();
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    // Check file size
+                    if (imageFile.size > maxSizeInBytes) {
+                        imageError.text("The image file size exceeds the 2MB limit.");
+                        imageError.show();
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                // Proceed with form submission
+                return true;
+            });
+        });
+    </script>
 }
