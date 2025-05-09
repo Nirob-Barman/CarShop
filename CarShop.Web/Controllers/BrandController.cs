@@ -33,8 +33,16 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            await _brandService.CreateBrandAsync(model);
-            return RedirectToAction("Index");
+            try
+            {
+                await _brandService.CreateBrandAsync(model);
+                return RedirectToAction("Index");
+            }
+            catch(Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(model);
+            }
         }
 
         [HttpGet]
@@ -50,8 +58,16 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            await _brandService.UpdateBrandAsync(id, model);
-            return RedirectToAction("Index");
+            try
+            {
+                await _brandService.UpdateBrandAsync(id, model);
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return View(model);
+            }
         }
 
         [HttpPost]

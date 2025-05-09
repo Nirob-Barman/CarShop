@@ -1,5 +1,10 @@
 ﻿@model CarShop.Application.DTOs.Brand.BrandDto
 
+@{
+    ViewData["Title"] = "Brand";
+    Layout = "~/Views/Shared/Car/_CarLayout.cshtml";
+}
+
 <h2>Edit Brand</h2>
 
 <form method="post">
@@ -14,4 +19,35 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'success',
+                text: '@TempData["SuccessMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@TempData["ErrorMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
 }

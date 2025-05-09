@@ -30,7 +30,13 @@ namespace CarShop.Infrastructure.Services
 
         public async Task<int> CreateBrandAsync(BrandDto dto)
         {
-            var brand = new Brand { Name = dto.Name };
+            // Check if brand name already exists (case-insensitive)
+            var exists = await _context.Brands.AnyAsync(b => b.Name!.ToLower() == dto.Name!.Trim().ToLower());
+            if (exists)
+            {
+                throw new Exception("A brand with this name already exists.");
+            }
+            var brand = new Brand { Name = dto.Name!.Trim() };
             _context.Brands.Add(brand);
             await _context.SaveChangesAsync();
             return brand.Id;
@@ -39,11 +45,22 @@ namespace CarShop.Infrastructure.Services
         public async Task UpdateBrandAsync(int id, BrandDto dto)
         {
             var brand = await _context.Brands.FindAsync(id);
-            if (brand != null)
+
+            if (brand == null)
             {
-                brand.Name = dto.Name;
-                await _context.SaveChangesAsync();
+                throw new Exception("Brand not found.");
             }
+
+            // Check if another brand has the same name
+            var exists = await _context.Brands.AnyAsync(b => b.Id != id && b.Name!.ToLower() == dto.Name!.Trim().ToLower());
+
+            if (exists)
+            {
+                throw new Exception("A brand with this name already exists.");
+            }
+
+            brand.Name = dto.Name!.Trim();
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteBrandAsync(int id)
