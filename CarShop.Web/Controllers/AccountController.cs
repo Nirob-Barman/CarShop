@@ -143,6 +143,7 @@ namespace CarShop.Web.Controllers
             }
         }
 
+        [Authorize]
         public IActionResult ChangePassword() => View();
 
         [Authorize]
