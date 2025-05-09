@@ -21,7 +21,80 @@ else
                 <p>Price: $@order.CarPrice</p>
                 <p>Ordered On: @order.OrderedAt.ToString("MMM dd, yyyy")</p>
                 <p>Quantity: @order.Quantity</p>
+                <p>Total Price: $@order.TotalPrice</p>
+
+                <form method="post" action="@Url.Action("CancelOrder", "Order")">
+                    <input type="hidden" name="orderId" value="@order.Id" />
+                    @* <button type="submit" class="btn btn-danger">Cancel Order</button> *@
+                    @* <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button> *@
+                    <button type="button" class="btn btn-danger" onclick="openCancelModal(@order.Id, '@order.CarTitle')">Cancel Order</button>
+                </form>
             </div>
         </div>
     }
+    <hr />
+    <h4>Total Spent: $@Model.Sum(o => o.TotalPrice)</h4>
+}
+
+
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderLabel">Confirm Order Cancellation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to cancel the order for <strong id="orderCarTitle"></strong>?
+            </div>
+            <div class="modal-footer">
+                <form id="cancelOrderForm" method="post" action="@Url.Action("CancelOrder", "Order")">
+                    <input type="hidden" name="orderId" id="cancelOrderId" />
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger">Yes, Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'success',
+                text: '@TempData["SuccessMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@TempData["ErrorMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
+    <script>
+        function openCancelModal(orderId, carTitle) {
+            $('#cancelOrderId').val(orderId);
+            $('#orderCarTitle').text(carTitle);
+            $('#cancelOrderModal').modal('show');
+        }
+    </script>
 }

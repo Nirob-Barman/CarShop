@@ -56,5 +56,21 @@ namespace CarShop.Infrastructure.Services
                     CarImageUrl = o.Car.ImageUrl
                 }).ToListAsync();
         }
+
+        public async Task CancelOrderAsync(int orderId, string userId)
+        {
+            var order = await _context.Orders.Include(o => o.Car).FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+
+            if (order == null)
+                throw new Exception("Order not found or you are not authorized to cancel this order.");
+
+            // Restore car stock
+            order.Car!.Quantity += order.Quantity;
+
+            // Remove the order
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }

@@ -32,6 +32,25 @@ namespace CarShop.Web.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CancelOrder(int orderId)
+        {
+            try
+            {
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                await _orderService.CancelOrderAsync(orderId, userId!);
+                TempData["SuccessMessage"] = "Order canceled successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+
+            return RedirectToAction("MyOrders");
+        }
+
+
+
         [HttpGet]
         public async Task<IActionResult> MyOrders()
         {

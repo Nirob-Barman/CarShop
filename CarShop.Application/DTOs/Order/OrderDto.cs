@@ -12,5 +12,6 @@ namespace CarShop.Application.DTOs.Order
         public string? CarTitle { get; set; }
         public decimal CarPrice { get; set; }
         public string? CarImageUrl { get; set; }
+        public decimal TotalPrice => CarPrice * Quantity;
     }
 }

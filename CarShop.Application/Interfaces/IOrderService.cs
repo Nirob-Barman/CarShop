@@ -6,5 +6,6 @@ namespace CarShop.Application.Interfaces
     {
         Task PlaceOrderAsync(string userId, int carId);
         Task<IEnumerable<OrderDto>> GetOrdersByUserIdAsync(string userId);
+        Task CancelOrderAsync(int orderId, string userId);
     }
 }
