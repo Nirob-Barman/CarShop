@@ -28,6 +28,34 @@ namespace CarShop.Infrastructure.Services
             return brand != null ? new BrandDto { Id = brand.Id, Name = brand.Name } : null!;
         }
 
+        public async Task<int?> GetBrandIdByNameAsync(string brandName)
+        {
+            if (string.IsNullOrWhiteSpace(brandName))
+                return null;
+
+            var normalizedBrandName = brandName.Trim().ToLower();
+
+            var brand = await _context.Brands
+                .Where(b => b.Name!.ToLower() == normalizedBrandName)
+                .Select(b => new { b.Id })
+                .FirstOrDefaultAsync();
+
+            return brand?.Id;
+        }
+
+        public async Task<BrandDto?> GetBrandByNameAsync(string brandName)
+        {
+            var brand = await _context.Brands.FirstOrDefaultAsync(b => b.Name == brandName);
+            
+            if (brand == null) return null;
+
+            return new BrandDto
+            {
+                Id = brand.Id,
+                Name = brand.Name
+            };
+        }
+
         public async Task<int> CreateBrandAsync(BrandDto dto)
         {
             // Check if brand name already exists (case-insensitive)

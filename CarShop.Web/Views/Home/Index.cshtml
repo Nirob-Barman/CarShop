@@ -1,8 +1,42 @@
-﻿@{
+﻿@model IEnumerable<CarShop.Application.DTOs.Car.CarDto>
+
+@{
     ViewData["Title"] = "Home Page";
+    var brands = ViewBag.Brands as IEnumerable<CarShop.Application.DTOs.Brand.BrandDto>;
+    string selectedBrand = ViewBag.SelectedBrand as string ?? "";
 }
 
 <div class="car">
     <h1>Welcome to CarShop</h1>
     <p class="lead">Your one-stop shop for premium cars</p>
 </div>
+
+
+<h2>Car Listings</h2>
+
+<form method="get" class="mb-3">
+    <select name="brandName" class="form-select" onchange="this.form.submit()">
+        <option value="">All Brands</option>
+        @foreach (var brand in brands!)
+        {
+            <option value="@brand.Name" selected="@(brand.Name == selectedBrand)">
+                @brand.Name
+            </option>
+            // <option value="@brand.Id">@brand.Name</option>
+            // <option value="@brand.Name" @(ViewBag.SelectedBrand == brand.Name ? "selected" : "")>@brand.Name</option>
+        }
+    </select>
+</form>
+
+@foreach (var car in Model)
+{
+    <div class="card mb-2">
+        <img src="@car.ImageUrl" alt="Car Image" class="card-img-top">
+        <div class="card-body">
+            <h5>@car.Title</h5>
+            <p>Brand: @car.BrandName</p>
+            <p>Price: $@car.Price</p>
+            <a href="/Home/Details/@car.Id" class="btn btn-primary">View Details</a>
+        </div>
+    </div>
+}
