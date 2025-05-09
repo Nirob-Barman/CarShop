@@ -119,11 +119,12 @@ CarShop
 
 ## 📅 Future Improvements
 
-* Add image upload for car listings.
-* Implement advanced search with filters.
-* Add user roles (Admin, User) for better control.
-* Improve UI with better CSS and animations.
-* Add a dashboard for admins to manage cars and brands.
+* Add support for customer reviews and ratings.
+* Implement car comparison functionality.
+* Add a wish list for saving favorite cars.
+* Integrate payment gateways for seamless transactions.
+* Add real-time notifications for order updates.
+* Implement advanced analytics and reports for admins.
 
 ---
 
