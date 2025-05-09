@@ -25,7 +25,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<ImageService, ImageService>();
-//builder.services.AddHttpClient(); // Required for HttpClientFactory
+builder.Services.AddScoped<ICommentService, CommentService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
