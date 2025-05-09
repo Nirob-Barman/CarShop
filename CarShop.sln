@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarShop.Infrastructure", "C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CarShop.Web", "CarShop.Web\CarShop.Web.csproj", "{D68F9D08-C2FF-45A1-8509-E2AEA038BCA5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,6 +38,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{FB582363-DB13-4789-95E4-8735C42D8C7A} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7AC510B9-9629-4153-AAF7-DD6E5FF107D2} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{7E638F30-5636-4464-AAAC-10801F3D10AB} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{D68F9D08-C2FF-45A1-8509-E2AEA038BCA5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5E03E49-6A48-4EDF-8C36-EA8EBDDCC843}
