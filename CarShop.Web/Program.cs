@@ -26,6 +26,7 @@ builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<ImageService, ImageService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

@@ -1,0 +1,27 @@
+﻿@model IEnumerable<CarShop.Application.DTOs.Order.OrderDto>
+
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<h2>My Orders</h2>
+
+@if (!Model.Any())
+{
+    <p>You have not placed any orders yet.</p>
+}
+else
+{
+    foreach (var order in Model)
+    {
+        <div class="card mb-3">
+            <img src="@order.CarImageUrl" alt="Car Image" class="card-img-top" style="max-width: 100%; height: auto;">
+            <div class="card-body">
+                <h5>@order.CarTitle</h5>
+                <p>Price: $@order.CarPrice</p>
+                <p>Ordered On: @order.OrderedAt.ToString("MMM dd, yyyy")</p>
+                <p>Quantity: @order.Quantity</p>
+            </div>
+        </div>
+    }
+}

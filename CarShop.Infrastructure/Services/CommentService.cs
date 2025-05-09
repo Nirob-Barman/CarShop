@@ -23,7 +23,7 @@ namespace CarShop.Infrastructure.Services
                 .Select(c => new CommentDto
                 {
                     Id = c.Id,
-                    UserName = c.UserName ?? "Anonymous",
+                    UserName = c.UserName,
                     Content = c.Content,
                     CreatedAt = c.CreatedAt,
                     CarId = c.CarId

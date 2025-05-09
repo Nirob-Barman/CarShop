@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = Model.Title;
-    var comments = ViewBag.Comments as IEnumerable<CarShop.Application.DTOs.Comment.CommentDto> ?? Enumerable.Empty<CarShop.Application.DTOs.Comment.CommentDto>();
+    var comments = ViewBag.Comments as IEnumerable<CarShop.Application.DTOs.Comment.CommentDto>;
 }
 
 
@@ -42,11 +42,11 @@
     </div>
 
     <div class="card mb-4">
-        <h5 class="card-header">Total Comments: @comments.Count()</h5>
+        <h5 class="card-header">Total Comments: @comments!.Count()</h5>
         <div class="card-body">
-            @if (comments.Any())
+            @if (comments!.Any())
             {
-                foreach (var comment in comments)
+                foreach (var comment in comments!)
                 {
                     <div class="border p-3 mb-3">
                         <h6 class="text-muted">@comment.CreatedAt.ToString("MMM dd, yyyy")</h6>
@@ -84,3 +84,36 @@
     </div>
 
 </div>
+
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'success',
+                text: '@TempData["SuccessMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: '@TempData["ErrorMessage"]',
+                position: 'top-end',
+                timer: 5000,
+                toast: true,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
+}
