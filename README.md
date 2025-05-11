@@ -14,6 +14,7 @@ CarShop is a car sales platform designed to provide a seamless experience for bo
 * **Brand Filtering:** Filter cars based on brand for more precise browsing.
 * **Car Details Page:** View detailed car information, including comments and stock availability.
 * **User Authentication:** Register, login, and manage user accounts securely.
+* **Email Notifications:** Sends confirmation emails for actions like user registration, orders, etc.
 * **Place Orders:** Authenticated users can place orders for cars.
 * **Order Management:** View, cancel, and manage previous orders.
 * **Comments:** Add comments to car details pages.
@@ -70,6 +71,20 @@ Ensure the **DefaultConnection** string in **appsettings.json** is correctly con
 ```json
 "ConnectionStrings": {
   "DefaultConnection": "Server=localhost;Database=CarShopDb;Trusted_Connection=True;MultipleActiveResultSets=true"
+}
+```
+
+## ✉️ Email Configuration (SMTP)
+To enable email features such as registration confirmations, password resets, or orher notifications, you must configure SMTP settings in your appsettings.json:
+```
+"EmailSettings": {
+  "SmtpServer": "smtp.example.com",
+  "Port": 587,
+  "SenderName": "Car Shop",
+  "SenderEmail": "noreply@carshop.com",
+  "Username": "your-smtp-username",
+  "Password": "your-smtp-password",
+  "EnableSsl": true
 }
 ```
 
