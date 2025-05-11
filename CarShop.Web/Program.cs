@@ -1,3 +1,4 @@
+using CarShop.Application.DTOs.Email;
 using CarShop.Application.Interfaces;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
@@ -27,6 +28,8 @@ builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<ImageService, ImageService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

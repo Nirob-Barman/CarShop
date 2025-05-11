@@ -11,14 +11,15 @@ namespace CarShop.Infrastructure.Identity
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IEmailService _emailService;
 
-        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public UserService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, RoleManager<IdentityRole> roleManager, IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _emailService = emailService;
         }
-
 
         public async Task<string> RegisterAsync(RegisterDto model)
         {
@@ -45,6 +46,9 @@ namespace CarShop.Infrastructure.Identity
                 await _userManager.DeleteAsync(user);
                 throw new Exception("Failed to assign default role to user.");
             }
+
+            var welcomeMessage = $"Hello {model.FullName},<br>Welcome to CarShop! Thank you for registering.";
+            await _emailService.SendEmailAsync(user.Email!, "Welcome to CarShop", welcomeMessage);
 
             return user.Id;
         }
