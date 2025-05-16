@@ -6,7 +6,7 @@
     string selectedBrand = ViewBag.SelectedBrand as string ?? "";
 }
 
-<h2 class="text-center mt-4 mb-3">All Cars</h2>
+<h2 class="text-center mt-4 mb-3">Browse Our Collection</h2>
 
 <div class="container mt-4">
     @await Html.PartialAsync("AllCars/_BrandFilter", (brands!, selectedBrand))
