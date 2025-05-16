@@ -22,6 +22,8 @@ namespace CarShop.Web.Controllers
 
         public async Task<IActionResult> Index(string? brandName)
         {
+            int page = 1;
+            int pageSize = 4;
             int? brandId = null;
 
             if (!string.IsNullOrWhiteSpace(brandName))
@@ -38,8 +40,13 @@ namespace CarShop.Web.Controllers
                 ? await _carService.GetCarsByBrandIdAsync(brandId.Value)
                 : await _carService.GetAllCarsAsync();
 
+            var totalCars = cars.Count();
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCars / pageSize);
+            var paginatedCars = cars.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            ViewBag.ShowAllButton = totalCars > pageSize;
+
             ViewBag.Brands = await _brandService.GetAllBrandsAsync();
-            return View(cars);
+            return View(paginatedCars);
         }
 
         [HttpGet]
