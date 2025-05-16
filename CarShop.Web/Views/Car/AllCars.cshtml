@@ -1,0 +1,30 @@
+﻿@model IEnumerable<CarShop.Application.DTOs.Car.CarDto>
+
+@{
+    ViewData["Title"] = "All Cars";
+    var brands = ViewBag.Brands as IEnumerable<CarShop.Application.DTOs.Brand.BrandDto>;
+    string selectedBrand = ViewBag.SelectedBrand as string ?? "";
+}
+
+<h2 class="text-center mt-4 mb-3">All Cars</h2>
+
+<div class="container mt-4">
+    @await Html.PartialAsync("AllCars/_BrandFilter", (brands!, selectedBrand))
+
+    <div>
+        @await Html.PartialAsync("AllCars/_CarList.cshtml", Model)
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("AllCars", new { page = i, brandName = ViewBag.SelectedBrand })">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+</div>

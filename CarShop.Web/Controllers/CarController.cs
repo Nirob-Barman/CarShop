@@ -146,11 +146,46 @@ namespace CarShop.Web.Controllers
             return RedirectToAction("Index");
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var car = await _carService.GetCarByIdAsync(id);
             return View(car);
         }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> AllCars(string? brandName, int page = 1)
+        {
+            int pageSize = 10;
+            int? brandId = null;
+
+            if (!string.IsNullOrWhiteSpace(brandName))
+            {
+                var brand = await _brandService.GetBrandByNameAsync(brandName);
+                if (brand != null)
+                {
+                    brandId = brand.Id;
+                    ViewBag.SelectedBrand = brand.Name;
+                }
+            }
+
+            var allCars = brandId.HasValue
+                ? await _carService.GetCarsByBrandIdAsync(brandId.Value)
+                : await _carService.GetAllCarsAsync();
+
+            int totalCars = allCars.Count();
+            var paginatedCars = allCars
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCars / pageSize);
+            ViewBag.CurrentPage = page;
+            ViewBag.Brands = await _brandService.GetAllBrandsAsync();
+
+            return View(paginatedCars);
+        }
+
     }
 }

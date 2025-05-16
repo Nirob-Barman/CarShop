@@ -1,0 +1,18 @@
+﻿@model (IEnumerable<CarShop.Application.DTOs.Brand.BrandDto>, string)
+
+@{
+    var brands = Model.Item1;
+    var selectedBrand = Model.Item2 ?? "";
+}
+
+<h3 class="text-center mb-3">Filter by Brand</h3>
+<div class="btn-group d-flex justify-content-center mb-5 flex-wrap">
+    <a href="@Url.Action("AllCars", "Car")" class="btn btn-outline-primary m-1 @(string.IsNullOrEmpty(selectedBrand) ? "active" : "")">All Brands</a>
+    @foreach (var brand in brands!)
+    {
+        <a href="@Url.Action("AllCars", "Car", new { brandName = brand.Name })"
+           class="btn btn-outline-primary m-1 @(selectedBrand == brand.Name ? "active" : "")">
+            @brand.Name
+        </a>
+    }
+</div>
