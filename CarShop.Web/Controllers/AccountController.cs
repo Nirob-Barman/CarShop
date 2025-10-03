@@ -9,49 +9,45 @@ namespace CarShop.Web.Controllers
     public class AccountController : Controller
     {
         private readonly IUserService _userService;
-        public AccountController(IUserService userService)
+        private readonly IUserContextService _userContextService;
+        public AccountController(IUserService userService, IUserContextService userContextService)
         {
             _userService = userService;
+            _userContextService = userContextService;
         }
 
         public IActionResult Register()
         {
-            if (User.Identity!.IsAuthenticated)
+
+            if (_userContextService.IsAuthenticated)
             {
                 return RedirectToAction("Profile");
             }
             return View();
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> Register(RegisterDto model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            //bool emailExists = await _userService.EmailExistsAsync(model.Email!);
-            //if (emailExists)
-            //{
-            //    ModelState.AddModelError(nameof(model.Email), "This email is already registered.");
-            //    return View(model);
-            //}
+            var result = await _userService.RegisterAsync(model);
 
-            try
-            {                
-                await _userService.RegisterAsync(model);
-                return RedirectToAction("Login");
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = result.Message;
                 return View(model);
             }
+
+            //TempData["SuccessMessage"] = "Registration successful. You can now log in.";
+            return RedirectToAction("Login");
         }
 
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            if (User.Identity!.IsAuthenticated)
+            if (_userContextService.IsAuthenticated)
             {
                 return RedirectToLocal(returnUrl);
             }
@@ -69,40 +65,30 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
 
-            var existingUser = await _userService.GetUserByEmailAsync(model.Email!);
-            if (existingUser is null)
+            var result = await _userService.LoginAsync(model);
+
+            if (!result.Success)
             {
+                if (result.FieldErrors != null)
+                {
+                    foreach (var kvp in result.FieldErrors)
+                    {
+                        ModelState.AddModelError(kvp.Key, kvp.Value);
+                    }
+                }
+
                 ViewData["ReturnUrl"] = returnUrl;
-                ModelState.AddModelError(nameof(model.Email), "This email is not registered.");
                 return View(model);
             }
 
-            var isPasswordMatch = await _userService.CheckPasswordAsync(existingUser, model.Password!);
-            if (!isPasswordMatch)
-            {
-                ModelState.AddModelError(nameof(model.Password), "Incorrect password.");
-                ViewData["ReturnUrl"] = returnUrl;
-                return View(model);
-            }
-
-            try
-            {
-                await _userService.LoginAsync(model);
-                //return RedirectToAction("Index", "Home");
-                return RedirectToLocal(returnUrl);
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                ViewData["ReturnUrl"] = returnUrl;
-                return View(model);
-            }
+            return RedirectToLocal(returnUrl);
         }
+
 
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            await _userService.LogoutAsync();
+            var result = await _userService.LogoutAsync();
             return RedirectToAction("Login");
         }
 
@@ -113,13 +99,23 @@ namespace CarShop.Web.Controllers
             return Json(emailExists);
         }
 
+
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var profile = await _userService.GetProfileAsync(userId);
-            return View(profile);
+            string userId = _userContextService.UserId!;
+
+            var result = await _userService.GetProfileAsync(userId);
+
+            if (!result.Success || result.Data == null)
+            {
+                TempData["ErrorMessage"] = result.Message ?? "Failed to load profile.";
+                return RedirectToAction("Login");
+            }
+
+            return View(result.Data);
         }
+
 
         [Authorize]
         [HttpPost]
@@ -128,23 +124,24 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Profile", model);
 
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            try
+            string userId = _userContextService.UserId!;
+
+            var result = await _userService.UpdateProfileAsync(userId, model);
+
+            if (!result.Success)
             {
-                await _userService.UpdateProfileAsync(userId, model);
-                TempData["SuccessMessage"] = "Profile Updated successfully.";
-                return RedirectToAction("Profile");
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                //return View(model);
+                TempData["ErrorMessage"] = result.Message ?? "Profile update failed.";
                 return View("Profile", model);
             }
+
+            TempData["SuccessMessage"] = result.Message ?? "Profile updated.";
+            return RedirectToAction("Profile");
         }
+
 
         [Authorize]
         public IActionResult ChangePassword() => View();
+
 
         [Authorize]
         [HttpPost]
@@ -153,20 +150,33 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            string userId = _userContextService.UserId!;
 
-            try
+            var result = await _userService.ChangePasswordAsync(userId, model);
+
+            if (result.Success)
             {
-                await _userService.ChangePasswordAsync(userId, model);
-                TempData["SuccessMessage"] = "Password changed successfully.";
+                TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction("Profile");
             }
-            catch (Exception ex)
+            else
             {
-                TempData["ErrorMessage"] = ex.Message;
+                if (result.Errors != null)
+                {
+                    if (result.FieldErrors != null)
+                    {
+                        foreach (var kvp in result.FieldErrors)
+                        {
+                            ModelState.AddModelError(kvp.Key, kvp.Value);
+                        }
+                    }
+                }
+
+                TempData["ErrorMessage"] = result.Message ?? "An error occurred.";
                 return View(model);
             }
         }
+
 
         [HttpGet]
         public IActionResult ForgotPassword() => View();
@@ -176,24 +186,26 @@ namespace CarShop.Web.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            try
-            {
-                var token = await _userService.GeneratePasswordResetTokenAsync(model.Email!);
-                //It generates a full absolute URL(including protocol and domain) that points to the ResetPassword action on your AccountController, with query parameters for the email and token.
-                //Request.Scheme Ensures the generated link uses http:// or https:// depending on the request. This makes the URL absolute.
-                var resetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
+            var result = await _userService.GeneratePasswordResetTokenAsync(model.Email!);
 
-                // TODO: Send resetLink via email (simulated below)
-                TempData["ResetLink"] = resetLink; // For dev/demo purpose
-                ViewBag.Message = "Reset link generated. (Check email)";
-            }
-            catch (Exception ex)
+            if (!result.Success)
             {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = string.Join(", ", result.Errors!);
+                return View(model);
             }
+
+            var token = result.Data;
+            //It generates a full absolute URL(including protocol and domain) that points to the ResetPassword action on your AccountController, with query parameters for the email and token.
+            //Request.Scheme Ensures the generated link uses http:// or https:// depending on the request. This makes the URL absolute.
+            var resetLink = Url.Action("ResetPassword","Account", new { email = model.Email, token = token }, Request.Scheme );
+
+            // Simulate sending email
+            TempData["ResetLink"] = resetLink;
+            ViewBag.Message = "Reset link generated. (Check email)";
 
             return View();
         }
+
 
         [HttpGet]
         public IActionResult ResetPassword(string email, string token)
@@ -201,22 +213,22 @@ namespace CarShop.Web.Controllers
             return View(new ResetPasswordDto { Email = email, Token = token });
         }
 
+
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
         {
             if (!ModelState.IsValid) return View(model);
 
-            try
+            var result = await _userService.ResetPasswordAsync(model.Email!, model.Token!, model.NewPassword!);
+
+            if (!result.Success)
             {
-                await _userService.ResetPasswordAsync(model.Email!, model.Token!, model.NewPassword!);
-                TempData["SuccessMessage"] = "Password has been reset successfully.";
-                return RedirectToAction("Login");
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = string.Join("; ", result.Errors!);
                 return View(model);
             }
+
+            TempData["SuccessMessage"] = result.Message;
+            return RedirectToAction("Login");
         }
 
         [HttpGet]

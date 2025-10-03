@@ -1,4 +1,5 @@
-﻿using CarShop.Application.Interfaces;
+﻿using CarShop.Application.DTOs.Identity;
+using CarShop.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,17 +14,30 @@ namespace CarShop.Web.Controllers
         {
             _userService = userService;
         }
+        
         public async Task<IActionResult> Users()
         {
-            var allRoles = await _userService.GetAllRolesNonAdminAsync();
-            var users = await _userService.GetAllUsersNonAdminAsync();
+            var rolesResult = await _userService.GetAllRolesNonAdminAsync();
+            var usersResult = await _userService.GetAllUsersNonAdminAsync();
 
-            foreach (var user in users)
+            if (!usersResult.Success || usersResult.Data == null)
             {
-                user.AllRoles = allRoles;
+                TempData["ErrorMessage"] = usersResult.Message ?? "Failed to retrieve users.";
+                return View(new List<UserWithRoleDto>());
             }
 
-            return View(users);
+            if (!rolesResult.Success || rolesResult.Data == null)
+            {
+                TempData["ErrorMessage"] = rolesResult.Message ?? "Failed to retrieve roles.";
+                return View(usersResult.Data); // show users even if roles failed
+            }
+
+            foreach (var user in usersResult.Data)
+            {
+                user.AllRoles = rolesResult.Data;
+            }
+
+            return View(usersResult.Data);
         }
 
         [HttpPost]
@@ -35,18 +49,18 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Users");
             }
 
-            try
+            var result = await _userService.AssignRoleToUserAsync(userId, roleName);
+
+            if (!result.Success)
             {
-                await _userService.AssignRoleToUserAsync(userId, roleName);
-                TempData["SuccessMessage"] = $"Role {roleName} updated successfully.";
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
+                TempData["ErrorMessage"] = result.Message ?? "Failed to assign role.";
+                return RedirectToAction("Users");
             }
 
+            TempData["SuccessMessage"] = result.Message;
             return RedirectToAction("Users");
         }
+
 
         public IActionResult CreateRole()
         {
@@ -63,17 +77,25 @@ namespace CarShop.Web.Controllers
                 return View();
             }
 
-            try
+            var result = await _userService.CreateRoleAsync(roleName);
+
+            if (!result.Success)
             {
-                await _userService.CreateRoleAsync(roleName);
-                TempData["SuccessMessage"] = $"Role '{roleName}' created successfully.";
-                return RedirectToAction("CreateRole");
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
+                if (result.Errors != null)
+                {
+                    foreach (var error in result.Errors)
+                        ModelState.AddModelError("", error);
+                }
+                else if (!string.IsNullOrWhiteSpace(result.Message))
+                {
+                    ModelState.AddModelError("", result.Message);
+                }
+
                 return View();
             }
+
+            TempData["SuccessMessage"] = result.Message;
+            return RedirectToAction("CreateRole");
         }
     }
 }

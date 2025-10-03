@@ -1,7 +1,11 @@
 using CarShop.Application.DTOs.Email;
 using CarShop.Application.Interfaces;
+using CarShop.Application.Interfaces.Identity;
+using CarShop.Application.Interfaces.Repositories;
+using CarShop.Application.Services;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
+using CarShop.Infrastructure.Persistence.Repositories;
 using CarShop.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +26,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IBrandService, BrandService>();
 builder.Services.AddScoped<ICarService, CarService>();
@@ -30,6 +35,17 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+
+builder.Services.AddScoped<IUserManager, IdentityUserManager>();
+builder.Services.AddScoped<ISignInManager, IdentitySignInManager>();
+builder.Services.AddScoped<IRoleManager, RoleManager>();
+
+
+builder.Services.AddScoped<IBrandRepository, BrandRepository>();
+builder.Services.AddScoped<ICarRepository, CarRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
