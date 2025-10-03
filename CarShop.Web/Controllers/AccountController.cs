@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using CarShop.Application.DTOs.Identity;
+﻿using CarShop.Application.DTOs.Identity;
 using CarShop.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

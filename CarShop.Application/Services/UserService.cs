@@ -3,9 +3,8 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
-using CarShop.Infrastructure.Identity.Mappers;
 
-namespace CarShop.Infrastructure.Identity
+namespace CarShop.Application.Services
 {
     public class UserService : IUserService
     {
