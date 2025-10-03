@@ -1,12 +1,24 @@
 {
-    "Logging": {
-        "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
-        }
-    },
-    "ConnectionStrings": {
-        "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=YOUR_DATABASE_NAME;Trusted_Connection=True;User Id=YOUR_USERNAME;Password=YOUR_PASSWORD;TrustServerCertificate=True;"
-    },
-    "AllowedHosts": "*"
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=YOUR_SERVER_NAME;Database=YOUR_DATABASE_NAME;Trusted_Connection=True;User Id=YOUR_USERNAME;Password=YOUR_PASSWORD;TrustServerCertificate=True;"
+  },
+  "AllowedHosts": "*",
+  "EmailSettings": {
+    "SmtpServer": "smtp.yourmailserver.com",
+    "Port": 587,
+    "SenderEmail": "your-email@example.com",
+    "SenderName": "Your App Support",
+    "Username": "your-email@example.com",
+    "Password": "your-app-password",
+    "EnableSsl": true
+  },
+  "Imgbb": {
+    "ApiKey": "your-imgbb-api-key"
+  }
 }
