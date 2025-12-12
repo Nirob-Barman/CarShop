@@ -1,4 +1,4 @@
-﻿@model CarShop.Application.DTOs.Car.CarDto
+﻿@model CarShop.Web.ViewModels.Car.CarViewModel
 
 @{
     ViewData["Title"] = "Edit Car";
@@ -53,7 +53,7 @@
         <div class="mb-3">
             <label asp-for="BrandId" class="form-label">Brand</label>
             <select asp-for="BrandId" class="form-select">
-                @foreach (var brand in (IEnumerable<CarShop.Application.DTOs.Brand.BrandDto>)ViewBag.Brands)
+                @foreach (var brand in (IEnumerable<CarShop.Web.ViewModels.Brand.BrandViewModel>)ViewBag.Brands)
                 {
                     <option value="@brand.Id">@brand.Name</option>
                 }

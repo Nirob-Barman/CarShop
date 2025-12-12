@@ -1,5 +1,7 @@
 ﻿using CarShop.Application.DTOs.Identity;
 using CarShop.Application.Interfaces;
+using CarShop.Web.ViewModels.Account;
+using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,12 +28,13 @@ namespace CarShop.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(RegisterDto model)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            var result = await _userService.RegisterAsync(model);
+            var dto = AccountMapper.ToDto(model);
+            var result = await _userService.RegisterAsync(dto);
 
             if (!result.Success)
             {
@@ -56,7 +59,7 @@ namespace CarShop.Web.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginDto model, string? returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
@@ -64,7 +67,8 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
 
-            var result = await _userService.LoginAsync(model);
+            var dto = AccountMapper.ToDto(model);
+            var result = await _userService.LoginAsync(dto);
 
             if (!result.Success)
             {
@@ -112,20 +116,22 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Login");
             }
 
-            return View(result.Data);
+            var vm = AccountMapper.ToViewModel(result.Data);
+            return View(vm);
         }
 
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> EditProfile(EditProfileDto model)
+        public async Task<IActionResult> EditProfile(ProfileViewModel model)
         {
             if (!ModelState.IsValid)
                 return View("Profile", model);
 
+            var dto = AccountMapper.ToDto(model);
             string userId = _userContextService.UserId!;
 
-            var result = await _userService.UpdateProfileAsync(userId, model);
+            var result = await _userService.UpdateProfileAsync(userId, dto);
 
             if (!result.Success)
             {
@@ -144,14 +150,14 @@ namespace CarShop.Web.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> ChangePassword(ChangePasswordDto model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
             string userId = _userContextService.UserId!;
-
-            var result = await _userService.ChangePasswordAsync(userId, model);
+            var dto = AccountMapper.ToDto(model);
+            var result = await _userService.ChangePasswordAsync(userId, dto);
 
             if (result.Success)
             {
@@ -181,11 +187,12 @@ namespace CarShop.Web.Controllers
         public IActionResult ForgotPassword() => View();
 
         [HttpPost]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordDto model)
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
 
-            var result = await _userService.GeneratePasswordResetTokenAsync(model.Email!);
+            var dto = AccountMapper.ToDto(model);
+            var result = await _userService.GeneratePasswordResetTokenAsync(dto.Email!);
 
             if (!result.Success)
             {
@@ -209,16 +216,17 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public IActionResult ResetPassword(string email, string token)
         {
-            return View(new ResetPasswordDto { Email = email, Token = token });
+            return View(new ResetPasswordViewModel { Email = email, Token = token });
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> ResetPassword(ResetPasswordDto model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
 
-            var result = await _userService.ResetPasswordAsync(model.Email!, model.Token!, model.NewPassword!);
+            var dto = AccountMapper.ToDto(model);
+            var result = await _userService.ResetPasswordAsync(dto.Email!, dto.Token!, dto.NewPassword!);
 
             if (!result.Success)
             {

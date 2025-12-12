@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using CarShop.Application.Interfaces;
 using CarShop.Web.Models;
+using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarShop.Web.Controllers
@@ -20,34 +21,6 @@ namespace CarShop.Web.Controllers
             _commentService = commentService;
         }
 
-        //public async Task<IActionResult> Index(string? brandName)
-        //{
-        //    int page = 1;
-        //    int pageSize = 4;
-        //    int? brandId = null;
-
-        //    if (!string.IsNullOrWhiteSpace(brandName))
-        //    {
-        //        var brand = await _brandService.GetBrandByNameAsync(brandName);
-        //        if (brand != null)
-        //        {
-        //            brandId = brand.Id;
-        //            ViewBag.SelectedBrand = brand.Name;
-        //        }
-        //    }
-
-        //    var cars = brandId.HasValue
-        //        ? await _carService.GetCarsByBrandIdAsync(brandId.Value)
-        //        : await _carService.GetAllCarsAsync();
-
-        //    var totalCars = cars.Count();
-        //    ViewBag.TotalPages = (int)Math.Ceiling((double)totalCars / pageSize);
-        //    var paginatedCars = cars.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-        //    ViewBag.ShowAllButton = totalCars > pageSize;
-
-        //    ViewBag.Brands = await _brandService.GetAllBrandsAsync();
-        //    return View(paginatedCars);
-        //}
 
         public async Task<IActionResult> Index(string? brandName)
         {
@@ -75,26 +48,20 @@ namespace CarShop.Web.Controllers
                 return View(new List<object>());
             }
 
-            var cars = carResult.Data!;
+            //var cars = carResult.Data!;
+            var cars = CarMapper.ToViewModels(carResult.Data!);
             int totalCars = cars.Count();
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalCars / pageSize);
             var paginatedCars = cars.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             ViewBag.ShowAllButton = totalCars > pageSize;
 
             var brandsResult = await _brandService.GetAllBrandsAsync();
-            ViewBag.Brands = brandsResult.Data;
+            //ViewBag.Brands = brandsResult.Data;
+            ViewBag.Brands = BrandMapper.ToViewModels(brandsResult.Data!);
 
             return View(paginatedCars);
         }
 
-        //[HttpGet]
-        //public async Task<IActionResult> Details(int id)
-        //{
-        //    var car = await _carService.GetCarByIdAsync(id);
-        //    if (car == null) return NotFound();
-        //    ViewBag.Comments = await _commentService.GetCommentsByCarIdAsync(id);
-        //    return View(car);
-        //}
 
         [HttpGet]
         public async Task<IActionResult> Details(int id)
@@ -106,6 +73,7 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Index");
             }
 
+            var carVm = CarMapper.ToViewModel(carResult.Data!);
             var commentResult = await _commentService.GetCommentsByCarIdAsync(id);
             if (!commentResult.Success)
             {
@@ -117,7 +85,7 @@ namespace CarShop.Web.Controllers
                 ViewBag.Comments = commentResult.Data;
             }
 
-            return View(carResult.Data);
+            return View(carVm);
         }
 
         public IActionResult Privacy()

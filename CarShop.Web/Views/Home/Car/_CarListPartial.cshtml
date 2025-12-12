@@ -1,8 +1,8 @@
-﻿@model IEnumerable<CarShop.Application.DTOs.Car.CarDto>
+﻿@model IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>
 
 @{
     ViewData["Title"] = "Home Page";
-    var brands = ViewBag.Brands as IEnumerable<CarShop.Application.DTOs.Brand.BrandDto>;
+    var brands = ViewBag.Brands as IEnumerable<CarShop.Web.ViewModels.Brand.BrandViewModel>;
     string selectedBrand = ViewBag.SelectedBrand as string ?? "";
 }
 

@@ -100,6 +100,8 @@ namespace CarShop.Infrastructure.Identity
             {
                 Id = identityUser.Id,
                 Email = identityUser.Email!,
+                FullName = identityUser.FullName,
+                Address = identityUser.Address
             };
         }
 

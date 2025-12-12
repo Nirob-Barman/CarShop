@@ -1,4 +1,4 @@
-﻿@model IEnumerable<CarShop.Application.DTOs.Car.CarDto>
+﻿@model IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>
 
 @{
     ViewData["Title"] = "Car";
@@ -14,6 +14,12 @@
     </div>
 </div>
 
+@if (!Model.Any())
+{
+    <div class="alert alert-info text-center">
+        No cars available.
+    </div>
+}
 
 <table class="table">
     <thead>
