@@ -1,12 +1,15 @@
 using CarShop.Application.DTOs.Email;
 using CarShop.Application.Interfaces;
+using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Interfaces.Repositories;
+using CarShop.Application.Interfaces.Repositories.Integration;
 using CarShop.Application.Services;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
 using CarShop.Infrastructure.Persistence.Repositories;
 using CarShop.Infrastructure.Services;
+using CarShop.Infrastructure.Services.Caching;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +20,22 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
+    //options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
+    //{
+    //    EndPoints = { "clear-moray-16822.upstash.io:6379" },
+    //    Password = "AUG2AAIncDE3MjgyYmFmNWViMWI0YmY3YjBmNDA5ZjljNmEzMDI5YXAxMTY4MjI",
+    //    Ssl = true,
+    //    AbortOnConnectFail = false,
+    //    ConnectTimeout = 10000  // 10 seconds
+    //};
+    options.InstanceName = "CarShop:";
+});
+
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
@@ -46,6 +65,8 @@ builder.Services.AddScoped<IBrandRepository, BrandRepository>();
 builder.Services.AddScoped<ICarRepository, CarRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+
+builder.Services.AddScoped<IIntegrationRepository, IntegrationRepository>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

@@ -120,6 +120,49 @@ namespace CarShop.Infrastructure.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("CarShop.Domain.Entities.IntegrationSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CacheTTLSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Configuration")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RetryPolicy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ServiceName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("IntegrationSettings");
+                });
+
             modelBuilder.Entity("CarShop.Domain.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -222,15 +265,15 @@ namespace CarShop.Infrastructure.Migrations
                         {
                             Id = "9E22B5A0-3D5C-4F5D-B123-987654321DEF",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "548028df-b9e6-4e84-b0a9-78b22ca4114c",
+                            ConcurrencyStamp = "94fa4731-2276-43e9-aa8a-a9c1e6abd15b",
                             Email = "admin@gmail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEHWuXvbzTN7UNl034eTilM/xYR+dAlWhQZTBH1wtdsx4I3riYfQXZOqhWAttGZuFww==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEAro6TJqbBJjmVBQ0IOTr5/TUJe1Q9MK8LNqkvldunx07flEF69DtdqxQhnCEofyHA==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e82df3d9-e9da-48ac-97d2-e7ad3c7f7dad",
+                            SecurityStamp = "fd571e31-1615-450c-8b11-63fbeb595aa2",
                             TwoFactorEnabled = false,
                             UserName = "admin@gmail.com"
                         });

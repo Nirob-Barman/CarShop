@@ -1,6 +1,8 @@
 ﻿using CarShop.Application.DTOs.Brand;
 using CarShop.Application.Interfaces;
+using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Interfaces.Repositories;
+using CarShop.Application.Interfaces.Repositories.Integration;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
 
@@ -9,26 +11,53 @@ namespace CarShop.Application.Services
     public class BrandService : IBrandService
     {
         private readonly IBrandRepository _brandRepository;
+        private readonly ICacheService _cacheService;
+        private readonly IIntegrationRepository _integrationRepository;
 
-        public BrandService(IBrandRepository brandRepository)
+        private const string AllBrandsKey = "brands:all";
+        private static string BrandKey(int id) => $"brands:{id}";
+
+        public BrandService(IBrandRepository brandRepository, ICacheService cacheService, IIntegrationRepository integrationRepository)
         {
             _brandRepository = brandRepository;
+            _cacheService = cacheService;
+            _integrationRepository = integrationRepository;
         }
 
         public async Task<Result<IEnumerable<BrandDto>>> GetAllBrandsAsync()
         {
+            var isRedisEnabled = await _integrationRepository.IsEnabledAsync("Redis");
+            if (isRedisEnabled)
+            {
+                var cached = await _cacheService.GetAsync<IEnumerable<BrandDto>>(AllBrandsKey);
+                if (cached != null)
+                    return Result<IEnumerable<BrandDto>>.Ok(cached);
+            }
+
             var brands = await _brandRepository.GetAllAsync();
             var result = brands.Select(b => new BrandDto { Id = b.Id, Name = b.Name });
+            if (isRedisEnabled)
+                await _cacheService.SetAsync(AllBrandsKey, result, TimeSpan.FromDays(1));
             return Result<IEnumerable<BrandDto>>.Ok(result);
         }
 
         public async Task<Result<BrandDto>> GetBrandByIdAsync(int id)
         {
+            var isRedisEnabled = await _integrationRepository.IsEnabledAsync("Redis");
+            if (isRedisEnabled)
+            {
+                var cached = await _cacheService.GetAsync<BrandDto>(BrandKey(id));
+                if (cached != null)
+                    return Result<BrandDto>.Ok(cached);
+            }
+
             var brand = await _brandRepository.GetByIdAsync(id);
             if (brand == null)
                 return Result<BrandDto>.Fail("Brand not found");
 
             var dto = new BrandDto { Id = brand.Id, Name = brand.Name };
+            if (isRedisEnabled)
+                await _cacheService.SetAsync(BrandKey(id), dto, TimeSpan.FromMinutes(10));
             return Result<BrandDto>.Ok(dto);
         }
 
@@ -69,7 +98,10 @@ namespace CarShop.Application.Services
             var brand = new Brand { Name = dto.Name.Trim() };
             _brandRepository.AddAsync(brand);
             await _brandRepository.SaveChangesAsync();
-
+            var isRedisEnabled = await _integrationRepository.IsEnabledAsync("Redis");
+            // Invalidate cache
+            if (isRedisEnabled)
+                await _cacheService.RemoveAsync(AllBrandsKey);
             return Result<int>.Ok(brand.Id, "Brand created successfully.");
         }
 
@@ -86,7 +118,13 @@ namespace CarShop.Application.Services
             brand.Name = dto.Name!.Trim();
             _brandRepository.UpdateAsync(brand);
             await _brandRepository.SaveChangesAsync();
-
+            var isRedisEnabled = await _integrationRepository.IsEnabledAsync("Redis");
+            // Invalidate cache
+            if (isRedisEnabled)
+            {
+                await _cacheService.RemoveAsync(AllBrandsKey);
+                await _cacheService.RemoveAsync(BrandKey(id));
+            }
             return Result<string>.Ok(null, "Brand updated successfully.");
         }
 
@@ -98,6 +136,13 @@ namespace CarShop.Application.Services
 
             _brandRepository.DeleteAsync(brand);
             await _brandRepository.SaveChangesAsync();
+            var isRedisEnabled = await _integrationRepository.IsEnabledAsync("Redis");
+            // Invalidate cache
+            if (isRedisEnabled)
+            {
+                await _cacheService.RemoveAsync(AllBrandsKey);
+                await _cacheService.RemoveAsync(BrandKey(id));
+            }
 
             return Result<string>.Ok(null, "Brand deleted successfully.");
         }

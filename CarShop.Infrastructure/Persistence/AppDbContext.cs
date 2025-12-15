@@ -12,6 +12,7 @@ namespace CarShop.Infrastructure.Persistence
         public DbSet<Brand> Brands { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<IntegrationSetting> IntegrationSettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
