@@ -1,10 +1,12 @@
 using CarShop.Application.DTOs.Email;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
+using CarShop.Application.Interfaces.FileStorage;
 using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Interfaces.Repositories;
 using CarShop.Application.Interfaces.Repositories.Integration;
 using CarShop.Application.Services;
+using CarShop.Infrastructure.FileStorage;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
 using CarShop.Infrastructure.Persistence.Repositories;
@@ -36,6 +38,7 @@ builder.Services.AddStackExchangeRedisCache(options =>
 });
 
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {

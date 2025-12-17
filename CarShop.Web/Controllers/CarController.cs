@@ -1,4 +1,5 @@
 ﻿using CarShop.Application.DTOs.Car;
+using CarShop.Application.DTOs.File;
 using CarShop.Application.Interfaces;
 using CarShop.Web.ViewModels.Car;
 using CarShop.Web.ViewModels.Mappers;
@@ -48,27 +49,20 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
+            FileUploadDto? fileDto = null;
             if (image != null && image.Length > 0)
             {
-                var fileSafeTitle = model.Title!.ToLowerInvariant().Replace(" ", "_");
-                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "car");
-
-                if (!Directory.Exists(uploadsRoot))
-                    Directory.CreateDirectory(uploadsRoot);
-
-                string fileName = $"{fileSafeTitle}{Path.GetExtension(image.FileName)}";
-                var filePath = Path.Combine(uploadsRoot, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                fileDto = new FileUploadDto
                 {
-                    await image.CopyToAsync(stream);
-                }
-
-                model.ImageUrl = Path.Combine("/uploads", "car", fileName).Replace("\\", "/");
+                    Content = image.OpenReadStream(),
+                    FileName = image.FileName,
+                    ContentType = image.ContentType,
+                    Size = image.Length
+                };
             }
 
             var dto = CarMapper.ToDto(model);
-            var result = await _carService.CreateCarAsync(dto);
+            var result = await _carService.CreateCarAsync(dto, fileDto);
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -116,37 +110,21 @@ namespace CarShop.Web.Controllers
 
             var existingCar = existingCarResult.Data;
 
+            FileUploadDto? fileDto = null;
+
             if (image != null && image.Length > 0)
             {
-                if (!string.IsNullOrEmpty(existingCar.ImageUrl))
+                fileDto = new FileUploadDto
                 {
-                    var previousPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existingCar.ImageUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(previousPath))
-                        System.IO.File.Delete(previousPath);
-                }
-
-                var fileSafeTitle = model.Title!.ToLowerInvariant().Replace(" ", "_");
-                var uploadsRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "car");
-                if (!Directory.Exists(uploadsRoot))
-                    Directory.CreateDirectory(uploadsRoot);
-
-                string fileName = $"{fileSafeTitle}{Path.GetExtension(image.FileName)}";
-                var filePath = Path.Combine(uploadsRoot, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream);
-                }
-
-                model.ImageUrl = Path.Combine("/uploads", "car", fileName).Replace("\\", "/");
-            }
-            else
-            {
-                model.ImageUrl = existingCar.ImageUrl;
+                    Content = image.OpenReadStream(),
+                    FileName = image.FileName,
+                    ContentType = image.ContentType,
+                    Size = image.Length
+                };
             }
 
             var dto = CarMapper.ToDto(model);
-            var result = await _carService.UpdateCarAsync(id, dto);
+            var result = await _carService.UpdateCarAsync(id, dto, fileDto);
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -167,15 +145,6 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Index");
             }
 
-            var car = carResult.Data;
-
-            if (!string.IsNullOrEmpty(car.ImageUrl))
-            {
-                var imagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", car.ImageUrl.TrimStart('/'));
-                if (System.IO.File.Exists(imagePath))
-                    System.IO.File.Delete(imagePath);
-            }
-
             var deleteResult = await _carService.DeleteCarAsync(id);
             //if (!deleteResult.Success)
             //    TempData["ErrorMessage"] = deleteResult.Message;
@@ -185,14 +154,7 @@ namespace CarShop.Web.Controllers
             return RedirectToAction("Index");
         }
 
-        //[AllowAnonymous]
-        //[HttpGet]
-        //public async Task<IActionResult> Details(int id)
-        //{
-        //    var car = await _carService.GetCarByIdAsync(id);
-        //    return View(car);
-        //}
-
+        
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> Details(int id)
