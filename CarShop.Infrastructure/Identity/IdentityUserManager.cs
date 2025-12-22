@@ -22,6 +22,7 @@ namespace CarShop.Infrastructure.Identity
                 Email = user.Email,
                 UserName = user.Email,
                 Address = user.Address,
+                FullName = user.FullName
             };
 
             var result = await _userManager.CreateAsync(identityUser, password);

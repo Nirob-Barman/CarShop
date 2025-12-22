@@ -8,6 +8,7 @@ namespace CarShop.Web.ViewModels.Mappers
         public static RegisterDto ToDto(RegisterViewModel vm)
         => new RegisterDto
         {
+            Address = vm.Address,
             FullName = vm.FullName,
             Email = vm.Email,
             Password = vm.Password,
