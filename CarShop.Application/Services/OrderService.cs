@@ -1,12 +1,13 @@
 ﻿
 using CarShop.Application.DTOs.Order;
+using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Repositories;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
 
 namespace CarShop.Application.Services
 {
-    internal class OrderService
+    public class OrderService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
         private readonly ICarRepository _carRepository;
