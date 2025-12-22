@@ -1,7 +1,8 @@
 ﻿using CarShop.Application.Interfaces;
-using System.Security.Claims;
+using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CarShop.Web.Controllers
 {
@@ -56,7 +57,8 @@ namespace CarShop.Web.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var orders = await _orderService.GetOrdersByUserIdAsync(userId!);
-            return View(orders);
+            var ordersVm = OrderMapper.ToViewModels(orders.Data!);
+            return View(ordersVm);
         }
     }
 }
