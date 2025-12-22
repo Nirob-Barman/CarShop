@@ -1,5 +1,6 @@
-﻿using CarShop.Application.DTOs.Identity;
-using CarShop.Application.Interfaces;
+﻿using CarShop.Application.Interfaces;
+using CarShop.Web.ViewModels.Admin;
+using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,21 +24,23 @@ namespace CarShop.Web.Controllers
             if (!usersResult.Success || usersResult.Data == null)
             {
                 TempData["ErrorMessage"] = usersResult.Message ?? "Failed to retrieve users.";
-                return View(new List<UserWithRoleDto>());
+                return View(new List<UserWithRoleViewModel>());
             }
+
+            var vmList = UserMapper.ToViewModels(usersResult.Data);
 
             if (!rolesResult.Success || rolesResult.Data == null)
             {
                 TempData["ErrorMessage"] = rolesResult.Message ?? "Failed to retrieve roles.";
-                return View(usersResult.Data); // show users even if roles failed
+                return View(vmList); // show users even if roles failed
             }
 
-            foreach (var user in usersResult.Data)
+            foreach (var user in vmList)
             {
                 user.AllRoles = rolesResult.Data;
             }
 
-            return View(usersResult.Data);
+            return View(vmList);
         }
 
         [HttpPost]
