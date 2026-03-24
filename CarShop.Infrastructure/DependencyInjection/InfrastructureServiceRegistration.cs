@@ -3,8 +3,7 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Interfaces.FileStorage;
 using CarShop.Application.Interfaces.Identity;
-using CarShop.Application.Interfaces.Repositories;
-using CarShop.Application.Interfaces.Repositories.Integration;
+using CarShop.Application.Interfaces.Persistence;
 using CarShop.Infrastructure.FileStorage;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
@@ -39,17 +38,20 @@ namespace CarShop.Infrastructure.DependencyInjection
                 options.InstanceName = "CarShop:";
             });
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
+
             services.AddScoped<IUserManager, IdentityUserManager>();
             services.AddScoped<ISignInManager, IdentitySignInManager>();
             services.AddScoped<IRoleManager, RoleManager>();
 
             services.AddHttpClient();
             services.AddScoped<IUserContextService, UserContextService>();
-            services.AddScoped<IBrandRepository, BrandRepository>();
-            services.AddScoped<ICarRepository, CarRepository>();
-            services.AddScoped<ICommentRepository, CommentRepository>();
-            services.AddScoped<IOrderRepository, OrderRepository>();
-            services.AddScoped<IIntegrationRepository, IntegrationRepository>();
+            //services.AddScoped<IBrandRepository, BrandRepository>();
+            //services.AddScoped<ICarRepository, CarRepository>();
+            //services.AddScoped<ICommentRepository, CommentRepository>();
+            //services.AddScoped<IOrderRepository, OrderRepository>();
+            //services.AddScoped<IIntegrationRepository, IntegrationRepository>();
 
             services.Configure<EmailSettings>(config.GetSection("EmailSettings"));
             services.AddScoped<IEmailService, EmailService>();

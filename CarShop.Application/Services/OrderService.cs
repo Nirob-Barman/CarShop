@@ -1,7 +1,6 @@
-﻿
-using CarShop.Application.DTOs.Order;
+﻿using CarShop.Application.DTOs.Order;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Repositories;
+using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
 
@@ -9,18 +8,15 @@ namespace CarShop.Application.Services
 {
     public class OrderService : IOrderService
     {
-        private readonly IOrderRepository _orderRepository;
-        private readonly ICarRepository _carRepository;
-
-        public OrderService(IOrderRepository orderRepository, ICarRepository carRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public OrderService(IUnitOfWork unitOfWork)
         {
-            _orderRepository = orderRepository;
-            _carRepository = carRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<string>> PlaceOrderAsync(string userId, int carId)
         {
-            var car = await _carRepository.GetByIdAsync(carId);
+            var car = await _unitOfWork.Repository<Car>().GetByIdAsync(carId);
 
             if (car == null)
                 return Result<string>.Fail("Car not found.");
@@ -39,15 +35,19 @@ namespace CarShop.Application.Services
                 Quantity = 1
             };
 
-            await _orderRepository.AddAsync(order);
-            await _orderRepository.SaveChangesAsync();
+            await _unitOfWork.Repository<Order>().AddAsync(order);
+            await _unitOfWork.SaveChangesAsync();
 
             return Result<string>.Ok(null, "Order placed successfully.");
         }
 
         public async Task<Result<IEnumerable<OrderDto>>> GetOrdersByUserIdAsync(string userId)
         {
-            var orders = await _orderRepository.GetByUserIdAsync(userId);
+            var orders = await _unitOfWork.Repository<Order>().GetAllWithIncludesAsync(
+                predicate: o => o.UserId == userId,
+                selector: o => o,
+                o => o.Car!
+            );
 
             var dtos = orders.Select(o => new OrderDto
             {
@@ -65,8 +65,11 @@ namespace CarShop.Application.Services
         }
 
         public async Task<Result<string>> CancelOrderAsync(int orderId, string userId)
-        {
-            var order = await _orderRepository.GetByIdAndUserIdAsync(orderId, userId);
+        {            
+            var order = (await _unitOfWork.Repository<Order>().GetAllWithIncludesAsync(
+                o => o.Id == orderId && o.UserId == userId,
+                o => o,
+                o => o.Car!)).FirstOrDefault();
 
             if (order == null)
                 return Result<string>.Fail("Order not found or you are not authorized to cancel it.");
@@ -77,8 +80,8 @@ namespace CarShop.Application.Services
                 order.Car.Quantity += order.Quantity;
             }
 
-            _orderRepository.DeleteAsync(order);
-            await _orderRepository.SaveChangesAsync();
+            _unitOfWork.Repository<Order>().Remove(order);
+            await _unitOfWork.SaveChangesAsync();
 
             return Result<string>.Ok(null, "Order cancelled successfully.");
         }

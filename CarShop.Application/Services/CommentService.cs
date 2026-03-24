@@ -1,7 +1,6 @@
-﻿
-using CarShop.Application.DTOs.Comment;
+﻿using CarShop.Application.DTOs.Comment;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Repositories;
+using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
 
@@ -9,16 +8,22 @@ namespace CarShop.Application.Services
 {
     public class CommentService : ICommentService
     {
-        private readonly ICommentRepository _commentRepository;
-
-        public CommentService(ICommentRepository commentRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        public CommentService(IUnitOfWork unitOfWork)
         {
-            _commentRepository = commentRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Result<IEnumerable<CommentDto>>> GetCommentsByCarIdAsync(int carId)
         {
-            var comments = await _commentRepository.GetByCarIdAsync(carId);
+            var comments = await _unitOfWork.Repository<Comment>().GetAllAsync(c => c.CarId == carId, c => new
+            {
+                c.Id,
+                c.UserName,
+                c.Content,
+                c.CreatedAt,
+                c.CarId,
+            });
 
             var dtos = comments.Select(c => new CommentDto
             {
@@ -47,8 +52,8 @@ namespace CarShop.Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _commentRepository.AddAsync(comment);
-            await _commentRepository.SaveChangesAsync();
+            await _unitOfWork.Repository<Comment>().AddAsync(comment);
+            await _unitOfWork.SaveChangesAsync();
 
             return Result<string>.Ok(null, "Comment added successfully.");
         }

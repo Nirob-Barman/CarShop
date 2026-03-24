@@ -1,5 +1,4 @@
-﻿
-using CarShop.Application.DTOs.Email;
+﻿using CarShop.Application.DTOs.Email;
 using CarShop.Application.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Net.Mail;

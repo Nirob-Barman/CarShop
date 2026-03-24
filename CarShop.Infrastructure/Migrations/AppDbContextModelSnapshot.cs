@@ -35,7 +35,7 @@ namespace CarShop.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("Brands", (string)null);
 
                     b.HasData(
                         new
@@ -90,7 +90,7 @@ namespace CarShop.Infrastructure.Migrations
 
                     b.HasIndex("BrandId");
 
-                    b.ToTable("Cars");
+                    b.ToTable("Cars", (string)null);
                 });
 
             modelBuilder.Entity("CarShop.Domain.Entities.Comment", b =>
@@ -117,7 +117,7 @@ namespace CarShop.Infrastructure.Migrations
 
                     b.HasIndex("CarId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("CarShop.Domain.Entities.IntegrationSetting", b =>
@@ -160,7 +160,7 @@ namespace CarShop.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("IntegrationSettings");
+                    b.ToTable("IntegrationSettings", (string)null);
                 });
 
             modelBuilder.Entity("CarShop.Domain.Entities.Order", b =>
@@ -187,7 +187,7 @@ namespace CarShop.Infrastructure.Migrations
 
                     b.HasIndex("CarId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("CarShop.Infrastructure.Identity.ApplicationUser", b =>
