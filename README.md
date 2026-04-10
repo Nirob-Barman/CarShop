@@ -1,33 +1,68 @@
-﻿# 🚗 CarShop - Car Sales Website
+# 🚗 CarShop — Car Sales Platform
 
-CarShop is a modern, full-featured car sales website built with ASP.NET Core using the Clean Architecture pattern. It allows users to browse cars, filter by brand, place orders, manage their orders, and leave comments on car details.
-
----
-
-## 📝 Project Overview
-
-CarShop is a car sales platform designed to provide a seamless experience for both car buyers and sellers. It includes features like car listing, brand filtering, user authentication, car ordering, and comment management. The project follows the Clean Architecture principles to ensure a modular, scalable, and maintainable codebase.
-
-### 📋 Key Features
-
-* **Car Listings:** View all available cars with details like image, price, and brand.
-* **Brand Filtering:** Filter cars based on brand for more precise browsing.
-* **Car Details Page:** View detailed car information, including comments and stock availability.
-* **User Authentication:** Register, login, and manage user accounts securely.
-* **Email Notifications:** Sends confirmation emails for actions like user registration, orders, etc.
-* **Place Orders:** Authenticated users can place orders for cars.
-* **Order Management:** View, cancel, and manage previous orders.
-* **Comments:** Add comments to car details pages.
+CarShop is a full-featured, production-ready car sales platform built with ASP.NET Core 8 MVC following **Clean Architecture**. It supports multi-gateway payments, role-based admin management, real-time notifications, promo codes, test drive bookings, and more.
 
 ---
 
-## ⚙️ Technologies Used
+## 📋 Features
 
-* **Backend:** ASP.NET Core 8, EF Core, Clean Architecture
-* **Frontend:** Bootstrap 5, jQuery, Razor Pages
-* **Database:** Microsoft SQL Server
-* **Authentication:** ASP.NET Identity
-* **Alerts:** SweetAlert2
+### For Users
+- **Browse & Search** — keyword, brand, price range, and sort filters on `/Car/AllCars`
+- **Car Details** — image, specs, stock status, social share (WhatsApp, Facebook, Copy Link)
+- **Star Ratings & Reviews** — 1–5 star rating with written review; one per user per car
+- **Wishlist** — save favourite cars; most-wishlisted shown on homepage
+- **Recently Viewed** — cookie-based, last 8 cars, 30-day expiry
+- **Multi-Gateway Checkout** — Stripe, SSLCommerz, BKash, SurjoPay; select gateway at checkout
+- **Order Management** — paginated order history, order details with printable receipt
+- **Test Drive Bookings** — pick date/time and notes; track booking status
+- **Stock Alerts** — get notified when an out-of-stock car is restocked
+- **Promo Codes** — apply discount codes at checkout; public deals page at `/PromoCode/Deals`
+- **In-App Notifications** — notification bell in navbar with unread badge (60s polling); mark as read / mark all
+- **Email Notifications** — order placed, order cancelled, payment confirmed, stock alert
+- **User Dashboard** — sidebar layout with avatar initials; My Orders, Wishlist, Test Drives, Stock Alerts, Notifications, Reviews, Profile, Change Password
+
+### For Admins
+- **Analytics Dashboard** — KPI cards, revenue, top cars, low-stock warnings, monthly orders chart
+- **Car Management** — full CRUD with image upload, live preview, type/size validation
+- **Brand Management** — create, edit, delete brands
+- **Order Management** — view all orders, filter by status, cancel any order
+- **User Management** — list users, assign roles, ban / unban accounts
+- **Role Management** — create, rename, delete roles (Admin and User are protected)
+- **Promo Code Management** — create, edit, toggle active, delete codes with usage/expiry limits
+- **Test Drive Management** — view all bookings, update status (Pending → Confirmed → Completed / Cancelled)
+- **Payment Gateway Management** — add/edit/toggle/delete gateways; credentials stored encrypted
+- **Audit Logs** — full mutation history (old + new values JSON) for Car, Brand, Order, PromoCode, PaymentGateway, TestDrive
+- **Bulk Import** — CSV import for car listings
+
+### Technical
+- **Clean Architecture** — Domain → Application → Infrastructure → Web; no layer skip
+- **Unit of Work + Generic Repository** — `_unitOfWork.Repository<T>()` throughout; no direct DbContext injection
+- **Result<T> wrapper** — consistent `Ok`/`Fail`/`FailField` returns from all services
+- **Strategy pattern** — payment processors resolved by gateway slug via `PaymentProcessorFactory`
+- **Config encryption** — gateway API keys encrypted at rest via ASP.NET Data Protection
+- **Redis cache** — Upstash cloud (StackExchange.Redis)
+- **Rate limiting** — 10 req/min/IP on auth POST endpoints (Login, Register, ForgotPassword)
+- **Health check** — `/health` endpoint
+- **SEO** — Open Graph + Twitter Card meta tags on Car Details
+- **Homepage lazy loading** — Tier 2 sections loaded via IntersectionObserver with skeleton placeholders
+- **Custom error pages** — 404 (`NotFound.cshtml`) and 500 (`Error.cshtml`)
+- **External static files** — all page-scoped CSS/JS in `wwwroot/css/pages/` and `wwwroot/js/pages/`; no internal `<style>` or `<script>` blocks in views
+
+---
+
+## ⚙️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | ASP.NET Core 8 MVC |
+| ORM | Entity Framework Core 8 |
+| Database | SQL Server (SQLEXPRESS) |
+| Auth | ASP.NET Identity |
+| Cache | Redis (Upstash) via StackExchange.Redis |
+| Email | Gmail SMTP (`smtp.gmail.com:587`) |
+| Payments | Stripe SDK + SSLCommerz / BKash / SurjoPay via HttpClient |
+| Frontend | Bootstrap 5, jQuery, SweetAlert2, Chart.js |
+| Config encryption | ASP.NET Data Protection |
 
 ---
 
@@ -35,38 +70,40 @@ CarShop is a car sales platform designed to provide a seamless experience for bo
 
 ### Prerequisites
 
-* .NET 8 SDK
-* SQL Server
-* Visual Studio 2022 (or later)
+- .NET 8 SDK
+- SQL Server (SQLEXPRESS)
+- `dotnet-ef` tool — `dotnet tool install --global dotnet-ef`
 
 ### Installation
 
 1. Clone the repository:
 
    ```bash
-   https://github.com/Nirob-Barman/CarShop.git
+   git clone https://github.com/Nirob-Barman/CarShop.git
    cd CarShop
    ```
-2. Configure the database connection in **appsettings.json**.
-3. Run database migrations:
+
+2. Configure **appsettings.json** (see Configuration section below).
+
+3. Apply database migrations:
 
    ```bash
-   dotnet ef database update
+   dotnet ef database update --project CarShop.Infrastructure --startup-project CarShop.Web
    ```
-4. Build and run the project:
+
+4. Run the web app:
 
    ```bash
-   dotnet run
-   ```
-5. Open the project in your browser:
-
-   ```
-   https://localhost:5001
+   dotnet run --project CarShop.Web
    ```
 
-### Database Setup
+5. Open in browser: `https://localhost:5001`
 
-Ensure the **DefaultConnection** string in **appsettings.json** is correctly configured for your SQL Server instance:
+---
+
+## ⚙️ Configuration
+
+### Database
 
 ```json
 "ConnectionStrings": {
@@ -74,11 +111,11 @@ Ensure the **DefaultConnection** string in **appsettings.json** is correctly con
 }
 ```
 
-## ✉️ Email Configuration (SMTP)
-To enable email features such as registration confirmations, password resets, or orher notifications, you must configure SMTP settings in your appsettings.json:
-```
+### Email (Gmail SMTP)
+
+```json
 "EmailSettings": {
-  "SmtpServer": "smtp.example.com",
+  "SmtpServer": "smtp.gmail.com",
   "Port": 587,
   "SenderName": "Car Shop",
   "SenderEmail": "noreply@carshop.com",
@@ -88,67 +125,69 @@ To enable email features such as registration confirmations, password resets, or
 }
 ```
 
----
+> Requires a Gmail [App Password](https://myaccount.google.com/apppasswords), not your account password.
 
-## 📂 Project Structure
+### Redis
 
-```
-CarShop
-│
-├── CarShop.Domain             # Domain Models
-├── CarShop.Application        # Business Logic & DTOs
-├── CarShop.Infrastructure     # Data Access & Repositories
-├── CarShop.Web                # ASP.NET Core MVC Project (Frontend)
-└── README.md                  # Project Documentation
+```json
+"Redis": {
+  "ConnectionString": "<host>:<port>,password=<password>,ssl=True,abortConnect=False"
+}
 ```
 
----
+### Stripe
 
-## 🔧 Key Components
+```json
+"Stripe": {
+  "PublishableKey": "pk_test_...",
+  "SecretKey": "sk_test_..."
+}
+```
 
-### Models
+> SSLCommerz, BKash, and SurjoPay credentials are stored **encrypted in the database** — managed via Admin → Payment Gateways UI, not appsettings.
 
-* **Car:** Represents a car with title, description, price, brand, and quantity.
-* **Brand:** Represents a car brand.
-* **Order:** Represents a car purchase with quantity and user info.
-* **Comment:** Represents user comments on car details pages.
-
-### Controllers
-
-* **AccountController:** Handles user authentication and profile management.
-* **HomeController:** Manages car listings, filtering, and car details.
-* **OrderController:** Handles placing and canceling orders.
-* **CommentController:** Manages car comments.
+> ⚠️ Never commit real credentials. Use environment variables or secrets management in production.
 
 ---
 
-## 🤝 Contribution Guidelines
+## 📂 Solution Structure
 
-* Fork the repository.
-* Create a feature branch.
-* Commit your changes.
-* Push to the branch.
-* Open a pull request.
+```
+CarShop/
+├── CarShop.Domain/          # Entities only — no dependencies
+├── CarShop.Application/     # Business logic, DTOs, interfaces, services
+├── CarShop.Infrastructure/  # EF Core, Identity, email, Redis, payment processors
+└── CarShop.Web/             # MVC controllers, Razor views, ViewModels, static files
+    ├── wwwroot/css/pages/   # Page-scoped CSS (admin-layout, car-layout, checkout, order-print)
+    └── wwwroot/js/pages/    # Page-scoped JS (29 files — one per feature/page)
+```
 
 ---
 
-## 📅 Future Improvements
+## 👤 Roles
 
-* Add support for customer reviews and ratings.
-* Implement car comparison functionality.
-* Add a wish list for saving favorite cars.
-* Integrate payment gateways for seamless transactions.
-* Add real-time notifications for order updates.
-* Implement advanced analytics and reports for admins.
+| Role | Access |
+|---|---|
+| **Admin** | Full CRUD on cars/brands; manage orders, test drives, promo codes, payment gateways, roles, users; analytics dashboard, audit logs, bulk import |
+| **User** | Browse, buy, wishlist, review, test drive bookings, stock alerts, notifications |
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Commit your changes.
+4. Push and open a pull request.
 
 ---
 
 ## 📞 Support
 
-For support, please open an issue or reach out via [nirob.barman.19@gmail.com](mailto:nirob.barman.19@gmail.com).
+Open an issue or email [nirob.barman.19@gmail.com](mailto:nirob.barman.19@gmail.com).
 
 ---
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT License — see the LICENSE file for details.
