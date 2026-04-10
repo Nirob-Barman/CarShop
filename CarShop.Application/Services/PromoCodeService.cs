@@ -1,5 +1,6 @@
 using CarShop.Application.DTOs.PromoCode;
 using CarShop.Application.Interfaces;
+using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
@@ -10,12 +11,16 @@ namespace CarShop.Application.Services
     public class PromoCodeService : IPromoCodeService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        public PromoCodeService(IUnitOfWork unitOfWork, IAuditLogService auditLogService, IUserContextService userContextService)
+        private const string ActiveCodesKey = "promos:active";
+
+        public PromoCodeService(IUnitOfWork unitOfWork, ICacheService cacheService, IAuditLogService auditLogService, IUserContextService userContextService)
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
@@ -64,6 +69,11 @@ namespace CarShop.Application.Services
             await _unitOfWork.Repository<PromoCode>().AddAsync(promo);
             await _unitOfWork.SaveChangesAsync();
 
+            var redisC = await _unitOfWork.Repository<IntegrationSetting>()
+                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            if (redisC != null && redisC.IsEnabled)
+                await _cacheService.RemoveAsync(ActiveCodesKey);
+
             await _auditLogService.LogAsync("PromoCode", "Create",
                 _userContextService.UserId, _userContextService.Email,
                 $"Created code '{promo.Code}' ({promo.DiscountPercent}% off)",
@@ -99,6 +109,17 @@ namespace CarShop.Application.Services
 
         public async Task<Result<IEnumerable<PromoCodeDto>>> GetAllActiveCodesAsync()
         {
+            var redis = await _unitOfWork.Repository<IntegrationSetting>()
+                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var isRedisEnabled = redis != null && redis.IsEnabled;
+
+            if (isRedisEnabled)
+            {
+                var cached = await _cacheService.GetAsync<IEnumerable<PromoCodeDto>>(ActiveCodesKey);
+                if (cached != null)
+                    return Result<IEnumerable<PromoCodeDto>>.Ok(cached);
+            }
+
             var now   = DateTime.UtcNow;
             var codes = await _unitOfWork.Repository<PromoCode>().GetAllAsync(
                 p => p.IsActive &&
@@ -115,7 +136,12 @@ namespace CarShop.Application.Services
                     ExpiresAt         = p.ExpiresAt,
                     IsActive          = p.IsActive
                 });
-            return Result<IEnumerable<PromoCodeDto>>.Ok(codes.OrderByDescending(p => p.DiscountPercent));
+            var result = codes.OrderByDescending(p => p.DiscountPercent);
+
+            if (isRedisEnabled)
+                await _cacheService.SetAsync(ActiveCodesKey, result, TimeSpan.FromMinutes(15));
+
+            return Result<IEnumerable<PromoCodeDto>>.Ok(result);
         }
 
         public async Task<Result<PromoCodeDto>> GetByIdAsync(int id)
@@ -150,6 +176,11 @@ namespace CarShop.Application.Services
             _unitOfWork.Repository<PromoCode>().Update(promo);
             await _unitOfWork.SaveChangesAsync();
 
+            var redisU = await _unitOfWork.Repository<IntegrationSetting>()
+                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            if (redisU != null && redisU.IsEnabled)
+                await _cacheService.RemoveAsync(ActiveCodesKey);
+
             await _auditLogService.LogAsync("PromoCode", "Update",
                 _userContextService.UserId, _userContextService.Email,
                 $"Updated code '{promo.Code}'",
@@ -176,6 +207,11 @@ namespace CarShop.Application.Services
             _unitOfWork.Repository<PromoCode>().Update(promo);
             await _unitOfWork.SaveChangesAsync();
 
+            var redisT = await _unitOfWork.Repository<IntegrationSetting>()
+                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            if (redisT != null && redisT.IsEnabled)
+                await _cacheService.RemoveAsync(ActiveCodesKey);
+
             await _auditLogService.LogAsync("PromoCode", promo.IsActive ? "Activate" : "Deactivate",
                 _userContextService.UserId, _userContextService.Email,
                 $"Code '{promo.Code}' {(promo.IsActive ? "activated" : "deactivated")}",
@@ -198,6 +234,11 @@ namespace CarShop.Application.Services
             promo.IsActive = false;
             _unitOfWork.Repository<PromoCode>().Update(promo);
             await _unitOfWork.SaveChangesAsync();
+
+            var redisD = await _unitOfWork.Repository<IntegrationSetting>()
+                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            if (redisD != null && redisD.IsEnabled)
+                await _cacheService.RemoveAsync(ActiveCodesKey);
 
             await _auditLogService.LogAsync("PromoCode", "Deactivate",
                 _userContextService.UserId, _userContextService.Email,
@@ -226,6 +267,11 @@ namespace CarShop.Application.Services
             _unitOfWork.Repository<PromoCode>().Remove(promo);
             await _unitOfWork.SaveChangesAsync();
 
+            var redisDel = await _unitOfWork.Repository<IntegrationSetting>()
+                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            if (redisDel != null && redisDel.IsEnabled)
+                await _cacheService.RemoveAsync(ActiveCodesKey);
+
             await _auditLogService.LogAsync("PromoCode", "Delete",
                 _userContextService.UserId, _userContextService.Email,
                 $"Deleted code '{promo.Code}'",
@@ -245,6 +291,11 @@ namespace CarShop.Application.Services
                 promo.UsageCount++;
                 _unitOfWork.Repository<PromoCode>().Update(promo);
                 await _unitOfWork.SaveChangesAsync();
+
+                var redis = await _unitOfWork.Repository<IntegrationSetting>()
+                    .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+                if (redis != null && redis.IsEnabled)
+                    await _cacheService.RemoveAsync(ActiveCodesKey);
             }
         }
 
