@@ -72,20 +72,5 @@
             Swal.fire({ icon:'error', title:'Oops', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
         </script>
     }
-    <script>
-        function confirmRemoveAlert(btn, carTitle) {
-            Swal.fire({
-                title: 'Remove Alert?',
-                text: `Stop tracking restock for "${carTitle}"?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, remove',
-                cancelButtonText: 'Keep alert'
-            }).then(result => {
-                if (result.isConfirmed) btn.closest('form').submit();
-            });
-        }
-    </script>
+    <script src="~/js/pages/my-alerts.js" asp-append-version="true"></script>
 }

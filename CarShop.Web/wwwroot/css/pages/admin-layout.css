@@ -1,0 +1,113 @@
+:root { --sidebar-w: 240px; }
+
+body { background: #f1f5f9; font-family: 'Segoe UI', sans-serif; }
+
+/* ══ SIDEBAR — fixed on desktop, offcanvas drawer on mobile ══ */
+#adminSidebar {
+    background: #0f172a;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (min-width: 992px) {
+    /* Override Bootstrap offcanvas — always visible, fixed */
+    #adminSidebar {
+        position: fixed !important;
+        top: 0; left: 0;
+        width: var(--sidebar-w) !important;
+        height: 100vh;
+        overflow-y: auto;
+        visibility: visible !important;
+        transform: none !important;
+        z-index: 1040;
+        transition: width .25s ease;
+    }
+
+    #adminMain {
+        margin-left: var(--sidebar-w);
+        transition: margin-left .25s ease;
+    }
+
+    /* Collapsed */
+    body.sb-collapsed #adminSidebar { width: 0 !important; overflow: hidden; }
+    body.sb-collapsed #adminMain   { margin-left: 0; }
+}
+
+/* ── Sidebar inner ── */
+.sidebar-brand {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid #1e293b;
+    flex-shrink: 0;
+}
+
+.sidebar-section {
+    font-size: .67rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #475569;
+    padding: .7rem 1.25rem .2rem;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid #1e293b;
+    padding: .75rem 1.25rem;
+}
+
+
+#adminSidebar .nav-link {
+    color: #94a3b8;
+    padding: .45rem 1.25rem;
+    border-radius: 0;
+    font-size: .875rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    white-space: nowrap;
+    transition: background .15s, color .15s;
+}
+#adminSidebar .nav-link:hover  { background: #1e293b; color: #f1f5f9; }
+#adminSidebar .nav-link.active { background: #1d4ed8; color: #fff; font-weight: 600; }
+
+/* ══ MAIN AREA ══ */
+#adminMain {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Topbar ── */
+#adminTopbar {
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: .65rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* ── Hamburger button ── */
+#sidebarToggle {
+    width: 34px; height: 34px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #64748b;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    transition: background .15s, color .15s;
+}
+#sidebarToggle:hover { background: #f1f5f9; color: #0f172a; }
+
+/* ── Content / Footer ── */
+#adminContent  { padding: 1.75rem; flex-grow: 1; }
+#adminFooter   {
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    padding: .65rem 1.5rem;
+    font-size: .8rem;
+    color: #94a3b8;
+}

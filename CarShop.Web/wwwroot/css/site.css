@@ -20,3 +20,22 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Suppress Edge's native password reveal button (avoids double eye icons) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear { display: none; }
+
+/* Car card hero block */
+.car {
+    background-color: #ffc107;
+    color: #fff;
+    padding: 60px 20px;
+    text-align: center;
+    border-bottom: 4px solid #ffca2c;
+}
+.car h1 {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.footer-link:hover { color: #ffc107 !important; transition: color .2s; }

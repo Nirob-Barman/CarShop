@@ -372,66 +372,6 @@
                 position:'top-end', timer:5000, toast:true, timerProgressBar:true, showConfirmButton:false });
         </script>
     }
-    <script>
-        (function () {
-            var url   = encodeURIComponent(window.location.href);
-            var title = encodeURIComponent('@Html.Raw(Model.Title?.Replace("'", "\\'"))');
-            document.getElementById('shareWhatsApp').href =
-                'https://wa.me/?text=' + title + '%20' + url;
-            document.getElementById('shareFacebook').href =
-                'https://www.facebook.com/sharer/sharer.php?u=' + url;
-            document.getElementById('copyLink').addEventListener('click', function () {
-                navigator.clipboard.writeText(window.location.href).then(function () {
-                    document.getElementById('copyLinkText').textContent = 'Copied!';
-                    setTimeout(function () { document.getElementById('copyLinkText').textContent = 'Copy Link'; }, 2000);
-                });
-            });
-        })();
-
-        function confirmDeleteCar(title) {
-            Swal.fire({
-                title: 'Delete car?',
-                text: "Delete '" + title + "'? This cannot be undone.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete'
-            }).then(function (result) {
-                if (result.isConfirmed) document.getElementById('deleteCarForm').submit();
-            });
-        }
-
-        function makeStarPicker(pickerId, hiddenInputId, starClass) {
-            const picker = document.getElementById(pickerId);
-            const hidden = document.getElementById(hiddenInputId);
-            if (!picker || !hidden) return;
-            const stars = Array.from(picker.querySelectorAll('.' + starClass));
-            let selected = 0;
-            function paint(upTo) { stars.forEach((s, i) => s.style.color = i < upTo ? '#ffc107' : '#dee2e6'); }
-            stars.forEach((star, idx) => {
-                star.addEventListener('mouseover', () => paint(idx + 1));
-                star.addEventListener('click', () => { selected = idx + 1; hidden.value = selected; paint(selected); });
-            });
-            picker.addEventListener('mouseleave', () => paint(selected));
-            picker._setVal = (val) => { selected = val; hidden.value = val; paint(val); };
-        }
-
-        makeStarPicker('starPicker',     'ratingValue',     'sp-star');
-        makeStarPicker('editStarPicker', 'editRatingValue', 'ep-star');
-
-        function openEditModal(commentId, rating, content) {
-            document.getElementById('editCommentId').value = commentId;
-            document.getElementById('editContent').value   = content;
-            const picker = document.getElementById('editStarPicker');
-            if (picker && picker._setVal) picker._setVal(rating);
-            new bootstrap.Modal(document.getElementById('editReviewModal')).show();
-        }
-
-        function openDeleteModal(commentId, carId) {
-            document.getElementById('deleteCommentId').value = commentId;
-            document.getElementById('deleteCarId').value     = carId;
-            new bootstrap.Modal(document.getElementById('deleteReviewModal')).show();
-        }
-    </script>
+    <script src="~/js/pages/car-details.js" asp-append-version="true"></script>
+    <script>initShareLinks('@Html.Raw(Model.Title?.Replace("'", "\\'"))');</script>
 }

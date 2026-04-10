@@ -111,12 +111,10 @@
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdersPerMonth.Select(x => x.Month)));
-        const data   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdersPerMonth.Select(x => x.Count)));
-        new Chart(document.getElementById('ordersChart'), {
-            type: 'bar',
-            data: { labels, datasets: [{ label: 'Orders', data, backgroundColor: '#0d6efd' }] },
-            options: { responsive: true, plugins: { legend: { display: false } } }
-        });
+        window._dashboardData = {
+            labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdersPerMonth.Select(x => x.Month))),
+            counts: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdersPerMonth.Select(x => x.Count)))
+        };
     </script>
+    <script src="~/js/pages/dashboard.js" asp-append-version="true"></script>
 }

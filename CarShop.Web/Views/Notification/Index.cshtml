@@ -71,23 +71,5 @@
         </script>
     }
     @Html.AntiForgeryToken()
-    <script>
-        var antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-        async function markRead(id, link) {
-            try {
-                await fetch('/Notification/MarkRead', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'RequestVerificationToken': antiForgeryToken
-                    },
-                    body: 'id=' + id
-                });
-            } catch (e) { /* ignore — navigate anyway */ }
-
-            if (link && link !== '') window.location.href = link;
-            else window.location.reload();
-        }
-    </script>
+    <script src="~/js/pages/notifications.js" asp-append-version="true"></script>
 }

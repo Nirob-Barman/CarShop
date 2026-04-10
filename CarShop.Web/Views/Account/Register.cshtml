@@ -24,7 +24,7 @@
 
             <div class="mb-3">
                 <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
-                <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" id="emailInput" autocomplete="email" />
+                <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" id="emailInput" autocomplete="email" data-check-url="@Url.Action("CheckEmailExists", "Account")" />
                 <span asp-validation-for="Email" class="text-danger small"></span>
                 <div id="emailError" class="text-danger small mt-1" style="display:none;">This email is already registered.</div>
             </div>
@@ -86,84 +86,6 @@
             Swal.fire({ icon: 'error', title: 'Registration Failed', text: '@TempData["ErrorMessage"]', position: 'top-end', timer: 5000, toast: true, timerProgressBar: true, showConfirmButton: false });
         </script>
     }
-    <script>
-        const eyeOn = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>';
-        const eyeOff = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/></svg>';
-
-        function togglePassword(id, btn) {
-            const input = document.getElementById(id);
-            const show = input.type === 'password';
-            input.type = show ? 'text' : 'password';
-            btn.innerHTML = show ? eyeOff : eyeOn;
-        }
-
-        // Password strength meter
-        document.getElementById('regPassword').addEventListener('input', function () {
-            const p = this.value;
-            if (!p) {
-                document.getElementById('passwordStrength').style.display = 'none';
-                document.getElementById('passwordRequirements').style.display = 'none';
-                return;
-            }
-            document.getElementById('passwordStrength').style.display = 'block';
-            document.getElementById('passwordRequirements').style.display = 'block';
-
-            const checks = [p.length >= 6, /\d/.test(p), /[a-z]/.test(p), /[A-Z]/.test(p), /\W/.test(p)];
-            const ids = ['reqLength', 'reqDigit', 'reqLower', 'reqUpper', 'reqSpecial'];
-            const score = checks.filter(Boolean).length;
-            checks.forEach((ok, i) => {
-                document.getElementById(ids[i]).className = ok ? 'text-success' : 'text-danger';
-            });
-
-            const levels = [
-                { pct: 20, cls: 'bg-danger', text: 'Very Weak' },
-                { pct: 40, cls: 'bg-warning', text: 'Weak' },
-                { pct: 60, cls: 'bg-info', text: 'Fair' },
-                { pct: 80, cls: 'bg-primary', text: 'Strong' },
-                { pct: 100, cls: 'bg-success', text: 'Very Strong' },
-            ];
-            const lvl = levels[score - 1] || levels[0];
-            const bar = document.getElementById('strengthBar');
-            bar.style.width = lvl.pct + '%';
-            bar.className = 'progress-bar ' + lvl.cls;
-            document.getElementById('strengthLabel').textContent = lvl.text;
-        });
-
-        // Email duplicate check
-        document.getElementById('emailInput').addEventListener('blur', function () {
-            const email = this.value;
-            if (!email || !validateEmailFormat(email)) return;
-            $.ajax({
-                url: '@Url.Action("CheckEmailExists", "Account")',
-                type: 'POST',
-                data: { email },
-                success: function (exists) {
-                    document.getElementById('emailError').style.display = exists ? 'block' : 'none';
-                    document.getElementById('submitBtn').disabled = exists;
-                }
-            });
-        });
-
-        // Form submit validation
-        document.getElementById('registerForm').addEventListener('submit', function (e) {
-            const pwd = document.getElementById('regPassword').value;
-            const confirm = document.getElementById('confirmPassword').value;
-            let valid = true;
-
-            if (pwd !== confirm) {
-                document.getElementById('confirmError').style.display = 'block';
-                valid = false;
-            } else {
-                document.getElementById('confirmError').style.display = 'none';
-            }
-
-            const allChecks = [pwd.length >= 6, /\d/.test(pwd), /[a-z]/.test(pwd), /[A-Z]/.test(pwd), /\W/.test(pwd)].every(Boolean);
-            if (!allChecks) {
-                document.getElementById('passwordRequirements').style.display = 'block';
-                valid = false;
-            }
-
-            if (!valid) e.preventDefault();
-        });
-    </script>
+    <script src="~/js/pages/auth.js" asp-append-version="true"></script>
+    <script src="~/js/pages/register.js" asp-append-version="true"></script>
 }

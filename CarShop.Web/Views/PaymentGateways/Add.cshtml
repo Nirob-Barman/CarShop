@@ -83,26 +83,5 @@
     </form>
 </div>
 
-<script>
-    const schema = @Html.Raw(schemaJson);
-
-    function onSlugChange(slug) {
-        const section = document.getElementById('configSection');
-        const container = document.getElementById('configFields');
-        container.innerHTML = '';
-        const fields = schema[slug];
-        if (!fields || fields.length === 0) { section.style.display = 'none'; return; }
-        fields.forEach(f => {
-            const div = document.createElement('div');
-            div.className = 'mb-3';
-            const inputType = f.IsSecret ? 'password' : 'text';
-            div.innerHTML = `
-                <label class="form-label">${f.Label}${f.IsSecret ? ' <span class="badge bg-warning text-dark" style="font-size:.65rem;">Secret</span>' : ''}</label>
-                <input type="${inputType}" name="configFields[${f.Key}]"
-                       class="form-control" placeholder="${f.Placeholder}" autocomplete="new-password" />
-            `;
-            container.appendChild(div);
-        });
-        section.style.display = '';
-    }
-</script>
+<script>window._gatewaySchema = @Html.Raw(schemaJson);</script>
+<script src="~/js/pages/payment-gateways-add.js" asp-append-version="true"></script>

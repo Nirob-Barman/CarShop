@@ -24,21 +24,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CarShop.Web.styles.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <style>
-        .car {
-            background-color: #ffc107;
-            color: #fff;
-            padding: 60px 20px;
-            text-align: center;
-            border-bottom: 4px solid #ffca2c;
-        }
-
-        .car h1 {
-            font-size: 2.5rem;
-            font-weight: bold;
-        }
-    </style>
-
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>

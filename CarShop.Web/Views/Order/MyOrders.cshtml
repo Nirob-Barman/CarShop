@@ -151,38 +151,6 @@
                 position: 'top-end', timer: 4000, toast: true, timerProgressBar: true, showConfirmButton: false });
         </script>
     }
-    <script>
-        function openCancelModal(orderId, carTitle) {
-            document.getElementById('cancelOrderId').value = orderId;
-            document.getElementById('orderCarTitle').textContent = carTitle;
-            new bootstrap.Modal(document.getElementById('cancelOrderModal')).show();
-        }
-
-        (function () {
-            const pageSize  = @pageSize;
-            const totalPgs  = @totalPages;
-            if (totalPgs <= 1) return;
-
-            const cards = Array.from(document.querySelectorAll('.order-card'));
-            let current = 1;
-
-            function render(page) {
-                current = page;
-                const start = (page - 1) * pageSize;
-                cards.forEach((c, i) => c.style.display = (i >= start && i < start + pageSize) ? '' : 'none');
-
-                const ul = document.getElementById('pagControls');
-                ul.innerHTML = '';
-                for (let p = 1; p <= totalPgs; p++) {
-                    const li = document.createElement('li');
-                    li.className = 'page-item' + (p === page ? ' active' : '');
-                    li.innerHTML = `<button class="page-link" onclick="goPage(${p})">${p}</button>`;
-                    ul.appendChild(li);
-                }
-            }
-
-            window.goPage = render;
-            render(1);
-        })();
-    </script>
+    <script>window._ordersConfig = { pageSize: @pageSize, totalPages: @totalPages };</script>
+    <script src="~/js/pages/my-orders.js" asp-append-version="true"></script>
 }

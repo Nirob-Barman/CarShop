@@ -91,20 +91,5 @@
             Swal.fire({ icon:'error', title:'Oops', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
         </script>
     }
-    <script>
-        function confirmCancelBooking(btn) {
-            Swal.fire({
-                title: 'Cancel Booking?',
-                text: 'Are you sure you want to cancel this test drive booking?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc3545',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, cancel it',
-                cancelButtonText: 'Keep it'
-            }).then(result => {
-                if (result.isConfirmed) btn.closest('form').submit();
-            });
-        }
-    </script>
+    <script src="~/js/pages/my-bookings.js" asp-append-version="true"></script>
 }

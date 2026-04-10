@@ -13,13 +13,9 @@
     };
 }
 
-<style>
-    @@media print {
-        .no-print { display: none !important; }
-        .sidebar, nav, .topbar { display: none !important; }
-        .card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
-    }
-</style>
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/order-print.css" asp-append-version="true" />
+}
 
 <div class="container-fluid py-4" style="max-width:860px;">
 
@@ -116,13 +112,5 @@
     {
         <script>Swal.fire({ icon:'error', title:'Error', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });</script>
     }
-    <script>
-        function confirmCancel(btn, orderId) {
-            Swal.fire({
-                title: `Cancel Order #${orderId}?`, text: 'This will restore car stock and cannot be undone.', icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, cancel it', cancelButtonText: 'Keep order'
-            }).then(result => { if (result.isConfirmed) btn.closest('form').submit(); });
-        }
-    </script>
+    <script src="~/js/pages/orders-index.js" asp-append-version="true"></script>
 }

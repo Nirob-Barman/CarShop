@@ -8,7 +8,7 @@
          style="background:linear-gradient(135deg,#212529 0%,#ffc107 100%);">
 
     <!-- Carousel wrapper -->
-    <div id="promoBanner" style="position:relative; overflow:hidden;">
+    <div id="promoBanner" data-count="@Model.Count" style="position:relative; overflow:hidden;">
 
         @for (int i = 0; i < Model.Count; i++)
         {
@@ -87,42 +87,4 @@
     }
 </section>
 
-<script>
-    (function () {
-        const total   = @Model.Count;
-        if (total <= 1) return;
-
-        let current   = 0;
-        let timer     = null;
-
-        function show(idx) {
-            document.querySelectorAll('.promo-slide').forEach((s, i) => {
-                s.classList.toggle('d-none', i !== idx);
-            });
-            document.querySelectorAll('.promo-dot').forEach((d, i) => {
-                d.style.background = i === idx ? '#fff' : 'rgba(255,255,255,.4)';
-            });
-            current = idx;
-        }
-
-        function next()  { show((current + 1) % total); }
-        function prev()  { show((current - 1 + total) % total); }
-
-        function startTimer() { timer = setInterval(next, 4000); }
-        function resetTimer() { clearInterval(timer); startTimer(); }
-
-        window.promoNext  = function () { next(); resetTimer(); };
-        window.promoPrev  = function () { prev(); resetTimer(); };
-        window.promoGoTo  = function (i) { show(i); resetTimer(); };
-
-        startTimer();
-    })();
-
-    function copyPromoCode(el) {
-        navigator.clipboard.writeText(el.textContent.trim()).then(() => {
-            const orig = el.textContent;
-            el.textContent = 'Copied!';
-            setTimeout(() => el.textContent = orig, 1500);
-        });
-    }
-</script>
+<script src="~/js/pages/promo-banner.js" asp-append-version="true"></script>

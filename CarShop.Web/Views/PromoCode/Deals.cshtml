@@ -81,18 +81,5 @@
 </div>
 
 @section Scripts {
-    <script>
-        function copyDealCode(btn) {
-            const code = btn.dataset.code;
-            navigator.clipboard.writeText(code).then(() => {
-                const orig = btn.innerHTML;
-                btn.innerHTML = '✅ Copied!';
-                btn.classList.replace('btn-outline-dark', 'btn-success');
-                setTimeout(() => {
-                    btn.innerHTML = orig;
-                    btn.classList.replace('btn-success', 'btn-outline-dark');
-                }, 2000);
-            });
-        }
-    </script>
+    <script src="~/js/pages/promo-deals.js" asp-append-version="true"></script>
 }

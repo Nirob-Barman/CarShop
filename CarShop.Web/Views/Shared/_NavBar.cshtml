@@ -65,18 +65,5 @@
 
 @if (User.Identity!.IsAuthenticated && !User.IsInRole("Admin"))
 {
-    <script>
-        (async function pollNotifications() {
-            try {
-                const res = await fetch('/Notification/UnreadCount');
-                const data = await res.json();
-                const badge = document.getElementById('notif-badge');
-                if (badge) {
-                    if (data.count > 0) { badge.textContent = data.count; badge.style.display = ''; }
-                    else badge.style.display = 'none';
-                }
-            } catch {}
-            setTimeout(pollNotifications, 60000);
-        })();
-    </script>
+    <script src="~/js/pages/navbar.js" asp-append-version="true"></script>
 }
