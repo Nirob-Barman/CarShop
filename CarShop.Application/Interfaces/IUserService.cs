@@ -32,8 +32,11 @@ namespace CarShop.Application.Interfaces
         Task<Result<List<string>>> GetAllRolesNonAdminAsync();
         //Task AssignRoleToUserAsync(string userId, string roleName);
         Task<Result<bool>> AssignRoleToUserAsync(string userId, string roleName);
-        //Task<List<string>> GetAllRolesAsync();
-        //Task CreateRoleAsync(string roleName);
+        Task<Result<List<string>>> GetAllRolesAsync();
         Task<Result<bool>> CreateRoleAsync(string roleName);
+        Task<Result<bool>> RenameRoleAsync(string currentName, string newName);
+        Task<Result<bool>> DeleteRoleAsync(string roleName);
+        Task<Result<bool>> BanUserAsync(string userId);
+        Task<Result<bool>> UnbanUserAsync(string userId);
     }
 }

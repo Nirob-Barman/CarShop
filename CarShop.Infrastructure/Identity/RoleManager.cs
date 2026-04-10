@@ -47,6 +47,20 @@ namespace CarShop.Infrastructure.Identity
             return (result.Succeeded, result.Errors.Select(e => e.Description).ToList());
         }
 
+        public async Task<(bool Succeeded, List<string> Errors)> RenameRoleAsync(string currentName, string newName)
+        {
+            var role = await _roleManager.FindByNameAsync(currentName);
+            if (role == null)
+                return (false, new List<string> { "Role does not exist." });
+
+            if (await _roleManager.RoleExistsAsync(newName))
+                return (false, new List<string> { $"Role '{newName}' already exists." });
+
+            role.Name = newName;
+            var result = await _roleManager.UpdateAsync(role);
+            return (result.Succeeded, result.Errors.Select(e => e.Description).ToList());
+        }
+
         public async Task<(bool Succeeded, List<string> Errors)> DeleteRoleAsync(string roleName)
         {
             var role = await _roleManager.FindByNameAsync(roleName);

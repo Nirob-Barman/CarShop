@@ -1,57 +1,134 @@
-﻿@model IEnumerable<CarShop.Web.ViewModels.Order.OrderViewModel>
-
+@model IEnumerable<CarShop.Web.ViewModels.Order.OrderViewModel>
 @{
     ViewData["Title"] = "My Orders";
+    Layout = "~/Views/Shared/User/_UserLayout.cshtml";
+    var orders     = Model.OrderByDescending(o => o.OrderedAt).ToList();
+    var totalSpent = orders.Where(o => o.Status is "Paid" or "Confirmed").Sum(o => o.FinalPrice);
+    const int pageSize = 5;
+    var totalPages = (int)Math.Ceiling(orders.Count / (double)pageSize);
 }
 
-<h2>My Orders</h2>
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <h5 class="fw-bold mb-0">My Orders</h5>
+        <small class="text-muted">Track and manage your purchases</small>
+    </div>
+    <div class="card-body p-4">
 
-@if (!Model.Any())
-{
-    <p>You have not placed any orders yet.</p>
-}
-else
-{
-    foreach (var order in Model)
+    @if (!orders.Any())
     {
-        <div class="card mb-3">
-            <img src="@order.CarImageUrl" alt="Car Image" class="card-img-top" style="max-width: 100%; height: auto;">
-            <div class="card-body">
-                <h5>@order.CarTitle</h5>
-                <p>Price: $@order.CarPrice</p>
-                <p>Ordered On: @order.OrderedAt.ToString("MMM dd, yyyy")</p>
-                <p>Quantity: @order.Quantity</p>
-                <p>Total Price: $@order.TotalPrice</p>
-
-                <form method="post" action="@Url.Action("CancelOrder", "Order")">
-                    <input type="hidden" name="orderId" value="@order.Id" />
-                    @* <button type="submit" class="btn btn-danger">Cancel Order</button> *@
-                    @* <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to cancel this order?')">Cancel Order</button> *@
-                    <button type="button" class="btn btn-danger" onclick="openCancelModal(@order.Id, '@order.CarTitle')">Cancel Order</button>
-                </form>
-            </div>
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">🛒</div>
+            <h5 class="text-muted">You haven't placed any orders yet.</h5>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Browse Cars</a>
         </div>
     }
-    <hr />
-    <h4>Total Spent: $@Model.Sum(o => o.TotalPrice)</h4>
-}
 
+    else
+    {
+        @foreach (var order in orders)
+        {
+            string badgeClass;
+            string badgeLabel;
+            (badgeClass, badgeLabel) = order.Status switch
+            {
+                "Paid"      => ("bg-success",            "Paid"),
+                "Confirmed" => ("bg-success",            "Confirmed"),
+                "Cancelled" => ("bg-danger",             "Cancelled"),
+                "Pending"   => ("bg-warning text-dark",  "Pending Payment"),
+                _           => ("bg-secondary",          order.Status)
+            };
+            bool canCancel = order.Status is "Paid" or "Confirmed";
+
+            <div class="card shadow-sm mb-3 border-0 order-card">
+                <div class="card-body d-flex gap-3 align-items-start">
+
+                    <img src="@order.CarImageUrl" alt="@order.CarTitle"
+                         class="rounded" style="width:110px;height:78px;object-fit:cover;flex-shrink:0;" />
+
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                            <div>
+                                <a asp-action="Details" asp-route-id="@order.Id" class="text-decoration-none text-dark">
+                                    <h5 class="mb-1 fw-bold">@order.CarTitle</h5>
+                                </a>
+                                <span class="text-muted small">
+                                    Order #@order.Id &middot; @order.OrderedAt.ToString("MMM dd, yyyy")
+                                </span>
+                            </div>
+                            <span class="badge @badgeClass fs-6 px-3 py-2">@badgeLabel</span>
+                        </div>
+
+                        <div class="mt-2">
+                            @if (order.DiscountAmount > 0 && !string.IsNullOrEmpty(order.PromoCode))
+                            {
+                                <span class="text-muted text-decoration-line-through small me-1">$@order.CarPrice.ToString("N2")</span>
+                                <span class="text-danger small me-2">-$@order.DiscountAmount.ToString("N2") (@order.PromoCode)</span>
+                            }
+                            <span class="fw-bold text-success">$@order.FinalPrice.ToString("N2")</span>
+                        </div>
+
+                        @if (order.Status == "Pending")
+                        {
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <span class="text-muted small">Payment not completed.</span>
+                                <a asp-controller="Payment" asp-action="Checkout"
+                                   asp-route-carId="@order.CarId"
+                                   class="btn btn-warning btn-sm fw-semibold">Complete Payment</a>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="d-flex flex-column gap-1">
+                        <a asp-action="Details" asp-route-id="@order.Id" class="btn btn-outline-secondary btn-sm">Details</a>
+                        @if (canCancel)
+                        {
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    onclick="openCancelModal(@order.Id, '@Html.Raw(Html.Encode(order.CarTitle))')">
+                                Cancel
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (totalSpent > 0)
+        {
+            <div class="text-end mt-2 text-muted small">
+                Total paid: <strong class="text-dark fs-6">$@totalSpent.ToString("N2")</strong>
+                <span>(paid orders only)</span>
+            </div>
+        }
+
+        @if (totalPages > 1)
+        {
+            <nav class="mt-4 d-flex justify-content-center" id="orderPagination">
+                <ul class="pagination pagination-sm mb-0" id="pagControls"></ul>
+            </nav>
+        }
+    }
+
+    </div>
+</div>
 
 <!-- Cancel Order Modal -->
-<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="cancelOrderLabel">Confirm Order Cancellation</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold">Cancel Order?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 Are you sure you want to cancel the order for <strong id="orderCarTitle"></strong>?
+                This cannot be undone.
             </div>
-            <div class="modal-footer">
-                <form id="cancelOrderForm" method="post" action="@Url.Action("CancelOrder", "Order")">
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Order</button>
+                <form method="post" asp-controller="Order" asp-action="CancelOrder" class="d-inline">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="orderId" id="cancelOrderId" />
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-danger">Yes, Cancel</button>
                 </form>
             </div>
@@ -59,42 +136,53 @@ else
     </div>
 </div>
 
-
 @section Scripts {
     @if (TempData["SuccessMessage"] != null)
     {
         <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'success',
-                text: '@TempData["SuccessMessage"]',
-                position: 'top-end',
-                timer: 5000,
-                toast: true,
-                timerProgressBar: true
-            });
+            Swal.fire({ icon: 'success', title: 'Done', text: '@TempData["SuccessMessage"]',
+                position: 'top-end', timer: 4000, toast: true, timerProgressBar: true, showConfirmButton: false });
         </script>
     }
     @if (TempData["ErrorMessage"] != null)
     {
         <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: '@TempData["ErrorMessage"]',
-                position: 'top-end',
-                timer: 5000,
-                toast: true,
-                timerProgressBar: true
-            });
+            Swal.fire({ icon: 'error', title: 'Oops', text: '@TempData["ErrorMessage"]',
+                position: 'top-end', timer: 4000, toast: true, timerProgressBar: true, showConfirmButton: false });
         </script>
     }
-
     <script>
         function openCancelModal(orderId, carTitle) {
-            $('#cancelOrderId').val(orderId);
-            $('#orderCarTitle').text(carTitle);
-            $('#cancelOrderModal').modal('show');
+            document.getElementById('cancelOrderId').value = orderId;
+            document.getElementById('orderCarTitle').textContent = carTitle;
+            new bootstrap.Modal(document.getElementById('cancelOrderModal')).show();
         }
+
+        (function () {
+            const pageSize  = @pageSize;
+            const totalPgs  = @totalPages;
+            if (totalPgs <= 1) return;
+
+            const cards = Array.from(document.querySelectorAll('.order-card'));
+            let current = 1;
+
+            function render(page) {
+                current = page;
+                const start = (page - 1) * pageSize;
+                cards.forEach((c, i) => c.style.display = (i >= start && i < start + pageSize) ? '' : 'none');
+
+                const ul = document.getElementById('pagControls');
+                ul.innerHTML = '';
+                for (let p = 1; p <= totalPgs; p++) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item' + (p === page ? ' active' : '');
+                    li.innerHTML = `<button class="page-link" onclick="goPage(${p})">${p}</button>`;
+                    ul.appendChild(li);
+                }
+            }
+
+            window.goPage = render;
+            render(1);
+        })();
     </script>
 }

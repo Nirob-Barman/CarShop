@@ -1,0 +1,38 @@
+@using CarShop.Application.DTOs.Wishlist
+@model IEnumerable<TopWishlistedCarDto>
+
+<section class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">❤️ Most Wishlisted</h2>
+        <a asp-controller="Car" asp-action="AllCars" class="btn btn-outline-dark btn-sm">View All →</a>
+    </div>
+
+    <div class="row g-3">
+        @foreach (var car in Model)
+        {
+            <div class="col-6 col-md-3">
+                <div class="card h-100 shadow-sm border-0 position-relative">
+                    <!-- Wishlist count badge -->
+                    <span class="position-absolute top-0 end-0 m-2 badge bg-danger"
+                          style="font-size:.75rem;">
+                        ♥ @car.WishlistCount
+                    </span>
+
+                    <img src="@car.CarImageUrl" alt="@car.CarTitle"
+                         class="card-img-top" style="height:160px;object-fit:cover;" />
+
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-1 text-truncate">@car.CarTitle</h6>
+                        <div class="text-muted small mb-2">@car.BrandName</div>
+                        <div class="text-success fw-bold">$@car.CarPrice.ToString("N2")</div>
+                    </div>
+
+                    <div class="card-footer bg-white border-0 pt-0 px-3 pb-3">
+                        <a asp-controller="Car" asp-action="Details" asp-route-id="@car.CarId"
+                           class="btn btn-outline-dark btn-sm w-100">View Car</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</section>

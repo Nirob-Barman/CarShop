@@ -1,0 +1,62 @@
+@using CarShop.Application.DTOs.Import
+@{
+    ViewData["Title"] = "Bulk Import Cars";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+    var importResult = ViewBag.ImportResult as BulkImportResultDto;
+}
+
+<div class="container py-4" style="max-width:700px;">
+    <h2 class="mb-4">Bulk Car Import (CSV)</h2>
+
+    @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+
+    @if (importResult != null)
+    {
+        <div class="card mb-4 border-@(importResult.FailureCount == 0 ? "success" : "warning")">
+            <div class="card-body">
+                <h5>Import Results</h5>
+                <p class="text-success">✔ @importResult.SuccessCount cars imported successfully.</p>
+                @if (importResult.FailureCount > 0)
+                {
+                    <p class="text-danger">✘ @importResult.FailureCount rows failed.</p>
+                    <ul class="list-group list-group-flush">
+                        @foreach (var err in importResult.Errors)
+                        {
+                            <li class="list-group-item list-group-item-danger small">@err</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header fw-semibold">Upload CSV File</div>
+        <div class="card-body">
+            <form asp-action="Index" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <div class="mb-3">
+                    <input type="file" name="csvFile" accept=".csv" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-primary">Import</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header fw-semibold">CSV Format</div>
+        <div class="card-body">
+            <p class="text-muted small">First row is the header (skipped). Columns must be in this order:</p>
+            <table class="table table-sm table-bordered">
+                <thead class="table-light">
+                    <tr><th>Title</th><th>Description</th><th>Price</th><th>Quantity</th><th>BrandName</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Toyota Corolla</td><td>Reliable sedan</td><td>25000</td><td>5</td><td>Toyota</td></tr>
+                    <tr><td>BMW X5</td><td>Luxury SUV</td><td>65000</td><td>3</td><td>BMW</td></tr>
+                </tbody>
+            </table>
+            <p class="text-muted small">BrandName must match an existing brand exactly (case-insensitive).</p>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,110 @@
+@using CarShop.Application.DTOs.TestDrive
+@model IEnumerable<TestDriveBookingDto>
+@{
+    ViewData["Title"] = "My Test Drive Bookings";
+    Layout = "~/Views/Shared/User/_UserLayout.cshtml";
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <h5 class="fw-bold mb-0">Test Drive Bookings</h5>
+        <small class="text-muted">Your scheduled test drive appointments</small>
+    </div>
+    <div class="card-body p-4">
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">🚗</div>
+            <h5 class="text-muted">No test drive bookings yet.</h5>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Browse Cars</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Car</th>
+                        <th>Booking Date</th>
+                        <th>Notes</th>
+                        <th>Status</th>
+                        <th>Booked On</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model)
+                    {
+                        <tr>
+                            <td><strong>@b.CarTitle</strong></td>
+                            <td>@b.BookingDate.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")</td>
+                            <td>@(b.Notes ?? "-")</td>
+                            <td>
+                                @{
+                                    var badge = b.Status switch
+                                    {
+                                        "Confirmed" => "success",
+                                        "Cancelled" => "danger",
+                                        _ => "warning"
+                                    };
+                                }
+                                <span class="badge bg-@badge">@b.Status</span>
+                            </td>
+                            <td>@b.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                            <td>
+                                @if (b.Status != "Cancelled")
+                                {
+                                    <form asp-action="Cancel" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="bookingId" value="@b.Id" />
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmCancelBooking(this)">Cancel</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'success', title:'Done', text:'@TempData["SuccessMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'error', title:'Oops', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    <script>
+        function confirmCancelBooking(btn) {
+            Swal.fire({
+                title: 'Cancel Booking?',
+                text: 'Are you sure you want to cancel this test drive booking?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, cancel it',
+                cancelButtonText: 'Keep it'
+            }).then(result => {
+                if (result.isConfirmed) btn.closest('form').submit();
+            });
+        }
+    </script>
+}

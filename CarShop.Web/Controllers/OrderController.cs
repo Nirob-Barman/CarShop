@@ -1,36 +1,19 @@
-﻿using CarShop.Application.Interfaces;
+using CarShop.Application.Interfaces;
 using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CarShop.Web.Controllers
 {
     [Authorize]
-    public class OrderController : Controller
+    public class OrderController : UserDashboardController
     {
         private readonly IOrderService _orderService;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, IUserService userService, IUserContextService userContextService)
+            : base(userService, userContextService)
         {
             _orderService = orderService;
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Buy(int carId)
-        {
-            try
-            {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                await _orderService.PlaceOrderAsync(userId!, carId);
-                TempData["SuccessMessage"] = "Car purchased successfully!";
-                return RedirectToAction("Details", "Home", new { id = carId });
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = ex.Message;
-                return RedirectToAction("Details", "Home", new { id = carId });
-            }
         }
 
         [HttpPost]
@@ -38,8 +21,7 @@ namespace CarShop.Web.Controllers
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                await _orderService.CancelOrderAsync(orderId, userId!);
+                await _orderService.CancelOrderAsync(orderId);
                 TempData["SuccessMessage"] = "Order canceled successfully!";
             }
             catch (Exception ex)
@@ -50,13 +32,23 @@ namespace CarShop.Web.Controllers
             return RedirectToAction("MyOrders");
         }
 
-
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            var result = await _orderService.GetOrderByIdAsync(id);
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Message;
+                return RedirectToAction("MyOrders");
+            }
+            return View(OrderMapper.ToViewModel(result.Data!));
+        }
 
         [HttpGet]
         public async Task<IActionResult> MyOrders()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var orders = await _orderService.GetOrdersByUserIdAsync(userId!);
+            await _orderService.ExpireStalePendingOrdersAsync();
+            var orders = await _orderService.GetOrdersByUserIdAsync();
             var ordersVm = OrderMapper.ToViewModels(orders.Data!);
             return View(ordersVm);
         }

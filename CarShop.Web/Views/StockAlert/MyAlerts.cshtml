@@ -1,0 +1,91 @@
+@using CarShop.Application.DTOs.StockAlert
+@model IEnumerable<StockAlertDto>
+@{
+    ViewData["Title"] = "My Stock Alerts";
+    Layout = "~/Views/Shared/User/_UserLayout.cshtml";
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <h5 class="fw-bold mb-0">Stock Alerts</h5>
+        <small class="text-muted">You'll be notified when these cars are back in stock</small>
+    </div>
+    <div class="card-body p-4">
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">🔔</div>
+            <h5 class="text-muted">No active stock alerts.</h5>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Browse Cars</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var alert in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-3">
+                        @if (!string.IsNullOrEmpty(alert.CarImageUrl))
+                        {
+                            <img src="@alert.CarImageUrl" class="card-img-top rounded-top-3" style="height:160px;object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-secondary d-flex align-items-center justify-content-center rounded-top-3" style="height:160px;">
+                                <span class="text-white fs-5">No Image</span>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold mb-1">@alert.CarTitle</h6>
+                            <small class="text-muted d-block mb-2">Subscribed: @alert.SubscribedAt.ToLocalTime().ToString("MMM dd, yyyy")</small>
+                            <span class="badge bg-warning text-dark">Waiting for restock</span>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-3">
+                            <form asp-controller="StockAlert" asp-action="Unsubscribe" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="carId" value="@alert.CarId" />
+                                <button type="button" class="btn btn-outline-secondary btn-sm w-100"
+                                        onclick="confirmRemoveAlert(this, '@Html.Raw(Html.Encode(alert.CarTitle))')">Remove Alert</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'success', title:'Done', text:'@TempData["SuccessMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'error', title:'Oops', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    <script>
+        function confirmRemoveAlert(btn, carTitle) {
+            Swal.fire({
+                title: 'Remove Alert?',
+                text: `Stop tracking restock for "${carTitle}"?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, remove',
+                cancelButtonText: 'Keep alert'
+            }).then(result => {
+                if (result.isConfirmed) btn.closest('form').submit();
+            });
+        }
+    </script>
+}

@@ -13,7 +13,7 @@
                         <p class="card-text">Brand: @car.BrandName</p>
                         <p class="card-text">Price: $@car.Price</p>
                         <div class="mt-auto text-center">
-                            <a href="/Home/Details/@car.Id" class="btn btn-primary btn-sm">View Details</a>
+                            <a href="/Car/Details/@car.Id" class="btn btn-primary btn-sm">View Details</a>
                         </div>
                     </div>
                 </div>
@@ -21,7 +21,7 @@
         }
     </div>
 
-    @if ((bool)ViewBag.ShowAllButton)
+    @if (ViewBag.ShowAllButton as bool? == true)
     {
         <div class="text-center mt-3 w-100">
             <a href="@Url.Action("AllCars", "Car")" class="btn btn-primary">View All Cars</a>

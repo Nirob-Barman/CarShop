@@ -19,6 +19,7 @@ namespace CarShop.Web.ViewModels.Mappers
             {
                 Email = vm.Email,
                 Password = vm.Password,
+                RememberMe = vm.RememberMe,
             };
 
         public static EditProfileDto ToDto(ProfileViewModel vm)
@@ -52,6 +53,7 @@ namespace CarShop.Web.ViewModels.Mappers
             {
                 FullName = dto.FullName,
                 Address = dto.Address,
+                Email = dto.Email,
             };
     }
 }

@@ -14,7 +14,8 @@ namespace CarShop.Web.ViewModels.Mappers
                 FullName = dto.FullName,
                 Address = dto.Address,
                 CurrentRole = dto.CurrentRole,
-                AllRoles = dto.AllRoles
+                AllRoles = dto.AllRoles,
+                IsBanned = dto.IsBanned,
             };
         }
 

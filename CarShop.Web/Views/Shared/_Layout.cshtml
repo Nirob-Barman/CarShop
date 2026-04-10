@@ -4,6 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CarShop</title>
+    @if (ViewData["MetaDescription"] != null)
+    {
+        <meta name="description" content="@ViewData["MetaDescription"]" />
+    }
+    @if (ViewData["OgTitle"] != null)
+    {
+        <meta property="og:title"       content="@ViewData["OgTitle"]" />
+        <meta property="og:description" content="@ViewData["OgDescription"]" />
+        <meta property="og:image"       content="@ViewData["OgImage"]" />
+        <meta property="og:url"         content="@ViewData["OgUrl"]" />
+        <meta property="og:type"        content="product" />
+        <meta name="twitter:card"       content="summary_large_image" />
+        <meta name="twitter:title"      content="@ViewData["OgTitle"]" />
+        <meta name="twitter:description" content="@ViewData["OgDescription"]" />
+        <meta name="twitter:image"      content="@ViewData["OgImage"]" />
+    }
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CarShop.Web.styles.css" asp-append-version="true" />
@@ -28,15 +44,11 @@
     <header>
         @await Html.PartialAsync("_NavBar")
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
 
-    <footer class="border-top footer text-muted">
-        @await Html.PartialAsync("Home/_Footer")
-    </footer>
+    @await Html.PartialAsync("Home/_Footer")
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

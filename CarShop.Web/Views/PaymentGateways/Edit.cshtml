@@ -1,0 +1,111 @@
+@model CarShop.Application.DTOs.Payment.PaymentGatewayDto
+@{
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Edit Payment Gateway";
+    var config = ViewBag.Config as Dictionary<string, string>;
+    var schema = ViewBag.Schema as List<CarShop.Application.Payment.GatewayConfigSchema.ConfigField>
+                 ?? new List<CarShop.Application.Payment.GatewayConfigSchema.ConfigField>();
+}
+
+<div class="container mt-4" style="max-width:700px;">
+    <h2 class="fw-bold mb-4">Edit: @Model.Name</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <form method="post" asp-action="Edit" asp-route-id="@Model.Id">
+        @Html.AntiForgeryToken()
+
+        <div class="card shadow-sm p-4 mb-4">
+            <h5 class="mb-3 text-muted fw-semibold">General Settings</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Gateway Type</label>
+                <input type="text" class="form-control" value="@Model.Slug" disabled />
+                <div class="form-text text-muted">Slug cannot be changed after creation.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Display Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" value="@Model.Name" required />
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Type</label>
+                    <select name="type" class="form-select">
+                        <option value="online"  selected="@(Model.Type == "online"  ? "selected" : null)">Online</option>
+                        <option value="mobile"  selected="@(Model.Type == "mobile"  ? "selected" : null)">Mobile Banking</option>
+                        <option value="wallet"  selected="@(Model.Type == "wallet"  ? "selected" : null)">Digital Wallet</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Sort Order</label>
+                    <input type="number" name="sortOrder" class="form-control" value="@Model.SortOrder" min="0" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Logo URL</label>
+                <input type="url" name="logoUrl" class="form-control" value="@Model.LogoUrl" placeholder="https://..." />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Supported Currencies</label>
+                <input type="text" name="supportedCurrencies" class="form-control" value="@Model.SupportedCurrencies" placeholder="USD,BDT" />
+            </div>
+
+            <div class="d-flex gap-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="isActive" id="isActive"
+                           value="true" @(Model.IsActive ? "checked" : "") />
+                    <label class="form-check-label" for="isActive">Active</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="isSandbox" id="isSandbox"
+                           value="true" @(Model.IsSandbox ? "checked" : "") />
+                    <label class="form-check-label" for="isSandbox">Sandbox / Test Mode</label>
+                </div>
+            </div>
+        </div>
+
+        @if (schema.Any())
+        {
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="mb-1 text-muted fw-semibold">Gateway Credentials</h5>
+                <p class="text-muted small mb-3">Leave fields blank to keep existing values.</p>
+
+                @foreach (var field in schema)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">
+                            @field.Label
+                            @if (field.IsSecret)
+                            {
+                                <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;">Secret</span>
+                            }
+                        </label>
+                        @if (field.IsSecret)
+                        {
+                            <input type="password" name="configFields[@field.Key]"
+                                   class="form-control" placeholder="Leave blank to keep existing"
+                                   autocomplete="new-password" />
+                        }
+                        else
+                        {
+                            <input type="text" name="configFields[@field.Key]"
+                                   class="form-control"
+                                   value="@(config != null && config.TryGetValue(field.Key, out var v) ? v : "")"
+                                   placeholder="@field.Placeholder" />
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        <button type="submit" class="btn btn-primary px-4">Save Changes</button>
+        <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+</div>

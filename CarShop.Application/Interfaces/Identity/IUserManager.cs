@@ -22,6 +22,7 @@ namespace CarShop.Application.Interfaces.Identity
         Task<(bool Succeeded, List<string> Errors)> RemoveFromRoleAsync(AppUser user, string roleName);
         Task<IEnumerable<AppUser>> GetAllUsersAsync();
         Task<bool> IsUserInRoleAsync(AppUser user, string role);
+        Task<(bool Succeeded, List<string> Errors)> SetLockoutAsync(string userId, bool ban);
         //Task<List<UserWithRoleDto>> GetAllUsersNonAdminAsync();
     }
 }

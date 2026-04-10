@@ -1,0 +1,122 @@
+@using CarShop.Application.DTOs.Analytics
+@model AnalyticsDashboardDto
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Analytics Dashboard</h2>
+
+    @if (Model == null)
+    {
+        <div class="alert alert-warning">No data available.</div>
+        return;
+    }
+
+    <!-- KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Total Orders</h6>
+                    <h2 class="fw-bold">@Model.TotalOrders</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Total Revenue</h6>
+                    <h2 class="fw-bold">$@Model.TotalRevenue.ToString("N2")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Total Cars</h6>
+                    <h2 class="fw-bold">@Model.TotalCars</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Low Stock Alerts</h6>
+                    <h2 class="fw-bold">@Model.LowStockCars.Count</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Orders Per Month Chart -->
+        <div class="col-md-7">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Orders Per Month</div>
+                <div class="card-body">
+                    <canvas id="ordersChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 5 Cars -->
+        <div class="col-md-5">
+            <div class="card shadow-sm h-100">
+                <div class="card-header fw-semibold">Top 5 Cars by Orders</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light"><tr><th>Car</th><th>Orders</th><th>Revenue</th></tr></thead>
+                        <tbody>
+                            @foreach (var car in Model.TopFiveCars)
+                            {
+                                <tr>
+                                    <td>@car.CarTitle</td>
+                                    <td>@car.OrderCount</td>
+                                    <td>$@car.Revenue.ToString("N0")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock -->
+    @if (Model.LowStockCars.Any())
+    {
+        <div class="card shadow-sm mt-4">
+            <div class="card-header fw-semibold text-danger">⚠ Low Stock Cars (Qty &lt; 5)</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light"><tr><th>Car</th><th>Quantity</th><th>Action</th></tr></thead>
+                    <tbody>
+                        @foreach (var c in Model.LowStockCars)
+                        {
+                            <tr>
+                                <td>@c.CarTitle</td>
+                                <td><span class="badge bg-danger">@c.Quantity</span></td>
+                                <td><a asp-controller="Car" asp-action="Edit" asp-route-id="@c.CarId" class="btn btn-sm btn-outline-warning">Edit</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdersPerMonth.Select(x => x.Month)));
+        const data   = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrdersPerMonth.Select(x => x.Count)));
+        new Chart(document.getElementById('ordersChart'), {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Orders', data, backgroundColor: '#0d6efd' }] },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    </script>
+}

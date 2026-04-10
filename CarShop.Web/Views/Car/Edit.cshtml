@@ -1,109 +1,139 @@
-﻿@model CarShop.Web.ViewModels.Car.CarViewModel
+@model CarShop.Web.ViewModels.Car.CarViewModel
 
 @{
     ViewData["Title"] = "Edit Car";
-    Layout = "~/Views/Shared/Car/_CarLayout.cshtml";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
 }
 
-<div class="card shadow-lg rounded-3 border-light p-4">
+<div class="card shadow-sm rounded-4 border-0 p-4" style="max-width:680px;">
+    <h5 class="fw-bold mb-4">Edit Car</h5>
+
     <form id="editCarForm" method="post" asp-action="Edit" enctype="multipart/form-data">
-        <div class="mb-3 text-center">
-            @if (!string.IsNullOrEmpty(Model.ImageUrl))
-            {
-                <div>
-                    <img src="@Model.ImageUrl" alt="Current Car Image" style="max-width: 300px; max-height: 300px; margin-bottom: 10px;" />
-                    @* <img src="@Model.ImageUrl" alt="Current Car Image" style="max-width: 800px; max-height: auto; margin-bottom: 10px;" /> *@
-                </div>
-            }
-        </div>
 
         <div class="mb-3">
-            <label asp-for="Title" class="form-label">Car Title</label>
+            <label asp-for="Title" class="form-label fw-semibold">Car Title</label>
             <input asp-for="Title" class="form-control" />
-            <span asp-validation-for="Title" class="text-danger"></span>
+            <span asp-validation-for="Title" class="text-danger small"></span>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Description" class="form-label">Description</label>
-            <textarea asp-for="Description" class="form-control"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
+            <label asp-for="Description" class="form-label fw-semibold">Description</label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+                <label asp-for="Price" class="form-label fw-semibold">Price</label>
+                <input asp-for="Price" class="form-control" />
+                <span asp-validation-for="Price" class="text-danger small"></span>
+            </div>
+            <div class="col-sm-6">
+                <label asp-for="Quantity" class="form-label fw-semibold">Quantity</label>
+                <input asp-for="Quantity" class="form-control" />
+                <span asp-validation-for="Quantity" class="text-danger small"></span>
+            </div>
         </div>
 
         <div class="mb-3">
-            <label asp-for="Price" class="form-label">Price</label>
-            <input asp-for="Price" class="form-control" />
-            <span asp-validation-for="Price" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="Quantity" class="form-label">Quantity</label>
-            <input asp-for="Quantity" class="form-control" />
-            <span asp-validation-for="Quantity" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            @* <label asp-for="ImageUrl" class="form-label">Image URL</label>
-        <input asp-for="ImageUrl" class="form-control" />
-        <span asp-validation-for="ImageUrl" class="text-danger"></span> *@
-            <label class="form-label">Car Image</label>
-            <input type="file" name="image" class="form-control" />
-            <span id="imageError" class="text-danger"></span>
-        </div>
-
-        <div class="mb-3">
-            <label asp-for="BrandId" class="form-label">Brand</label>
+            <label asp-for="BrandId" class="form-label fw-semibold">Brand</label>
             <select asp-for="BrandId" class="form-select">
                 @foreach (var brand in (IEnumerable<CarShop.Web.ViewModels.Brand.BrandViewModel>)ViewBag.Brands)
                 {
                     <option value="@brand.Id">@brand.Name</option>
                 }
             </select>
-            <span asp-validation-for="BrandId" class="text-danger"></span>
+            <span asp-validation-for="BrandId" class="text-danger small"></span>
         </div>
 
-        <button type="submit" class="btn btn-success">Update</button>
-        <a href="/Car" class="btn btn-secondary">Back</a>
+        <!-- Current image -->
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <div class="mb-3 text-center" id="currentImageBox">
+                <p class="text-muted small fw-semibold mb-2 text-uppercase">Current Image</p>
+                <img id="currentImage" src="@Model.ImageUrl" alt="Current"
+                     style="max-height:220px; max-width:100%; object-fit:contain; border-radius:8px; transition:opacity .3s;" />
+            </div>
+        }
+
+        <!-- File input -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold">Change Image <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="file" name="image" id="imageInput" class="form-control" accept="image/jpeg,image/png,image/gif" />
+            <div class="form-text">Leave blank to keep the current image. Max 2 MB — JPG, PNG, GIF.</div>
+            <span id="imageError" class="text-danger small d-block mt-1"></span>
+        </div>
+
+        <!-- New image preview -->
+        <div id="previewBox" class="mb-3 text-center d-none">
+            <p class="text-muted small fw-semibold mb-2 text-uppercase">New Image Preview</p>
+            <img id="previewImg" alt="Preview"
+                 style="max-height:220px; max-width:100%; object-fit:contain; border-radius:8px; border:2px solid #0d6efd;" />
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-success px-4">Update Car</button>
+            <a href="/Car" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+
     </form>
 </div>
 
-
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-
     <script>
-        $(document).ready(function () {
-            $("#editCarForm").submit(function (e) {
-                var imageFile = $("#Image")[0].files[0];
-                var imageError = $("#imageError");
-                var allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
-                var maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+        var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        var maxSize = 2 * 1024 * 1024;
 
-                // Clear previous error message
-                imageError.text("");
-                imageError.hide();
+        document.getElementById('imageInput').addEventListener('change', function () {
+            var file = this.files[0];
+            var errorEl = document.getElementById('imageError');
+            var previewBox = document.getElementById('previewBox');
+            var previewImg = document.getElementById('previewImg');
+            var currentImage = document.getElementById('currentImage');
 
-                if (imageFile) {
-                    // Check file type
-                    if (!allowedTypes.includes(imageFile.type)) {
-                        imageError.text("Please upload a valid image file (JPG, PNG, or GIF).");
-                        imageError.show();
-                        e.preventDefault();
-                        return false;
-                    }
+            errorEl.textContent = '';
+            previewBox.classList.add('d-none');
+            if (currentImage) currentImage.style.opacity = '1';
 
-                    // Check file size
-                    if (imageFile.size > maxSizeInBytes) {
-                        imageError.text("The image file size exceeds the 2MB limit.");
-                        imageError.show();
-                        e.preventDefault();
-                        return false;
-                    }
-                }
+            if (!file) return;
 
-                // Proceed with form submission
-                return true;
-            });
+            if (!allowedTypes.includes(file.type)) {
+                errorEl.textContent = 'Please upload a valid image file (JPG, PNG, or GIF).';
+                this.value = '';
+                return;
+            }
+            if (file.size > maxSize) {
+                errorEl.textContent = 'Image exceeds the 2 MB limit.';
+                this.value = '';
+                return;
+            }
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewBox.classList.remove('d-none');
+                if (currentImage) currentImage.style.opacity = '0.35';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('editCarForm').addEventListener('submit', function (e) {
+            var file = document.getElementById('imageInput').files[0];
+            var errorEl = document.getElementById('imageError');
+            errorEl.textContent = '';
+
+            if (!file) return; // no image selected — keep existing, allow submit
+
+            if (!allowedTypes.includes(file.type)) {
+                errorEl.textContent = 'Please upload a valid image file (JPG, PNG, or GIF).';
+                e.preventDefault();
+                return;
+            }
+            if (file.size > maxSize) {
+                errorEl.textContent = 'Image exceeds the 2 MB limit.';
+                e.preventDefault();
+            }
         });
     </script>
 }

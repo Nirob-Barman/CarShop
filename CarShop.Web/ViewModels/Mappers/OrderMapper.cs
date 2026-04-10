@@ -10,12 +10,19 @@ namespace CarShop.Web.ViewModels.Mappers
             return new OrderViewModel
             {
                 Id = dto.Id,
+                CarId = dto.CarId,
                 CarTitle = dto.CarTitle,
                 CarPrice = dto.CarPrice,
                 CarImageUrl = dto.CarImageUrl,
                 Quantity = dto.Quantity,
                 TotalPrice = dto.TotalPrice,
-                OrderedAt = dto.OrderedAt
+                OrderedAt = dto.OrderedAt,
+                Status = dto.Status,
+                PromoCode = dto.PromoCode,
+                DiscountAmount = dto.DiscountAmount,
+                FinalPrice = dto.FinalPrice,
+                UserEmail = dto.UserEmail,
+                UserFullName = dto.UserFullName
             };
         }
 

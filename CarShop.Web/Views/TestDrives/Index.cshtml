@@ -1,0 +1,83 @@
+@using CarShop.Application.DTOs.TestDrive
+@model IEnumerable<TestDriveBookingDto>
+@{
+    ViewData["Title"] = "Test Drive Bookings";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Test Drive Bookings</h2>
+
+    @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+    @if (TempData["ErrorMessage"] != null)   { <div class="alert alert-danger">@TempData["ErrorMessage"]</div> }
+
+    <ul class="nav nav-tabs mb-3">
+        @foreach (var s in new[] { (null as string, "All"), ("Pending","Pending"), ("Confirmed","Confirmed"), ("Cancelled","Cancelled") })
+        {
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.Status == s.Item1 ? "active" : "")"
+                   asp-action="Index" asp-route-status="@s.Item1">@s.Item2</a>
+            </li>
+        }
+    </ul>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr><th>User</th><th>Car</th><th>Booking Date</th><th>Notes</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="6" class="text-center text-muted py-4">No bookings found.</td></tr>
+                }
+                @foreach (var b in Model)
+                {
+                    <tr>
+                        <td><small>@(b.UserEmail ?? b.UserId)</small></td>
+                        <td>@b.CarTitle</td>
+                        <td>@b.BookingDate.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")</td>
+                        <td><small class="text-muted">@(b.Notes ?? "—")</small></td>
+                        <td>
+                            @{ var badge = b.Status switch { "Confirmed"=>"success","Cancelled"=>"danger",_=>"warning" }; }
+                            <span class="badge bg-@badge">@b.Status</span>
+                        </td>
+                        <td>
+                            @if (b.Status == "Pending")
+                            {
+                                <form asp-action="UpdateStatus" method="post" class="d-flex gap-1" id="td-form-@b.Id">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="bookingId" value="@b.Id" />
+                                    <button name="status" value="Confirmed" class="btn btn-sm btn-success">Confirm</button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            onclick="confirmCancelBooking(@b.Id)">Cancel</button>
+                                </form>
+                            }
+                            else { <span class="text-muted">—</span> }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmCancelBooking(id) {
+            Swal.fire({
+                title: 'Cancel booking?', text: 'This will mark the booking as Cancelled.', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, cancel it', cancelButtonText: 'No, keep it'
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    var form = document.getElementById('td-form-' + id);
+                    var btn = document.createElement('input');
+                    btn.type = 'hidden'; btn.name = 'status'; btn.value = 'Cancelled';
+                    form.appendChild(btn);
+                    form.submit();
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,93 @@
+@using CarShop.Application.DTOs.Notification
+@model IEnumerable<AppNotificationDto>
+@{
+    ViewData["Title"] = "Notifications";
+    Layout = "~/Views/Shared/User/_UserLayout.cshtml";
+    var notifications = Model.ToList();
+    var unreadCount = notifications.Count(n => !n.IsRead);
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="fw-bold mb-0">
+                Notifications
+                @if (unreadCount > 0)
+                {
+                    <span class="badge bg-primary ms-2">@unreadCount new</span>
+                }
+            </h5>
+            <small class="text-muted">Your recent activity and alerts</small>
+        </div>
+        @if (unreadCount > 0)
+        {
+            <form asp-action="MarkAllRead" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Mark all as read</button>
+            </form>
+        }
+    </div>
+    <div class="card-body p-4">
+
+        @if (!notifications.Any())
+        {
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">🔔</div>
+                <h5 class="text-muted">No notifications yet.</h5>
+                <p class="text-muted small">You'll be notified about orders, stock alerts, and more.</p>
+            </div>
+        }
+        else
+        {
+            <div class="list-group list-group-flush">
+                @foreach (var n in notifications)
+                {
+                    <div class="list-group-item list-group-item-action px-0 py-3 @(!n.IsRead ? "border-start border-4 border-primary ps-3" : "")"
+                         style="cursor:pointer; background:transparent;"
+                         onclick="markRead(@n.Id, '@(n.Link ?? "")')">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <p class="mb-1 @(!n.IsRead ? "fw-semibold" : "text-muted") flex-grow-1">@n.Message</p>
+                            @if (!n.IsRead)
+                            {
+                                <span class="badge bg-primary rounded-pill flex-shrink-0">New</span>
+                            }
+                        </div>
+                        <small class="text-muted">@n.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy hh:mm tt")</small>
+                    </div>
+                }
+            </div>
+
+            <div class="text-muted small text-end mt-3">@notifications.Count notification@(notifications.Count == 1 ? "" : "s") total</div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon: 'success', title: 'Done', text: '@TempData["SuccessMessage"]', position: 'top-end', timer: 3000, toast: true, timerProgressBar: true, showConfirmButton: false });
+        </script>
+    }
+    @Html.AntiForgeryToken()
+    <script>
+        var antiForgeryToken = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        async function markRead(id, link) {
+            try {
+                await fetch('/Notification/MarkRead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': antiForgeryToken
+                    },
+                    body: 'id=' + id
+                });
+            } catch (e) { /* ignore — navigate anyway */ }
+
+            if (link && link !== '') window.location.href = link;
+            else window.location.reload();
+        }
+    </script>
+}

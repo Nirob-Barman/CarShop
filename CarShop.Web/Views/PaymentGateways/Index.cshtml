@@ -1,0 +1,93 @@
+@model IEnumerable<CarShop.Application.DTOs.Payment.PaymentGatewayDto>
+@{
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Payment Gateways";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Payment Gateways</h2>
+        <a asp-action="Add" class="btn btn-primary">+ Add Gateway</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th><th>Slug</th><th>Type</th><th>Currencies</th>
+                        <th>Sort</th><th>Status</th><th>Mode</th><th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-4">No payment gateways configured.</td></tr>
+                    }
+                    @foreach (var gw in Model.OrderBy(g => g.SortOrder))
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(gw.LogoUrl))
+                                {
+                                    <img src="@gw.LogoUrl" alt="@gw.Name" style="height:24px;object-fit:contain;margin-right:6px;" />
+                                }
+                                <strong>@gw.Name</strong>
+                            </td>
+                            <td><code>@gw.Slug</code></td>
+                            <td><span class="badge bg-secondary">@gw.Type</span></td>
+                            <td>@gw.SupportedCurrencies</td>
+                            <td>@gw.SortOrder</td>
+                            <td>
+                                <span class="badge bg-@(gw.IsActive ? "success" : "danger")">@(gw.IsActive ? "Active" : "Inactive")</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-@(gw.IsSandbox ? "warning text-dark" : "dark")">@(gw.IsSandbox ? "Sandbox" : "Live")</span>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Edit" asp-route-id="@gw.Id"
+                                   class="btn btn-sm btn-outline-primary me-1">Edit</a>
+
+                                <form asp-action="Toggle" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@gw.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary me-1">
+                                        @(gw.IsActive ? "Disable" : "Enable")
+                                    </button>
+                                </form>
+
+                                <form asp-action="Delete" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@gw.Id" />
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            onclick="confirmDelete(this, '@gw.Name')">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(btn, name) {
+            Swal.fire({
+                title: 'Delete gateway?', text: "Delete '" + name + "'? This cannot be undone.", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete', cancelButtonText: 'Cancel'
+            }).then(function (result) { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+    </script>
+}

@@ -13,5 +13,12 @@ namespace CarShop.Application.DTOs.Order
         public decimal CarPrice { get; set; }
         public string? CarImageUrl { get; set; }
         public decimal TotalPrice => CarPrice * Quantity;
+
+        public string Status { get; set; } = "Confirmed";
+        public string? PromoCode { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal FinalPrice { get; set; }
+        public string? UserEmail { get; set; }
+        public string? UserFullName { get; set; }
     }
 }

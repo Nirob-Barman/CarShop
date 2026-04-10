@@ -1,0 +1,43 @@
+@{ ViewData["Title"] = "Book a Test Drive"; }
+
+<div class="container py-4" style="max-width:600px;">
+    <h2 class="mb-4">Book a Test Drive</h2>
+
+    @if (ViewBag.Car != null)
+    {
+        <div class="alert alert-info">
+            <strong>Car:</strong> @ViewBag.Car.Title &nbsp;|&nbsp;
+            <strong>Price:</strong> $@((ViewBag.Car.Price as decimal?)?.ToString("N2"))
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Book" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="carId" value="@(ViewBag.Car?.Id)" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Preferred Date & Time</label>
+                    <input type="datetime-local" name="bookingDate" class="form-control" required
+                           min="@DateTime.Now.AddHours(1).ToString("yyyy-MM-ddTHH:mm")" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Notes (optional)</label>
+                    <textarea name="notes" class="form-control" rows="3"
+                              placeholder="Any special requests or questions?"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-warning w-100 fw-bold">Confirm Booking</button>
+                <a asp-controller="Car" asp-action="Details" asp-route-id="@(ViewBag.Car?.Id)"
+                   class="btn btn-outline-secondary w-100 mt-2">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

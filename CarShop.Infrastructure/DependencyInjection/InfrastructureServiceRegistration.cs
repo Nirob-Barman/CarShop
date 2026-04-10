@@ -5,6 +5,7 @@ using CarShop.Application.Interfaces.FileStorage;
 using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Infrastructure.FileStorage;
+using CarShop.Infrastructure.Payments;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
 using CarShop.Infrastructure.Persistence.Repositories;
@@ -59,6 +60,17 @@ namespace CarShop.Infrastructure.DependencyInjection
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<IFileStorage, LocalFileStorage>();
 
+            // Config encryption
+            services.AddDataProtection();
+            services.AddScoped<IConfigEncryptor, DataProtectionConfigEncryptor>();
+
+            // Payment processors (strategy pattern)
+            services.AddScoped<IPaymentProcessor, StripePaymentProcessor>();
+            services.AddScoped<IPaymentProcessor, SSLCommerzPaymentProcessor>();
+            services.AddScoped<IPaymentProcessor, BKashPaymentProcessor>();
+            services.AddScoped<IPaymentProcessor, SurjoPayPaymentProcessor>();
+            services.AddScoped<IPaymentProcessorFactory, PaymentProcessorFactory>();
+
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequiredLength = 6;
@@ -70,7 +82,7 @@ namespace CarShop.Infrastructure.DependencyInjection
             {
                 options.LoginPath = "/Account/Login";
                 options.AccessDeniedPath = "/Account/AccessDenied";
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(30); // Cookie will expire after 30 minutes
+                options.ExpireTimeSpan = TimeSpan.FromDays(14); // Persistent (Remember Me) cookie lasts 14 days
                 options.SlidingExpiration = true; // Refresh cookie expiration on each request
                 options.Cookie.HttpOnly = true; // Cookie can't be accessed by JavaScript
             });

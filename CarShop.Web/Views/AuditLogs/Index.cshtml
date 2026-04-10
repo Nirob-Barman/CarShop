@@ -1,0 +1,105 @@
+@using CarShop.Application.DTOs.AuditLog
+@model IEnumerable<AuditLogDto>
+@{
+    ViewData["Title"] = "Audit Logs";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Audit Logs</h2>
+
+    <form asp-action="Index" method="get" class="row g-2 mb-3">
+        <div class="col-auto">
+            <select name="entityName" class="form-select">
+                <option value="">All Entities</option>
+                @foreach (var name in (IEnumerable<string>)ViewBag.EntityNames)
+                {
+                    <option value="@name" selected="@(ViewBag.EntityName == name)">@name</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-sm table-hover">
+            <thead class="table-dark">
+                <tr><th>Timestamp</th><th>Entity</th><th>Action</th><th>User</th><th>IP Address</th><th>Details</th><th>Changes</th></tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="7" class="text-center text-muted py-4">No audit logs found.</td></tr>
+                }
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td><small>@log.Timestamp.ToLocalTime().ToString("MMM dd, yyyy HH:mm")</small></td>
+                        <td><span class="badge bg-secondary">@log.EntityName</span></td>
+                        <td>
+                            @{
+                                var actionBadge = log.Action switch {
+                                    "Create" => "success", "Delete" => "danger",
+                                    "BulkImport" => "info", _ => "warning"
+                                };
+                            }
+                            <span class="badge bg-@actionBadge">@log.Action</span>
+                        </td>
+                        <td>@(log.UserName ?? "-")</td>
+                        <td><small class="text-muted">@(log.IPAddress ?? "-")</small></td>
+                        <td><small class="text-muted">@log.Details</small></td>
+                        <td>
+                            @if (log.OldValues != null || log.NewValues != null)
+                            {
+                                <button class="btn btn-xs btn-outline-secondary py-0 px-1"
+                                        type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#changes-@log.Id">
+                                    <small>View</small>
+                                </button>
+                                <div class="collapse mt-1" id="changes-@log.Id">
+                                    @if (log.OldValues != null)
+                                    {
+                                        <div><small class="text-danger fw-semibold">Before:</small><br /><code style="font-size:0.7rem;word-break:break-all;">@log.OldValues</code></div>
+                                    }
+                                    @if (log.NewValues != null)
+                                    {
+                                        <div class="mt-1"><small class="text-success fw-semibold">After:</small><br /><code style="font-size:0.7rem;word-break:break-all;">@log.NewValues</code></div>
+                                    }
+                                </div>
+                            }
+                            else { <span class="text-muted">-</span> }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if ((int)ViewBag.CurrentPage > 1 || Model.Count() == 50)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @if ((int)ViewBag.CurrentPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@((int)ViewBag.CurrentPage - 1)"
+                           asp-route-entityName="@ViewBag.EntityName">Previous</a>
+                    </li>
+                }
+                <li class="page-item active"><a class="page-link">@ViewBag.CurrentPage</a></li>
+                @if (Model.Count() == 50)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index"
+                           asp-route-page="@((int)ViewBag.CurrentPage + 1)"
+                           asp-route-entityName="@ViewBag.EntityName">Next</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

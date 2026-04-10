@@ -69,3 +69,10 @@ appsettings.*.json
 .env
 .env.*
 secrets.json
+
+## Claude hidden folder
+.claude/
+
+## Project docs (not for version control yet)
+CLAUDE.md
+USER_MANUAL.md

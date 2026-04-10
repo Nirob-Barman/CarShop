@@ -1,54 +1,78 @@
-﻿@model CarShop.Web.ViewModels.Account.RegisterViewModel
+@model CarShop.Web.ViewModels.Account.RegisterViewModel
 
 @{
     ViewData["Title"] = "Register";
     Layout = "~/Views/Shared/Account/_AuthLayout.cshtml";
+
+    string eyeIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" fill=\"currentColor\" viewBox=\"0 0 16 16\"><path d=\"M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z\"/><path d=\"M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z\"/></svg>";
 }
 
-<div class="card shadow-lg border-0 rounded-4 p-4">
-    <div class="card-body">
-        <h2 class="text-center mb-4">Create Your CarShop Account</h2>
+<div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+    <div class="bg-success text-white text-center py-4 px-4">
+        <div class="mb-2" style="font-size:2.5rem;">🚗</div>
+        <h4 class="mb-0 fw-bold">Create Your Account</h4>
+        <small class="opacity-75">Join CarShop and find your perfect car</small>
+    </div>
+    <div class="card-body p-4">
         <form id="registerForm" asp-action="Register" method="post" novalidate>
+
             <div class="mb-3">
                 <label asp-for="FullName" class="form-label fw-semibold">Full Name</label>
-                <input asp-for="FullName" class="form-control form-control-lg" placeholder="John Doe" />
+                <input asp-for="FullName" class="form-control form-control-lg" placeholder="John Doe" autocomplete="name" />
                 <span asp-validation-for="FullName" class="text-danger small"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Email" class="form-label fw-semibold">Email Address</label>
-                <input asp-for="Email" class="form-control form-control-lg" placeholder="example@email.com" id="emailInput" />
+                <input asp-for="Email" class="form-control form-control-lg" placeholder="you@example.com" id="emailInput" autocomplete="email" />
                 <span asp-validation-for="Email" class="text-danger small"></span>
-                @* <div id="emailValidationError" class="text-danger small" style="display:none;"></div> *@
-                <div id="emailError" class="text-danger small" style="display:none;">This email is already taken.</div>
+                <div id="emailError" class="text-danger small mt-1" style="display:none;">This email is already registered.</div>
             </div>
 
             <div class="mb-3">
                 <label asp-for="Password" class="form-label fw-semibold">Password</label>
-                <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="••••••••" />
+                <div class="input-group">
+                    <input asp-for="Password" type="password" class="form-control form-control-lg" placeholder="••••••••" id="regPassword" autocomplete="new-password" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('regPassword', this)" tabindex="-1">@Html.Raw(eyeIcon)</button>
+                </div>
                 <span asp-validation-for="Password" class="text-danger small"></span>
-                <ul id="passwordRequirements" class="text-danger small" style="display:none;">
-                    <li id="passwordLength">Password must be at least 6 characters long.</li>
-                    <li id="passwordDigit">Password must contain at least one digit.</li>
-                    <li id="passwordLower">Password must contain at least one lowercase letter.</li>
-                    <li id="passwordUpper">Password must contain at least one uppercase letter.</li>
-                    <li id="passwordSpecial">Password must contain at least one special character.</li>
+                <div id="passwordStrength" class="mt-2" style="display:none;">
+                    <div class="progress" style="height:4px;">
+                        <div id="strengthBar" class="progress-bar" role="progressbar" style="width:0%"></div>
+                    </div>
+                    <small id="strengthLabel" class="text-muted"></small>
+                </div>
+                <ul id="passwordRequirements" class="small mt-1 mb-0 ps-3" style="display:none;">
+                    <li id="reqLength" class="text-muted">At least 6 characters</li>
+                    <li id="reqDigit" class="text-muted">At least one digit</li>
+                    <li id="reqLower" class="text-muted">At least one lowercase letter</li>
+                    <li id="reqUpper" class="text-muted">At least one uppercase letter</li>
+                    <li id="reqSpecial" class="text-muted">At least one special character</li>
                 </ul>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control form-control-lg" placeholder="••••••••" id="confirmPassword" autocomplete="new-password" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmPassword', this)" tabindex="-1">@Html.Raw(eyeIcon)</button>
+                </div>
+                <div id="confirmError" class="text-danger small mt-1" style="display:none;">Passwords do not match.</div>
             </div>
 
             <div class="mb-4">
                 <label asp-for="Address" class="form-label fw-semibold">Address</label>
-                <input asp-for="Address" class="form-control form-control-lg" placeholder="1234 Main St" />
+                <input asp-for="Address" class="form-control form-control-lg" placeholder="1234 Main St" autocomplete="street-address" />
                 <span asp-validation-for="Address" class="text-danger small"></span>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-lg w-100">Register</button>
+            <button type="submit" id="submitBtn" class="btn btn-success btn-lg w-100 fw-semibold">Create Account</button>
         </form>
 
-        <div class="text-center mt-3">
-            <small>
-                Already have an account? <a asp-action="Login">Login here</a>.
-            </small>
+        <hr class="my-4">
+        <div class="text-center">
+            <span class="text-muted small">Already have an account?</span>
+            <a asp-action="Login" class="small fw-semibold text-decoration-none ms-1">Sign in here</a>
         </div>
     </div>
 </div>
@@ -59,101 +83,87 @@
     @if (TempData["ErrorMessage"] != null)
     {
         <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: '@TempData["ErrorMessage"]',
-                position: 'top-end',
-                timer: 5000,
-                toast: true,
-                timerProgressBar: true
-            });
+            Swal.fire({ icon: 'error', title: 'Registration Failed', text: '@TempData["ErrorMessage"]', position: 'top-end', timer: 5000, toast: true, timerProgressBar: true, showConfirmButton: false });
         </script>
     }
-
-
     <script>
-        $(document).ready(function () {
-            // Password validation check
-            $('#registerForm').on('submit', function (event) {
-                let password = $('input[name="Password"]').val();
-                let valid = true;
+        const eyeOn = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.134 13.134 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0z"/></svg>';
+        const eyeOff = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755-.165.165-.337.328-.517.486l.708.709z"/><path d="M11.297 9.176a3.5 3.5 0 0 0-4.474-4.474l.823.823a2.5 2.5 0 0 1 2.829 2.829l.822.822zm-2.943 1.299.822.822a3.5 3.5 0 0 1-4.474-4.474l.823.823a2.5 2.5 0 0 0 2.829 2.829z"/><path d="M3.35 5.47c-.18.16-.353.322-.518.487A13.134 13.134 0 0 0 1.172 8l.195.288c.335.48.83 1.12 1.465 1.755C4.121 11.332 5.881 12.5 8 12.5c.716 0 1.39-.133 2.02-.36l.77.772A7.029 7.029 0 0 1 8 13.5C3 13.5 0 8 0 8s.939-1.721 2.641-3.238l.708.709zm10.296 8.884-12-12 .708-.708 12 12-.708.708z"/></svg>';
 
-                // Clear previous errors
-                $('#passwordRequirements').hide();
-                $('#passwordLength').hide();
-                $('#passwordDigit').hide();
-                $('#passwordLower').hide();
-                $('#passwordUpper').hide();
-                $('#passwordSpecial').hide();
+        function togglePassword(id, btn) {
+            const input = document.getElementById(id);
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.innerHTML = show ? eyeOff : eyeOn;
+        }
 
-                // Check if password meets requirements
-                if (password.length < 6) {
-                    $('#passwordLength').show();
-                    valid = false;
-                }
-                if (!/\d/.test(password)) {
-                    $('#passwordDigit').show();
-                    valid = false;
-                }
-                if (!/[a-z]/.test(password)) {
-                    $('#passwordLower').show();
-                    valid = false;
-                }
-                if (!/[A-Z]/.test(password)) {
-                    $('#passwordUpper').show();
-                    valid = false;
-                }
-                if (!/\W/.test(password)) {
-                    $('#passwordSpecial').show();
-                    valid = false;
-                }
+        // Password strength meter
+        document.getElementById('regPassword').addEventListener('input', function () {
+            const p = this.value;
+            if (!p) {
+                document.getElementById('passwordStrength').style.display = 'none';
+                document.getElementById('passwordRequirements').style.display = 'none';
+                return;
+            }
+            document.getElementById('passwordStrength').style.display = 'block';
+            document.getElementById('passwordRequirements').style.display = 'block';
 
-                // If not valid, prevent form submission
-                if (!valid) {
-                    $('#passwordRequirements').show();
-                    event.preventDefault();
+            const checks = [p.length >= 6, /\d/.test(p), /[a-z]/.test(p), /[A-Z]/.test(p), /\W/.test(p)];
+            const ids = ['reqLength', 'reqDigit', 'reqLower', 'reqUpper', 'reqSpecial'];
+            const score = checks.filter(Boolean).length;
+            checks.forEach((ok, i) => {
+                document.getElementById(ids[i]).className = ok ? 'text-success' : 'text-danger';
+            });
+
+            const levels = [
+                { pct: 20, cls: 'bg-danger', text: 'Very Weak' },
+                { pct: 40, cls: 'bg-warning', text: 'Weak' },
+                { pct: 60, cls: 'bg-info', text: 'Fair' },
+                { pct: 80, cls: 'bg-primary', text: 'Strong' },
+                { pct: 100, cls: 'bg-success', text: 'Very Strong' },
+            ];
+            const lvl = levels[score - 1] || levels[0];
+            const bar = document.getElementById('strengthBar');
+            bar.style.width = lvl.pct + '%';
+            bar.className = 'progress-bar ' + lvl.cls;
+            document.getElementById('strengthLabel').textContent = lvl.text;
+        });
+
+        // Email duplicate check
+        document.getElementById('emailInput').addEventListener('blur', function () {
+            const email = this.value;
+            if (!email || !validateEmailFormat(email)) return;
+            $.ajax({
+                url: '@Url.Action("CheckEmailExists", "Account")',
+                type: 'POST',
+                data: { email },
+                success: function (exists) {
+                    document.getElementById('emailError').style.display = exists ? 'block' : 'none';
+                    document.getElementById('submitBtn').disabled = exists;
                 }
             });
         });
 
+        // Form submit validation
+        document.getElementById('registerForm').addEventListener('submit', function (e) {
+            const pwd = document.getElementById('regPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+            let valid = true;
 
-
-        $('#emailInput').on('blur', function () {
-            var email = $(this).val();
-            if (email) {
-
-                if (!validateEmailFormat(email)) {
-                    // $('#emailValidationError').text("Please enter a valid email address.").show();
-                    // $('#registerForm button').prop('disabled', true);
-                }
-                else{
-                    $.ajax({
-                        url: '@Url.Action("CheckEmailExists", "Account")',
-                        type: 'POST',
-                        data: { email: email },
-                        success: function (response) {
-                            if (response) {
-                                $('#emailError').show();
-                                $('#registerForm button').prop('disabled', true);
-                            } else {
-                                $('#emailError').hide();
-                                $('#registerForm button').prop('disabled', false);
-                            }
-                        },
-                        error: function () {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'Oops...',
-                                text: 'Error checking email',
-                                timer: 5000,
-                                toast: true,
-                                timerProgressBar: true
-                            });
-                        }
-                    });
-                }                
+            if (pwd !== confirm) {
+                document.getElementById('confirmError').style.display = 'block';
+                valid = false;
+            } else {
+                document.getElementById('confirmError').style.display = 'none';
             }
+
+            const allChecks = [pwd.length >= 6, /\d/.test(pwd), /[a-z]/.test(pwd), /[A-Z]/.test(pwd), /\W/.test(pwd)].every(Boolean);
+            if (!allChecks) {
+                document.getElementById('passwordRequirements').style.display = 'block';
+                valid = false;
+            }
+
+            if (!valid) e.preventDefault();
         });
     </script>
 }

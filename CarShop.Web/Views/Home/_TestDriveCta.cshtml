@@ -1,0 +1,25 @@
+<section class="py-5 text-white text-center"
+         style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);">
+    <div class="container" style="max-width:680px;">
+        <div class="fs-1 mb-3">🚗</div>
+        <h2 class="fw-bold mb-2">Want to Try Before You Buy?</h2>
+        <p class="lead opacity-75 mb-4">
+            Book a free test drive on any car — pick your date and time, we handle the rest.
+            No commitment, no pressure.
+        </p>
+        @if (User.Identity!.IsAuthenticated && !User.IsInRole("Admin"))
+        {
+            <a asp-controller="TestDrive" asp-action="Book"
+               class="btn btn-warning btn-lg fw-bold px-5">
+                Book a Test Drive →
+            </a>
+        }
+        else if (!User.Identity!.IsAuthenticated)
+        {
+            <a asp-controller="Account" asp-action="Login"
+               class="btn btn-warning btn-lg fw-bold px-5">
+                Login to Book →
+            </a>
+        }
+    </div>
+</section>

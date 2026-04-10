@@ -13,10 +13,22 @@ namespace CarShop.Web.Controllers
     {
         private readonly ICarService _carService;
         private readonly IBrandService _brandService;
-        public CarController(ICarService carService, IBrandService brandService)
+        private readonly ICommentService _commentService;
+        private readonly IWishlistService _wishlistService;
+        private readonly IStockAlertService _stockAlertService;
+
+        public CarController(
+            ICarService carService,
+            IBrandService brandService,
+            ICommentService commentService,
+            IWishlistService wishlistService,
+            IStockAlertService stockAlertService)
         {
             _carService = carService;
             _brandService = brandService;
+            _commentService = commentService;
+            _wishlistService = wishlistService;
+            _stockAlertService = stockAlertService;
         }
         
         public async Task<IActionResult> Index()
@@ -159,58 +171,85 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var result = await _carService.GetCarByIdAsync(id);
-            //if (!result.Success || result.Data == null)
-            //{
-            //    TempData["ErrorMessage"] = result.Message ?? "Car not found.";
-            //    return RedirectToAction("AllCars");
-            //}
-            var vm = CarMapper.ToViewModel(result.Data!);
+            var carResult = await _carService.GetCarByIdAsync(id);
+            if (!carResult.Success || carResult.Data == null)
+            {
+                TempData["ErrorMessage"] = carResult.Message ?? "Car not found.";
+                return RedirectToAction("AllCars");
+            }
+
+            // Track recently viewed (cookie — up to 8 IDs, 30-day expiry)
+            const string cookieName = "RecentlyViewed";
+            var existing = Request.Cookies[cookieName] ?? "";
+            var ids = existing.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                              .Where(x => int.TryParse(x, out _))
+                              .Select(int.Parse)
+                              .Where(x => x != id)
+                              .Prepend(id)
+                              .Take(8)
+                              .ToList();
+            Response.Cookies.Append(cookieName, string.Join(',', ids), new CookieOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddDays(30),
+                IsEssential = true,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
+            });
+
+            var vm = CarMapper.ToViewModel(carResult.Data);
+
+            var commentResult = await _commentService.GetCommentsByCarIdAsync(id);
+            ViewBag.Comments = commentResult.Success ? commentResult.Data
+                : new List<CarShop.Application.DTOs.Comment.CommentDto>();
+
+            var avgResult = await _commentService.GetAverageRatingAsync(id);
+            ViewBag.AverageRating = avgResult.Data;
+
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var wishResult  = await _wishlistService.IsInWishlistAsync(id);
+                ViewBag.IsInWishlist = wishResult.Data;
+
+                var alertResult = await _stockAlertService.GetUserAlertsAsync();
+                ViewBag.IsStockAlerted = alertResult.Data?.Any(a => a.CarId == id) ?? false;
+
+                var reviewedResult = await _commentService.HasUserReviewedAsync(id);
+                ViewBag.HasReviewed = reviewedResult.Data;
+            }
+
             return View(vm);
         }
 
 
 
         [AllowAnonymous]
-        public async Task<IActionResult> AllCars(string? brandName, int page = 1)
+        public async Task<IActionResult> AllCars(string? brandName, string? keyword, decimal? minPrice, decimal? maxPrice, string? sortBy, int page = 1)
         {
-            int pageSize = 10;
-            int? brandId = null;
-
-            if (!string.IsNullOrWhiteSpace(brandName))
+            var searchDto = new CarShop.Application.DTOs.Car.CarSearchDto
             {
-                var brandResult = await _brandService.GetBrandByNameAsync(brandName);
-                if (brandResult.Success && brandResult.Data != null)
-                {
-                    brandId = brandResult.Data.Id;
-                    ViewBag.SelectedBrand = brandResult.Data.Name;
-                }
-            }
+                BrandName = brandName,
+                Keyword = keyword,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                SortBy = sortBy ?? "newest",
+                Page = page,
+                PageSize = 10
+            };
 
-            var carResult = brandId.HasValue
-                ? await _carService.GetCarsByBrandIdAsync(brandId.Value)
-                : await _carService.GetAllCarsAsync();
-
-            if (!carResult.Success)
-            {
-                //TempData["ErrorMessage"] = carResult.Message;
-                return View(new List<CarDto>());
-            }
-
-            var allCars = CarMapper.ToViewModels(carResult.Data!);
-            int totalCars = allCars.Count();
-            var paginatedCars = allCars
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            ViewBag.TotalPages = (int)Math.Ceiling((double)totalCars / pageSize);
-            ViewBag.CurrentPage = page;
-
+            var result = await _carService.SearchCarsAsync(searchDto);
             var brandList = await _brandService.GetAllBrandsAsync();
-            ViewBag.Brands = BrandMapper.ToViewModels(brandList.Data!);
 
-            return View(paginatedCars);
+            ViewBag.Brands = BrandMapper.ToViewModels(brandList.Data!);
+            ViewBag.TotalPages = result.Data?.TotalPages ?? 1;
+            ViewBag.CurrentPage = page;
+            ViewBag.SearchKeyword = keyword;
+            ViewBag.SelectedBrand = brandName;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+            ViewBag.SortBy = sortBy ?? "newest";
+
+            var cars = CarMapper.ToViewModels(result.Data?.Items ?? Enumerable.Empty<CarDto>());
+            return View(cars);
         }
     }
 }

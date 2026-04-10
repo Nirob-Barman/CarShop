@@ -1,0 +1,108 @@
+@{
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+    ViewData["Title"] = "Add Payment Gateway";
+    var slugs = ViewBag.Slugs as string[] ?? Array.Empty<string>();
+
+    var schemaJson = System.Text.Json.JsonSerializer.Serialize(
+        CarShop.Application.Payment.GatewayConfigSchema.Fields.ToDictionary(
+            kv => kv.Key,
+            kv => kv.Value.Select(f => new { f.Key, f.Label, f.IsSecret, f.Placeholder }).ToList()
+        )
+    );
+}
+
+<div class="container mt-4" style="max-width:700px;">
+    <h2 class="fw-bold mb-4">Add Payment Gateway</h2>
+
+    <form method="post" asp-action="Add">
+        @Html.AntiForgeryToken()
+
+        <div class="card shadow-sm p-4 mb-4">
+            <h5 class="mb-3 text-muted fw-semibold">General Settings</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Gateway Type <span class="text-danger">*</span></label>
+                <select name="slug" id="slugSelect" class="form-select" required onchange="onSlugChange(this.value)">
+                    <option value="">-- Select --</option>
+                    @foreach (var s in slugs)
+                    {
+                        <option value="@s">@System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(s)</option>
+                    }
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Display Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" placeholder="e.g. Stripe (USD)" required />
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Type</label>
+                    <select name="type" class="form-select">
+                        <option value="online">Online</option>
+                        <option value="mobile">Mobile Banking</option>
+                        <option value="wallet">Digital Wallet</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Sort Order</label>
+                    <input type="number" name="sortOrder" class="form-control" value="0" min="0" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Logo URL</label>
+                <input type="url" name="logoUrl" class="form-control" placeholder="https://..." />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Supported Currencies</label>
+                <input type="text" name="supportedCurrencies" class="form-control" value="USD" placeholder="USD,BDT" />
+            </div>
+
+            <div class="d-flex gap-4">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="isActive" id="isActive" value="true" checked />
+                    <label class="form-check-label" for="isActive">Active</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="isSandbox" id="isSandbox" value="true" checked />
+                    <label class="form-check-label" for="isSandbox">Sandbox / Test Mode</label>
+                </div>
+            </div>
+        </div>
+
+        <div id="configSection" class="card shadow-sm p-4 mb-4" style="display:none;">
+            <h5 class="mb-3 text-muted fw-semibold">Gateway Credentials</h5>
+            <div id="configFields"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4">Save Gateway</button>
+        <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+</div>
+
+<script>
+    const schema = @Html.Raw(schemaJson);
+
+    function onSlugChange(slug) {
+        const section = document.getElementById('configSection');
+        const container = document.getElementById('configFields');
+        container.innerHTML = '';
+        const fields = schema[slug];
+        if (!fields || fields.length === 0) { section.style.display = 'none'; return; }
+        fields.forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'mb-3';
+            const inputType = f.IsSecret ? 'password' : 'text';
+            div.innerHTML = `
+                <label class="form-label">${f.Label}${f.IsSecret ? ' <span class="badge bg-warning text-dark" style="font-size:.65rem;">Secret</span>' : ''}</label>
+                <input type="${inputType}" name="configFields[${f.Key}]"
+                       class="form-control" placeholder="${f.Placeholder}" autocomplete="new-password" />
+            `;
+            container.appendChild(div);
+        });
+        section.style.display = '';
+    }
+</script>

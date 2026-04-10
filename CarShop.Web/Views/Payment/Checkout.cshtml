@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "Checkout";
+    var car        = ViewBag.Car       as CarShop.Application.DTOs.Car.CarDto;
+    var gateways   = ViewBag.Gateways  as List<CarShop.Application.DTOs.Payment.PaymentGatewayDto> ?? new();
+    var promoCode  = ViewBag.PromoCode as string;
+    decimal final  = ViewBag.FinalPrice;
+    decimal disc   = ViewBag.Discount;
+}
+
+<div class="container mt-5" style="max-width:700px;">
+    <h2 class="mb-4 fw-bold">Checkout</h2>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Order Summary -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex gap-3 align-items-center">
+            <img src="@car?.ImageUrl" alt="@car?.Title"
+                 style="width:100px;height:70px;object-fit:cover;border-radius:8px;" />
+            <div class="flex-grow-1">
+                <h5 class="mb-1 fw-bold">@car?.Title</h5>
+                <div class="text-muted small">@car?.BrandName</div>
+                @if (disc > 0)
+                {
+                    <div class="text-danger small">Promo: @promoCode &mdash; saved $@disc.ToString("N2")</div>
+                }
+            </div>
+            <div class="text-end">
+                @if (disc > 0)
+                {
+                    <div class="text-muted text-decoration-line-through small">$@car?.Price.ToString("N2")</div>
+                }
+                <div class="fs-5 fw-bold text-success">$@final.ToString("N2")</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gateway Selection -->
+    <h5 class="mb-3">Select Payment Method</h5>
+
+    @if (!gateways.Any())
+    {
+        <div class="alert alert-warning">No payment methods available. Please contact support.</div>
+    }
+    else
+    {
+        <form method="post" asp-controller="Payment" asp-action="Initiate" id="checkoutForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="carId"     value="@car?.Id" />
+            <input type="hidden" name="promoCode" value="@promoCode" />
+            <input type="hidden" name="gatewayId" id="selectedGatewayId" value="" />
+
+            <div class="row g-3 mb-4" id="gatewayCards">
+                @foreach (var gw in gateways)
+                {
+                    <div class="col-6 col-md-4">
+                        <div class="card gateway-card border-2 h-100 text-center p-3"
+                             data-id="@gw.Id" style="cursor:pointer; transition:all .15s;">
+                            @if (!string.IsNullOrEmpty(gw.LogoUrl))
+                            {
+                                <img src="@gw.LogoUrl" alt="@gw.Name"
+                                     style="height:40px;object-fit:contain;margin-bottom:8px;" />
+                            }
+                            else
+                            {
+                                <div class="display-6 mb-1">💳</div>
+                            }
+                            <div class="fw-semibold">@gw.Name</div>
+                            @if (gw.IsSandbox)
+                            {
+                                <span class="badge bg-warning text-dark mt-1" style="font-size:.65rem;">Test Mode</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <button type="submit" id="payBtn" class="btn btn-warning btn-lg w-100 fw-bold" disabled>
+                Pay $@final.ToString("N2")
+            </button>
+        </form>
+    }
+
+    <a asp-controller="Car" asp-action="Details" asp-route-id="@car?.Id"
+       class="btn btn-link mt-3 text-muted">&larr; Back to car</a>
+</div>
+
+<style>
+    .gateway-card.selected {
+        border-color: #0d6efd !important;
+        background-color: #f0f5ff;
+        box-shadow: 0 0 0 3px rgba(13,110,253,.25);
+    }
+    .gateway-card:hover { border-color: #0d6efd; }
+</style>
+
+<script>
+    document.querySelectorAll('.gateway-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.gateway-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('selectedGatewayId').value = card.dataset.id;
+            document.getElementById('payBtn').disabled = false;
+        });
+    });
+</script>

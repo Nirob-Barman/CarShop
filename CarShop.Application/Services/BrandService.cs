@@ -1,4 +1,5 @@
-﻿using CarShop.Application.DTOs.Brand;
+using System.Text.Json;
+using CarShop.Application.DTOs.Brand;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Interfaces.Persistence;
@@ -11,22 +12,28 @@ namespace CarShop.Application.Services
     {
         private readonly ICacheService _cacheService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _auditLogService;
+        private readonly IUserContextService _userContextService;
 
         private const string AllBrandsKey = "brands:all";
         private static string BrandKey(int id) => $"brands:{id}";
 
         public BrandService(
             IUnitOfWork unitOfWork,
-            ICacheService cacheService)
+            ICacheService cacheService,
+            IAuditLogService auditLogService,
+            IUserContextService userContextService)
         {
             _unitOfWork = unitOfWork;
             _cacheService = cacheService;
+            _auditLogService = auditLogService;
+            _userContextService = userContextService;
         }
 
         public async Task<Result<IEnumerable<BrandDto>>> GetAllBrandsAsync()
         {
             var redis = await _unitOfWork.Repository<IntegrationSetting>().
-                FirstOrDefaultAsync(s => s.ServiceName == "Redis", 
+                FirstOrDefaultAsync(s => s.ServiceName == "Redis",
                 s => new
                 {
                     s.IsEnabled
@@ -102,14 +109,14 @@ namespace CarShop.Application.Services
             if (string.IsNullOrWhiteSpace(dto.Name))
                 return Result<int>.Fail("Brand name is required");
 
-            //var exists = await _brandRepository.ExistsByNameAsync(dto.Name);
             var exists = await _unitOfWork.Repository<Brand>().AnyAsync(b => b.Name == dto.Name);
             if (exists)
                 return Result<int>.Fail("A brand with this name already exists.");
 
-            var brand = new Brand { Name = dto.Name.Trim() };            
+            var brand = new Brand { Name = dto.Name.Trim() };
             await _unitOfWork.Repository<Brand>().AddAsync(brand);
             await _unitOfWork.SaveChangesAsync();
+
             var redis = await _unitOfWork.Repository<IntegrationSetting>().
                 FirstOrDefaultAsync(s => s.ServiceName == "Redis",
                 s => new
@@ -120,6 +127,14 @@ namespace CarShop.Application.Services
             // Invalidate cache
             if (isRedisEnabled)
                 await _cacheService.RemoveAsync(AllBrandsKey);
+
+            await _auditLogService.LogAsync("Brand", "Create", _userContextService.UserId, _userContextService.Email,
+                $"Created brand: {brand.Name} (Id: {brand.Id})",
+                entityId: brand.Id,
+                ipAddress: _userContextService.IpAddress,
+                userAgent: _userContextService.UserAgent,
+                newValues: JsonSerializer.Serialize(new { brand.Id, brand.Name }));
+
             return Result<int>.Ok(brand.Id, "Brand created successfully.");
         }
 
@@ -133,9 +148,11 @@ namespace CarShop.Application.Services
             if (exists)
                 return Result<string>.Fail("Another brand with this name already exists.");
 
+            var oldValues = JsonSerializer.Serialize(new { brand.Id, brand.Name });
             brand.Name = dto.Name!.Trim();
             _unitOfWork.Repository<Brand>().Update(brand);
             await _unitOfWork.SaveChangesAsync();
+
             var redis = await _unitOfWork.Repository<IntegrationSetting>().
                 FirstOrDefaultAsync(s => s.ServiceName == "Redis",
                 s => new
@@ -149,6 +166,15 @@ namespace CarShop.Application.Services
                 await _cacheService.RemoveAsync(AllBrandsKey);
                 await _cacheService.RemoveAsync(BrandKey(id));
             }
+
+            await _auditLogService.LogAsync("Brand", "Update", _userContextService.UserId, _userContextService.Email,
+                $"Updated brand: {brand.Name} (Id: {id})",
+                entityId: id,
+                ipAddress: _userContextService.IpAddress,
+                userAgent: _userContextService.UserAgent,
+                oldValues: oldValues,
+                newValues: JsonSerializer.Serialize(new { brand.Id, brand.Name }));
+
             return Result<string>.Ok(null, "Brand updated successfully.");
         }
 
@@ -158,9 +184,10 @@ namespace CarShop.Application.Services
             if (brand == null)
                 return Result<string>.Fail("Brand not found.");
 
-
+            var oldValues = JsonSerializer.Serialize(new { brand.Id, brand.Name });
             _unitOfWork.Repository<Brand>().Remove(brand);
             await _unitOfWork.SaveChangesAsync();
+
             var redis = await _unitOfWork.Repository<IntegrationSetting>().
                 FirstOrDefaultAsync(s => s.ServiceName == "Redis",
                 s => new
@@ -174,6 +201,13 @@ namespace CarShop.Application.Services
                 await _cacheService.RemoveAsync(AllBrandsKey);
                 await _cacheService.RemoveAsync(BrandKey(id));
             }
+
+            await _auditLogService.LogAsync("Brand", "Delete", _userContextService.UserId, _userContextService.Email,
+                $"Deleted brand: {brand.Name} (Id: {id})",
+                entityId: id,
+                ipAddress: _userContextService.IpAddress,
+                userAgent: _userContextService.UserAgent,
+                oldValues: oldValues);
 
             return Result<string>.Ok(null, "Brand deleted successfully.");
         }

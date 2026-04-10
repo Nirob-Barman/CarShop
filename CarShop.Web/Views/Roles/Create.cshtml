@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Create New Role";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4" style="max-width:480px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Back</a>
+        <h2 class="mb-0">Create New Role</h2>
+    </div>
+
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div class="mb-3">
+            <label for="roleName" class="form-label">Role Name</label>
+            <input type="text" id="roleName" name="roleName" class="form-control" placeholder="Enter role name" />
+        </div>
+        <button type="submit" class="btn btn-primary">Create Role</button>
+        <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon: 'success', title: 'Success', text: '@TempData["SuccessMessage"]', position: 'top-end', timer: 5000, toast: true, timerProgressBar: true, showConfirmButton: false });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon: 'error', title: 'Error', text: '@TempData["ErrorMessage"]', position: 'top-end', timer: 5000, toast: true, timerProgressBar: true, showConfirmButton: false });
+        </script>
+    }
+}

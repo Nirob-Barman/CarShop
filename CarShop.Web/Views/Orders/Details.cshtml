@@ -1,0 +1,128 @@
+@using CarShop.Application.DTOs.Order
+@model OrderDto
+@{
+    ViewData["Title"] = $"Order #{Model.Id}";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+
+    string badgeClass = Model.Status switch
+    {
+        "Paid" or "Confirmed" => "bg-success",
+        "Cancelled"           => "bg-danger",
+        "Pending"             => "bg-warning text-dark",
+        _                     => "bg-secondary"
+    };
+}
+
+<style>
+    @@media print {
+        .no-print { display: none !important; }
+        .sidebar, nav, .topbar { display: none !important; }
+        .card { box-shadow: none !important; border: 1px solid #dee2e6 !important; }
+    }
+</style>
+
+<div class="container-fluid py-4" style="max-width:860px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <div>
+            <h2 class="fw-bold mb-0">Order #@Model.Id</h2>
+            <small class="text-muted">Placed on @Model.OrderedAt.ToLocalTime().ToString("MMMM dd, yyyy 'at' hh:mm tt")</small>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-secondary btn-sm">🖨️ Print</button>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">← Back to Orders</a>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <span class="badge @badgeClass fs-6 px-3 py-2">@Model.Status</span>
+        @if (Model.Status != "Cancelled")
+        {
+            <form asp-action="Cancel" method="post" class="d-inline no-print">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <button type="button" class="btn btn-outline-danger btn-sm"
+                        onclick="confirmCancel(this, @Model.Id)">Cancel Order</button>
+            </form>
+        }
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white fw-semibold border-0 pt-3">Car</div>
+                <div class="card-body d-flex gap-3 align-items-start">
+                    @if (!string.IsNullOrEmpty(Model.CarImageUrl))
+                    {
+                        <img src="@Model.CarImageUrl" alt="@Model.CarTitle"
+                             class="rounded" style="width:100px;height:72px;object-fit:cover;flex-shrink:0;" />
+                    }
+                    <div>
+                        <div class="fw-bold">@Model.CarTitle</div>
+                        <a asp-controller="Car" asp-action="Details" asp-route-id="@Model.CarId"
+                           class="btn btn-sm btn-outline-primary mt-2 no-print">View Car</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white fw-semibold border-0 pt-3">Customer</div>
+                <div class="card-body">
+                    <div class="fw-semibold">@(Model.UserFullName ?? "—")</div>
+                    <div class="text-muted">@(Model.UserEmail ?? "—")</div>
+                    <div class="text-muted small mt-1">User ID: <code>@Model.UserId</code></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white fw-semibold border-0 pt-3">Price Breakdown</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Car Price</span>
+                        <span>$@Model.CarPrice.ToString("N2")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Quantity</span>
+                        <span>@Model.Quantity</span>
+                    </div>
+                    @if (Model.DiscountAmount > 0)
+                    {
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Promo Code (@Model.PromoCode)</span>
+                            <span>-$@Model.DiscountAmount.ToString("N2")</span>
+                        </div>
+                    }
+                    <hr class="my-2" />
+                    <div class="d-flex justify-content-between fw-bold fs-5">
+                        <span>Total</span>
+                        <span class="text-success">$@Model.FinalPrice.ToString("N2")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>Swal.fire({ icon:'success', title:'Done', text:'@TempData["SuccessMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });</script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>Swal.fire({ icon:'error', title:'Error', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });</script>
+    }
+    <script>
+        function confirmCancel(btn, orderId) {
+            Swal.fire({
+                title: `Cancel Order #${orderId}?`, text: 'This will restore car stock and cannot be undone.', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, cancel it', cancelButtonText: 'Keep order'
+            }).then(result => { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+    </script>
+}

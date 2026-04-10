@@ -18,7 +18,4 @@
     "Password": "your-app-password",
     "EnableSsl": true
   },
-  "Imgbb": {
-    "ApiKey": "your-imgbb-api-key"
-  }
 }

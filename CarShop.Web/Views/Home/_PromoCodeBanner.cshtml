@@ -1,0 +1,128 @@
+@using CarShop.Application.DTOs.PromoCode
+@model List<PromoCodeDto>
+@{
+    bool multiple = Model.Count > 1;
+}
+
+<section class="promo-banner text-white"
+         style="background:linear-gradient(135deg,#212529 0%,#ffc107 100%);">
+
+    <!-- Carousel wrapper -->
+    <div id="promoBanner" style="position:relative; overflow:hidden;">
+
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var p = Model[i];
+            <div class="promo-slide py-3 px-3 @(i == 0 ? "" : "d-none")"
+                 data-index="@i">
+                <div class="container">
+                    <div class="d-flex flex-wrap align-items-center justify-content-center gap-3 text-center">
+
+                        <span class="fs-4">🏷️</span>
+
+                        <div>
+                            <span class="fw-bold fs-5">Limited Offer! </span>
+                            <span>Save <strong>@p.DiscountPercent.ToString("0")%</strong> on your next order</span>
+                            @if (p.MaxDiscountAmount.HasValue)
+                            {
+                                <span class="ms-1 opacity-75">(up to $@p.MaxDiscountAmount.Value.ToString("N0") off)</span>
+                            }
+                            @if (p.ExpiresAt.HasValue)
+                            {
+                                <span class="ms-2 opacity-75 small">· Expires @p.ExpiresAt.Value.ToString("MMM dd, yyyy")</span>
+                            }
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="text-dark fw-semibold small">Code:</span>
+                            <span class="badge bg-dark text-warning fs-6 px-3 py-2 promo-code-badge"
+                                  style="letter-spacing:2px;cursor:pointer;"
+                                  title="Click to copy"
+                                  onclick="copyPromoCode(this)">@p.Code</span>
+                        </div>
+
+                        @if (multiple)
+                        {
+                            <span class="opacity-75 small">@(i + 1) / @Model.Count</span>
+                        }
+
+                        @if (multiple)
+                        {
+                            <a asp-controller="PromoCode" asp-action="Deals"
+                               class="btn btn-sm btn-dark fw-semibold ms-2">
+                                View All @Model.Count Deals →
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (multiple)
+        {
+            <!-- Prev / Next arrows -->
+            <button onclick="promoPrev()" class="promo-arrow promo-arrow-left"
+                    style="position:absolute;top:50%;left:8px;transform:translateY(-50%);
+                           background:rgba(0,0,0,.35);border:none;color:#fff;border-radius:50%;
+                           width:32px;height:32px;font-size:1rem;cursor:pointer;">&#8249;</button>
+            <button onclick="promoNext()" class="promo-arrow promo-arrow-right"
+                    style="position:absolute;top:50%;right:8px;transform:translateY(-50%);
+                           background:rgba(0,0,0,.35);border:none;color:#fff;border-radius:50%;
+                           width:32px;height:32px;font-size:1rem;cursor:pointer;">&#8250;</button>
+        }
+    </div>
+
+    @if (multiple)
+    {
+        <!-- Dot indicators -->
+        <div class="d-flex justify-content-center gap-2 pb-2" id="promoDots">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <button onclick="promoGoTo(@i)"
+                        style="width:8px;height:8px;border-radius:50%;border:none;padding:0;
+                               background:@(i == 0 ? "#fff" : "rgba(255,255,255,.4)");"
+                        class="promo-dot"></button>
+            }
+        </div>
+    }
+</section>
+
+<script>
+    (function () {
+        const total   = @Model.Count;
+        if (total <= 1) return;
+
+        let current   = 0;
+        let timer     = null;
+
+        function show(idx) {
+            document.querySelectorAll('.promo-slide').forEach((s, i) => {
+                s.classList.toggle('d-none', i !== idx);
+            });
+            document.querySelectorAll('.promo-dot').forEach((d, i) => {
+                d.style.background = i === idx ? '#fff' : 'rgba(255,255,255,.4)';
+            });
+            current = idx;
+        }
+
+        function next()  { show((current + 1) % total); }
+        function prev()  { show((current - 1 + total) % total); }
+
+        function startTimer() { timer = setInterval(next, 4000); }
+        function resetTimer() { clearInterval(timer); startTimer(); }
+
+        window.promoNext  = function () { next(); resetTimer(); };
+        window.promoPrev  = function () { prev(); resetTimer(); };
+        window.promoGoTo  = function (i) { show(i); resetTimer(); };
+
+        startTimer();
+    })();
+
+    function copyPromoCode(el) {
+        navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+            const orig = el.textContent;
+            el.textContent = 'Copied!';
+            setTimeout(() => el.textContent = orig, 1500);
+        });
+    }
+</script>

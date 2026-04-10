@@ -1,0 +1,55 @@
+@using CarShop.Application.DTOs.PromoCode
+@model PromoCodeDto
+@{
+    ViewData["Title"] = "Create Promo Code";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container py-4" style="max-width:550px;">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Back</a>
+        <h2 class="mb-0 fw-bold">Create Promo Code</h2>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null) { <div class="alert alert-danger">@TempData["ErrorMessage"]</div> }
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Code <span class="text-danger">*</span></label>
+                    <input name="Code" class="form-control text-uppercase" placeholder="e.g. SAVE10" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Discount % <span class="text-danger">*</span></label>
+                    <input name="DiscountPercent" type="number" min="1" max="100" step="0.01" class="form-control" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Max Discount Amount ($)</label>
+                    <input name="MaxDiscountAmount" type="number" min="0" step="0.01" class="form-control" placeholder="Leave empty for no limit" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Max Usages</label>
+                    <input name="MaxUsages" type="number" min="1" class="form-control" placeholder="Leave empty for unlimited" />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Expires At</label>
+                    <input name="ExpiresAt" type="datetime-local" class="form-control" />
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Create Promo Code</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'success', title:'Created!', text:'@TempData["SuccessMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+}

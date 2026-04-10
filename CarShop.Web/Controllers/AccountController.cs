@@ -1,9 +1,9 @@
-﻿using CarShop.Application.DTOs.Identity;
-using CarShop.Application.Interfaces;
+﻿using CarShop.Application.Interfaces;
 using CarShop.Web.ViewModels.Account;
 using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CarShop.Web.Controllers
 {
@@ -28,6 +28,7 @@ namespace CarShop.Web.Controllers
         }
 
         [HttpPost]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
@@ -59,6 +60,7 @@ namespace CarShop.Web.Controllers
 
 
         [HttpPost]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             if (!ModelState.IsValid)
@@ -145,7 +147,13 @@ namespace CarShop.Web.Controllers
 
 
         [Authorize]
-        public IActionResult ChangePassword() => View();
+        public async Task<IActionResult> ChangePassword()
+        {
+            var profile = await _userService.GetProfileAsync(_userContextService.UserId!);
+            ViewBag.FullName = profile.Data?.FullName;
+            ViewBag.Email    = profile.Data?.Email;
+            return View();
+        }
 
 
         [Authorize]
@@ -153,7 +161,12 @@ namespace CarShop.Web.Controllers
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
+            {
+                var profile = await _userService.GetProfileAsync(_userContextService.UserId!);
+                ViewBag.FullName = profile.Data?.FullName;
+                ViewBag.Email    = profile.Data?.Email;
                 return View(model);
+            }
 
             string userId = _userContextService.UserId!;
             var dto = AccountMapper.ToDto(model);
@@ -187,6 +200,7 @@ namespace CarShop.Web.Controllers
         public IActionResult ForgotPassword() => View();
 
         [HttpPost]
+        [EnableRateLimiting("auth")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
@@ -201,15 +215,14 @@ namespace CarShop.Web.Controllers
             }
 
             var token = result.Data;
-            //It generates a full absolute URL(including protocol and domain) that points to the ResetPassword action on your AccountController, with query parameters for the email and token.
-            //Request.Scheme Ensures the generated link uses http:// or https:// depending on the request. This makes the URL absolute.
-            var resetLink = Url.Action("ResetPassword","Account", new { email = model.Email, token = token }, Request.Scheme );
+            var resetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
 
-            // Simulate sending email
-            TempData["ResetLink"] = resetLink;
-            ViewBag.Message = "Reset link generated. (Check email)";
+            // TODO: replace with real email sending
+            // For development: log or display link; in production send via IEmailService
+            // await _emailService.SendEmailAsync(model.Email, "Reset Password", $"<a href='{resetLink}'>Click here</a>");
 
-            return View();
+            ViewBag.EmailSent = true;
+            return View(model);
         }
 
 

@@ -1,0 +1,98 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var ctrl   = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
+    bool IsActive(string c, string a = "") =>
+        ctrl.Equals(c, StringComparison.OrdinalIgnoreCase) &&
+        (string.IsNullOrEmpty(a) || action.Equals(a, StringComparison.OrdinalIgnoreCase));
+
+    string Ac(string c, string a = "") => IsActive(c, a) ? "active" : "";
+
+    var email    = User.Identity!.Name ?? "";
+    var fullName = ViewBag.UserFullName as string ?? "";
+    var display  = !string.IsNullOrWhiteSpace(fullName) ? fullName : email;
+
+    var parts    = display.Trim().Split(new[]{ ' ', '@' }, StringSplitOptions.RemoveEmptyEntries);
+    var initials = parts.Length >= 2
+        ? $"{parts[0][0]}{parts[1][0]}".ToUpper()
+        : (display.Length > 0 ? display[0].ToString().ToUpper() : "?");
+}
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- ══ SIDEBAR ══ -->
+        <div class="col-lg-3">
+
+            <!-- Avatar card -->
+            <div class="card border-0 shadow-sm rounded-4 text-center p-4 mb-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3 fw-bold fs-3"
+                     style="width:80px;height:80px;">
+                    @initials
+                </div>
+                <h6 class="mb-0 fw-bold text-truncate">@display</h6>
+                @if (!string.IsNullOrWhiteSpace(fullName))
+                {
+                    <small class="text-muted text-truncate d-block">@email</small>
+                }
+            </div>
+
+            <!-- Nav -->
+            <div class="list-group list-group-flush rounded-4 shadow-sm">
+                <a asp-controller="Account" asp-action="Profile"
+                   class="list-group-item list-group-item-action rounded-top-4 @Ac("Account","Profile")">
+                    ✏️ Edit Profile
+                </a>
+                <a asp-controller="Account" asp-action="ChangePassword"
+                   class="list-group-item list-group-item-action @Ac("Account","ChangePassword")">
+                    🔑 Change Password
+                </a>
+                @if (!User.IsInRole("Admin"))
+                {
+                    <a asp-controller="Order" asp-action="MyOrders"
+                       class="list-group-item list-group-item-action @Ac("Order","MyOrders")">
+                        📦 My Orders
+                    </a>
+                    <a asp-controller="Wishlist" asp-action="Index"
+                       class="list-group-item list-group-item-action @Ac("Wishlist","Index")">
+                        ❤️ My Wishlist
+                    </a>
+                    <a asp-controller="TestDrive" asp-action="MyBookings"
+                       class="list-group-item list-group-item-action @Ac("TestDrive","MyBookings")">
+                        🚗 Test Drive Bookings
+                    </a>
+                    <a asp-controller="StockAlert" asp-action="MyAlerts"
+                       class="list-group-item list-group-item-action @Ac("StockAlert","MyAlerts")">
+                        🔔 Stock Alerts
+                    </a>
+                    <a asp-controller="Notification" asp-action="Index"
+                       class="list-group-item list-group-item-action @Ac("Notification","Index")">
+                        🔔 Notifications
+                    </a>
+                    <a asp-controller="Review" asp-action="MyReviews"
+                       class="list-group-item list-group-item-action rounded-bottom-4 @Ac("Review","MyReviews")">
+                        ⭐ My Reviews
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Review" asp-action="MyReviews"
+                       class="list-group-item list-group-item-action rounded-bottom-4 @Ac("Review","MyReviews")">
+                        ⭐ My Reviews
+                    </a>
+                }
+            </div>
+
+        </div>
+
+        <!-- ══ CONTENT ══ -->
+        <div class="col-lg-9">
+            @RenderBody()
+        </div>
+
+    </div>
+</div>
+
+@RenderSection("Scripts", required: false)

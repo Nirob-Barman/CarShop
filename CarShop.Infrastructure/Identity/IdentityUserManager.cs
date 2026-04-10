@@ -89,6 +89,7 @@ namespace CarShop.Infrastructure.Identity
             {
                 Id = identityUser.Id,
                 Email = identityUser.Email!,
+                IsBanned = identityUser.LockoutEnabled && identityUser.LockoutEnd.HasValue && identityUser.LockoutEnd > DateTimeOffset.UtcNow,
             };
         }
 
@@ -173,8 +174,22 @@ namespace CarShop.Infrastructure.Identity
                 Id = u.Id,
                 Email = u.Email!,
                 FullName = u.FullName!,
-                Address = u.Address
+                Address = u.Address,
+                IsBanned = u.LockoutEnabled && u.LockoutEnd.HasValue && u.LockoutEnd > DateTimeOffset.UtcNow,
             }).ToList();
+        }
+
+        public async Task<(bool Succeeded, List<string> Errors)> SetLockoutAsync(string userId, bool ban)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return (false, new List<string> { "User not found." });
+
+            user.LockoutEnabled = ban;
+            user.LockoutEnd = ban ? DateTimeOffset.MaxValue : null;
+
+            var result = await _userManager.UpdateAsync(user);
+            return (result.Succeeded, result.Errors.Select(e => e.Description).ToList());
         }
 
         public async Task<bool> IsUserInRoleAsync(AppUser user, string role)

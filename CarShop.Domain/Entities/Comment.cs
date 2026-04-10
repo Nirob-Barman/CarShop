@@ -9,6 +9,8 @@ namespace CarShop.Domain.Entities
         public DateTime CreatedAt { get; set; }
 
         public int CarId { get; set; }
+        public int? Rating { get; set; }
+        public string? UserId { get; set; }
         public Car? Car { get; set; }
     }
 }

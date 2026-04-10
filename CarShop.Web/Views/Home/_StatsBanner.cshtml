@@ -1,0 +1,24 @@
+@{
+    int cars    = ViewBag.StatsCarsCount   ?? 0;
+    int brands  = ViewBag.StatsBrandsCount ?? 0;
+    int orders  = ViewBag.StatsOrdersCount ?? 0;
+}
+
+<section class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row g-3 text-center">
+            <div class="col-4">
+                <div class="fs-2 fw-bold text-warning">@cars+</div>
+                <div class="text-white-50 small">Cars Listed</div>
+            </div>
+            <div class="col-4">
+                <div class="fs-2 fw-bold text-warning">@brands+</div>
+                <div class="text-white-50 small">Brands</div>
+            </div>
+            <div class="col-4">
+                <div class="fs-2 fw-bold text-warning">@orders+</div>
+                <div class="text-white-50 small">Happy Buyers</div>
+            </div>
+        </div>
+    </div>
+</section>

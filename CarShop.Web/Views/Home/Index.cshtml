@@ -1,24 +1,200 @@
-﻿@model IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>
+@model IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>
 
 @{
     ViewData["Title"] = "Home Page";
-    var brands = ViewBag.Brands as IEnumerable<CarShop.Web.ViewModels.Brand.BrandViewModel>;
-    string selectedBrand = ViewBag.SelectedBrand as string ?? "";
+    var brands       = ViewBag.Brands as IEnumerable<CarShop.Web.ViewModels.Brand.BrandViewModel>;
+    string selBrand  = ViewBag.SelectedBrand as string ?? "";
+    var activePromos = ViewBag.ActivePromos as List<CarShop.Application.DTOs.PromoCode.PromoCodeDto>;
+    var recentCars   = ViewBag.RecentCars as IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>;
 }
 
-<div class="car">
-    <h1>Welcome to CarShop</h1>
-    <p class="lead">Your one-stop shop for premium cars</p>
-</div>
+<!-- ═══════════════ TIER 1 — SERVER RENDERED ═══════════════ -->
 
+<!-- Hero Banner -->
+<section class="hero-section text-white text-center py-5"
+         style="background:linear-gradient(135deg,#212529 0%,#343a40 60%,#ffc107 100%);
+                min-height:320px;display:flex;flex-direction:column;justify-content:center;">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-2">Find Your Dream Car</h1>
+        <p class="lead text-white-75 mb-4">Browse hundreds of premium cars. Book a test drive. Drive home happy.</p>
+        <div class="bg-white bg-opacity-10 rounded-3 p-3 mt-2">
+            @await Html.PartialAsync("_SearchBar")
+        </div>
+    </div>
+</section>
 
-<div class="container mt-4">
-    <!-- Brand Filter Buttons -->
-    @await Html.PartialAsync("Car/_BrandFilter", (brands!, selectedBrand))
+<!-- Stats Bar -->
+@await Html.PartialAsync("_StatsBanner")
 
-    <!-- Car Listing -->
-    <div>
+<!-- Promo Code Banner -->
+@if (activePromos != null && activePromos.Any())
+{
+    @await Html.PartialAsync("_PromoCodeBanner", activePromos)
+}
+
+<!-- Featured Cars -->
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold mb-0">Featured Cars</h2>
+        <a asp-controller="Car" asp-action="AllCars" class="btn btn-outline-dark btn-sm">View All →</a>
+    </div>
+    @await Html.PartialAsync("Car/_BrandFilter", (brands!, selBrand))
+    <div class="mt-3">
         @await Html.PartialAsync("Car/_CarList.cshtml", Model)
     </div>
 </div>
 
+<!-- New Arrivals -->
+@if (recentCars != null && recentCars.Any())
+{
+    @await Html.PartialAsync("_NewArrivals", recentCars)
+}
+
+<!-- Test Drive CTA — static, no DB -->
+@await Html.PartialAsync("_TestDriveCta")
+
+<!-- Why Choose Us — static, no DB -->
+@await Html.PartialAsync("_WhyChooseUs")
+
+<!-- ═══════════════ TIER 2 — LAZY LOADED ═══════════════ -->
+
+<!-- Top Rated Cars -->
+<div class="lazy-section" data-url="@Url.Action("TopRated", "Home")">
+    <div class="container mt-5">
+        <div class="placeholder-glow">
+            <span class="placeholder col-3 rounded mb-4" style="height:2rem;display:block;"></span>
+            <div class="row g-4">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <span class="placeholder col-12 rounded-top" style="height:180px;display:block;"></span>
+                            <div class="card-body">
+                                <h5 class="placeholder col-8"></h5>
+                                <p class="placeholder col-4"></p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Most Wishlisted Cars -->
+<div class="lazy-section" data-url="@Url.Action("MostWishlisted", "Home")">
+    <div class="container mt-5">
+        <div class="placeholder-glow">
+            <span class="placeholder col-4 rounded mb-4" style="height:2rem;display:block;"></span>
+            <div class="row g-4">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <span class="placeholder col-12 rounded-top" style="height:180px;display:block;"></span>
+                            <div class="card-body">
+                                <h5 class="placeholder col-7"></h5>
+                                <p class="placeholder col-3"></p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Your Wishlist (authenticated users only) -->
+@if (User.Identity?.IsAuthenticated == true && !User.IsInRole("Admin"))
+{
+    <div class="lazy-section" data-url="@Url.Action("MyWishlist", "Home")">
+        <div class="container mt-5">
+            <div class="placeholder-glow">
+                <span class="placeholder col-3 rounded mb-4" style="height:2rem;display:block;"></span>
+                <div class="row g-4">
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <div class="col-md-3">
+                            <div class="card border-0 shadow-sm">
+                                <span class="placeholder col-12 rounded-top" style="height:180px;display:block;"></span>
+                                <div class="card-body">
+                                    <h5 class="placeholder col-8"></h5>
+                                    <p class="placeholder col-4"></p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Recently Viewed Cars -->
+<div class="lazy-section" data-url="@Url.Action("RecentlyViewed", "Home")">
+    <div class="container mt-5">
+        <div class="placeholder-glow">
+            <span class="placeholder col-3 rounded mb-4" style="height:2rem;display:block;"></span>
+            <div class="row g-4">
+                @for (int i = 0; i < 4; i++)
+                {
+                    <div class="col-md-3">
+                        <div class="card border-0 shadow-sm">
+                            <span class="placeholder col-12 rounded-top" style="height:180px;display:block;"></span>
+                            <div class="card-body">
+                                <h5 class="placeholder col-6"></h5>
+                                <p class="placeholder col-4"></p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Testimonials -->
+<div class="lazy-section" data-url="@Url.Action("Testimonials", "Home")">
+    <div class="container mt-5 mb-5">
+        <div class="placeholder-glow">
+            <span class="placeholder col-3 rounded mb-4" style="height:2rem;display:block;"></span>
+            <div class="row g-4">
+                @for (int i = 0; i < 3; i++)
+                {
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm p-3">
+                            <p class="placeholder col-12"></p>
+                            <p class="placeholder col-10"></p>
+                            <p class="placeholder col-6"></p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    var $el = $(entry.target);
+                    observer.unobserve(entry.target);
+                    $.get($el.data('url'), function (html) {
+                        if ($.trim(html)) {
+                            $el.replaceWith(html);
+                        } else {
+                            $el.remove();
+                        }
+                    });
+                });
+            }, { rootMargin: '300px' });
+
+            $('.lazy-section').each(function () {
+                observer.observe(this);
+            });
+        });
+    </script>
+}

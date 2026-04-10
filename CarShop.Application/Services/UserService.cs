@@ -60,12 +60,15 @@ namespace CarShop.Application.Services
                 //return Result<string>.Fail("Invalid credentials");
                 return Result<string>.FailField(nameof(model.Email), "This email is not registered.");
 
+            if (user.IsBanned)
+                return Result<string>.Fail("Your account has been banned. Please contact support.");
+
             var isPasswordValid = await _signInManager.CheckPasswordSignInAsync(user, model.Password!);
             if (!isPasswordValid)
                 //return Result<string>.Fail("Invalid credentials");
                 return Result<string>.FailField(nameof(model.Password), "Incorrect password.");
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.SignInAsync(user, isPersistent: model.RememberMe);
 
             return Result<string>.Ok("Success", "Login successful");
         }
@@ -99,7 +102,8 @@ namespace CarShop.Application.Services
             var dto = new EditProfileDto
             {
                 FullName = user.FullName,
-                Address = user.Address
+                Address = user.Address,
+                Email = user.Email
             };
 
             return Result<EditProfileDto>.Ok(dto);
@@ -191,9 +195,10 @@ namespace CarShop.Application.Services
         }
 
 
-        public async Task<List<string>> GetAllRolesAsync()
+        public async Task<Result<List<string>>> GetAllRolesAsync()
         {
-            return await _roleManager.GetAllRolesAsync();
+            var roles = await _roleManager.GetAllRolesAsync();
+            return Result<List<string>>.Ok(roles);
         }
 
 
@@ -258,7 +263,8 @@ namespace CarShop.Application.Services
                         Email = user.Email!,
                         FullName = user.FullName!,
                         Address = user.Address,
-                        CurrentRole = roles.FirstOrDefault() ?? "None"
+                        CurrentRole = roles.FirstOrDefault() ?? "None",
+                        IsBanned = user.IsBanned,
                     });
                 }
 
@@ -270,6 +276,22 @@ namespace CarShop.Application.Services
             }
         }
 
+
+        public async Task<Result<bool>> BanUserAsync(string userId)
+        {
+            var result = await _userManager.SetLockoutAsync(userId, ban: true);
+            if (!result.Succeeded)
+                return Result<bool>.Fail(result.Errors, "Failed to ban user.");
+            return Result<bool>.Ok(true, "User has been banned.");
+        }
+
+        public async Task<Result<bool>> UnbanUserAsync(string userId)
+        {
+            var result = await _userManager.SetLockoutAsync(userId, ban: false);
+            if (!result.Succeeded)
+                return Result<bool>.Fail(result.Errors, "Failed to unban user.");
+            return Result<bool>.Ok(true, "User has been unbanned.");
+        }
 
         public async Task<Result<bool>> CreateRoleAsync(string roleName)
         {
@@ -289,6 +311,36 @@ namespace CarShop.Application.Services
             }
 
             return Result<bool>.Ok(true, $"Role '{roleName}' created successfully.");
+        }
+
+        public async Task<Result<bool>> RenameRoleAsync(string currentName, string newName)
+        {
+            if (string.IsNullOrWhiteSpace(newName))
+                return Result<bool>.Fail("New role name is required.");
+
+            newName = newName.Trim();
+
+            if (currentName.Equals("Admin", StringComparison.OrdinalIgnoreCase))
+                return Result<bool>.Fail("The Admin role cannot be renamed.");
+
+            var result = await _roleManager.RenameRoleAsync(currentName, newName);
+            if (!result.Succeeded)
+                return Result<bool>.Fail(result.Errors, "Failed to rename role.");
+
+            return Result<bool>.Ok(true, $"Role renamed to '{newName}' successfully.");
+        }
+
+        public async Task<Result<bool>> DeleteRoleAsync(string roleName)
+        {
+            if (roleName.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                roleName.Equals("User", StringComparison.OrdinalIgnoreCase))
+                return Result<bool>.Fail($"The '{roleName}' role cannot be deleted.");
+
+            var result = await _roleManager.DeleteRoleAsync(roleName);
+            if (!result.Succeeded)
+                return Result<bool>.Fail(result.Errors, "Failed to delete role.");
+
+            return Result<bool>.Ok(true, $"Role '{roleName}' deleted successfully.");
         }
     }
 }

@@ -14,5 +14,10 @@ namespace CarShop.Web.ViewModels.Account
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}$",
             ErrorMessage = "Password must be at least 6 characters and include uppercase, lowercase, digit, and special character.")]
         public string? NewPassword { get; set; }
+
+        [Required(ErrorMessage = "Please confirm your new password.")]
+        [DataType(DataType.Password)]
+        [Compare("NewPassword", ErrorMessage = "Passwords do not match.")]
+        public string? ConfirmPassword { get; set; }
     }
 }

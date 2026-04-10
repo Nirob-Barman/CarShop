@@ -1,0 +1,119 @@
+@using CarShop.Application.DTOs.Comment
+@model IEnumerable<CommentDto>
+@{
+    ViewData["Title"] = "All Reviews";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+    var reviews = Model.ToList();
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-0 pt-3 pb-2 d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="fw-bold mb-0">All Reviews</h6>
+            <small class="text-muted">@reviews.Count review@(reviews.Count == 1 ? "" : "s") total</small>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        @if (!reviews.Any())
+        {
+            <div class="text-center py-5 text-muted">
+                <div class="fs-1 mb-2">⭐</div>
+                <p class="mb-0">No reviews yet.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:60px;">Rating</th>
+                            <th>Car</th>
+                            <th>Reviewer</th>
+                            <th>Review</th>
+                            <th>Date</th>
+                            <th style="width:80px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in reviews)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="fw-bold text-warning">@r.Rating</span>
+                                    <span class="text-muted small">/5</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(r.CarImageUrl))
+                                    {
+                                        <img src="@r.CarImageUrl" alt="@r.CarTitle"
+                                             class="rounded me-2" style="width:40px;height:30px;object-fit:cover;" />
+                                    }
+                                    <a asp-controller="Car" asp-action="Details" asp-route-id="@r.CarId"
+                                       class="text-decoration-none text-dark fw-semibold" target="_blank">@r.CarTitle</a>
+                                </td>
+                                <td>
+                                    <span class="text-muted small">@r.UserName</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(r.Content))
+                                    {
+                                        <span class="text-muted" title="@r.Content">
+                                            @(r.Content.Length > 80 ? r.Content[..80] + "…" : r.Content)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic small">No text</span>
+                                    }
+                                </td>
+                                <td class="text-muted small text-nowrap">
+                                    @r.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")
+                                </td>
+                                <td>
+                                    <form asp-action="Delete" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="commentId" value="@r.Id" />
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmDelete(this, '@r.UserName?.Replace("'", "\\'")')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete(btn, reviewer) {
+            Swal.fire({
+                title: 'Delete Review?',
+                text: `Remove review by "${reviewer}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete'
+            }).then(result => { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+    </script>
+}

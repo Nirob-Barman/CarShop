@@ -1,0 +1,116 @@
+@using CarShop.Application.DTOs.Comment
+@model IEnumerable<CommentDto>
+@{
+    ViewData["Title"] = "My Reviews";
+    Layout = "~/Views/Shared/User/_UserLayout.cshtml";
+    var reviews = Model.ToList();
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <h5 class="fw-bold mb-0">My Reviews</h5>
+        <small class="text-muted">Reviews you've written for cars</small>
+    </div>
+    <div class="card-body p-4">
+
+        @if (!reviews.Any())
+        {
+            <div class="text-center py-5">
+                <div class="display-1 text-muted mb-3">⭐</div>
+                <h5 class="text-muted">You haven't written any reviews yet.</h5>
+                <a asp-controller="Car" asp-action="AllCars" class="btn btn-primary mt-3">Browse Cars</a>
+            </div>
+        }
+        else
+        {
+            @foreach (var review in reviews)
+            {
+                <div class="card border-0 bg-light rounded-3 mb-3">
+                    <div class="card-body d-flex gap-3 align-items-start">
+
+                        <!-- Car image -->
+                        @if (!string.IsNullOrEmpty(review.CarImageUrl))
+                        {
+                            <img src="@review.CarImageUrl" alt="@review.CarTitle"
+                                 class="rounded" style="width:90px;height:65px;object-fit:cover;flex-shrink:0;" />
+                        }
+                        else
+                        {
+                            <div class="rounded bg-secondary d-flex align-items-center justify-content-center"
+                                 style="width:90px;height:65px;flex-shrink:0;">
+                                <span class="text-white small">No Image</span>
+                            </div>
+                        }
+
+                        <!-- Review content -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                <div>
+                                    <a asp-controller="Car" asp-action="Details" asp-route-id="@review.CarId"
+                                       class="fw-bold text-decoration-none text-dark">@review.CarTitle</a>
+                                    <div class="mt-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <span style="color:@(i <= (review.Rating ?? 0) ? "#ffc107" : "#dee2e6"); font-size:1.1rem;">★</span>
+                                        }
+                                        <span class="text-muted small ms-1">@review.Rating / 5</span>
+                                    </div>
+                                </div>
+                                <small class="text-muted">@review.CreatedAt.ToLocalTime().ToString("MMM dd, yyyy")</small>
+                            </div>
+                            @if (!string.IsNullOrEmpty(review.Content))
+                            {
+                                <p class="mb-0 mt-2 text-muted">"@review.Content"</p>
+                            }
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="d-flex flex-column gap-1">
+                            <a asp-controller="Car" asp-action="Details" asp-route-id="@review.CarId"
+                               class="btn btn-sm btn-outline-primary">View Car</a>
+                            <form asp-controller="Review" asp-action="DeleteReview" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="commentId" value="@review.Id" />
+                                <input type="hidden" name="carId" value="@review.CarId" />
+                                <button type="button" class="btn btn-sm btn-outline-danger w-100"
+                                        onclick="confirmDelete(this, '@review.CarTitle')">Delete</button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            }
+
+            <div class="text-muted small text-end mt-2">@reviews.Count review@(reviews.Count == 1 ? "" : "s") total</div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'success', title:'Done', text:'@TempData["SuccessMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'error', title:'Oops', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    <script>
+        function confirmDelete(btn, carTitle) {
+            Swal.fire({
+                title: 'Delete Review?',
+                text: `Remove your review for "${carTitle}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete'
+            }).then(result => { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+    </script>
+}

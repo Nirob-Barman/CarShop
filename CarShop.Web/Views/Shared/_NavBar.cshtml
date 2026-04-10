@@ -1,56 +1,82 @@
-﻿<nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+<nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
     <div class="container-fluid">
-        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CarShop</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-        aria-expanded="false" aria-label="Toggle navigation">
+        <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">🚗 CarShop</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
             <ul class="navbar-nav flex-grow-1">
                 <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                 </li>
-                @if (User.Identity!.IsAuthenticated && !User.IsInRole("Admin"))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Order" asp-action="MyOrders">MyOrders</a>
-                    </li>
-                }
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Car" asp-action="AllCars">All Cars</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="PromoCode" asp-action="Deals">🏷️ Deals</a>
+                </li>
 
-                <!-- Car and Brand Links -->
                 @if (User.IsInRole("Admin"))
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Car" asp-action="Index">Cars</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Brand" asp-action="Index">Brands</a>
+                        <a class="nav-link text-dark fw-semibold" asp-controller="Admin" asp-action="Dashboard">
+                            <span class="badge bg-warning text-dark me-1" style="font-size:.65rem;vertical-align:middle;">Admin</span>Dashboard
+                        </a>
                     </li>
                 }
-                
             </ul>
+
             <ul class="navbar-nav">
                 @if (User.Identity!.IsAuthenticated)
                 {
+                    @if (!User.IsInRole("Admin"))
+                    {
+                        <!-- Notification Bell -->
+                        <li class="nav-item me-2">
+                            <a class="nav-link text-dark position-relative" asp-controller="Notification" asp-action="Index">
+                                🔔
+                                <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                      style="font-size:0.65rem; display:none;">0</span>
+                            </a>
+                        </li>
+                    }
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Profile">Profile</a>
+                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-                            <button type="submit" class="nav-link btn btn-link text-dark" style="text-decoration: none;">Logout</button>
+                        <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="nav-link btn btn-link text-dark" style="text-decoration:none;">Logout</button>
                         </form>
                     </li>
                 }
                 else
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
                     </li>
                 }
             </ul>
         </div>
     </div>
 </nav>
+
+@if (User.Identity!.IsAuthenticated && !User.IsInRole("Admin"))
+{
+    <script>
+        (async function pollNotifications() {
+            try {
+                const res = await fetch('/Notification/UnreadCount');
+                const data = await res.json();
+                const badge = document.getElementById('notif-badge');
+                if (badge) {
+                    if (data.count > 0) { badge.textContent = data.count; badge.style.display = ''; }
+                    else badge.style.display = 'none';
+                }
+            } catch {}
+            setTimeout(pollNotifications, 60000);
+        })();
+    </script>
+}

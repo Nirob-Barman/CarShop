@@ -7,6 +7,7 @@ namespace CarShop.Application.Interfaces.Identity
         Task<List<string>> GetAllRolesAsync(bool excludeAdmin = true);
         Task<bool> RoleExistsAsync(string roleName);
         Task<(bool Succeeded, List<string> Errors)> CreateRoleAsync(string roleName);
+        Task<(bool Succeeded, List<string> Errors)> RenameRoleAsync(string currentName, string newName);
         Task<(bool Succeeded, List<string> Errors)> DeleteRoleAsync(string roleName);
     }
 }

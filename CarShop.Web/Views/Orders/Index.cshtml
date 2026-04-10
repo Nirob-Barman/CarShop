@@ -1,0 +1,106 @@
+@using CarShop.Application.DTOs.Order
+@model IEnumerable<OrderDto>
+@{
+    ViewData["Title"] = "Manage Orders";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Manage Orders</h2>
+
+    @if (TempData["SuccessMessage"] != null) { <div class="alert alert-success">@TempData["SuccessMessage"]</div> }
+    @if (TempData["ErrorMessage"] != null)   { <div class="alert alert-danger">@TempData["ErrorMessage"]</div> }
+
+    <ul class="nav nav-tabs mb-3">
+        @foreach (var s in new[] { (null as string, "All"), ("Confirmed","Confirmed"), ("Cancelled","Cancelled") })
+        {
+            <li class="nav-item">
+                <a class="nav-link @(ViewBag.Status == s.Item1 ? "active" : "")"
+                   asp-action="Index" asp-route-status="@s.Item1">@s.Item2</a>
+            </li>
+        }
+    </ul>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th><th>User</th><th>Car</th><th>Date</th>
+                    <th>Qty</th><th>Promo</th><th>Price</th><th>Status</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="9" class="text-center text-muted py-4">No orders found.</td></tr>
+                }
+                @foreach (var o in Model)
+                {
+                    <tr>
+                        <td>@o.Id</td>
+                        <td>
+                            <div>@(o.UserFullName ?? "-")</div>
+                            <small class="text-muted">@o.UserEmail</small>
+                        </td>
+                        <td>@o.CarTitle</td>
+                        <td>@o.OrderedAt.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                        <td>@o.Quantity</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(o.PromoCode))
+                            {
+                                <span class="badge bg-info text-dark">@o.PromoCode (-$@o.DiscountAmount.ToString("N2"))</span>
+                            }
+                            else { <span class="text-muted">—</span> }
+                        </td>
+                        <td class="fw-bold">$@o.FinalPrice.ToString("N2")</td>
+                        <td>
+                            @{ var badge = o.Status == "Cancelled" ? "danger" : "success"; }
+                            <span class="badge bg-@badge">@o.Status</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a asp-action="Details" asp-route-id="@o.Id"
+                                   class="btn btn-sm btn-outline-secondary">View</a>
+                                @if (o.Status != "Cancelled")
+                                {
+                                    <form asp-action="Cancel" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="orderId" value="@o.Id" />
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                onclick="confirmCancel(this, @o.Id)">Cancel</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if ((int)ViewBag.TotalPages > 1)
+    {
+        <nav>
+            <ul class="pagination justify-content-center">
+                @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                {
+                    <li class="page-item @(i == (int)ViewBag.CurrentPage ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-status="@ViewBag.Status">@i</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function confirmCancel(btn, orderId) {
+            Swal.fire({
+                title: `Cancel Order #${orderId}?`, text: 'This will restore car stock and cannot be undone.', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, cancel it', cancelButtonText: 'Keep order'
+            }).then(result => { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+    </script>
+}

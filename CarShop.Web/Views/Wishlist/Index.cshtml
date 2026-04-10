@@ -1,0 +1,76 @@
+@using CarShop.Application.DTOs.Wishlist
+@model IEnumerable<WishlistItemDto>
+@{
+    ViewData["Title"] = "My Wishlist";
+    Layout = "~/Views/Shared/User/_UserLayout.cshtml";
+}
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-white border-0 pt-4 px-4 pb-0">
+        <h5 class="fw-bold mb-0">My Wishlist</h5>
+        <small class="text-muted">Cars you've saved for later</small>
+    </div>
+    <div class="card-body p-4">
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">❤️</div>
+            <h5 class="text-muted">Your wishlist is empty.</h5>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Browse Cars</a>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 shadow-sm border-0 rounded-3">
+                        @if (!string.IsNullOrEmpty(item.CarImageUrl))
+                        {
+                            <img src="@item.CarImageUrl" class="card-img-top rounded-top-3" style="height:180px;object-fit:cover;" alt="@item.CarTitle" />
+                        }
+                        else
+                        {
+                            <div class="bg-secondary d-flex align-items-center justify-content-center rounded-top-3" style="height:180px;">
+                                <span class="text-white fs-4">No Image</span>
+                            </div>
+                        }
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold mb-1">@item.CarTitle</h6>
+                            <p class="text-success fw-bold fs-5 mb-1">$@item.CarPrice.ToString("N2")</p>
+                            <small class="text-muted">Added @item.AddedAt.ToLocalTime().ToString("MMM dd, yyyy")</small>
+                        </div>
+                        <div class="card-footer bg-white border-0 d-flex gap-2 pb-3">
+                            <a asp-controller="Car" asp-action="Details" asp-route-id="@item.CarId"
+                               class="btn btn-primary btn-sm flex-grow-1">View Car</a>
+                            <form asp-controller="Wishlist" asp-action="Remove" method="post">
+                                <input type="hidden" name="carId" value="@item.CarId" />
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'success', title:'Done', text:'@TempData["SuccessMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon:'error', title:'Oops', text:'@TempData["ErrorMessage"]', position:'top-end', timer:4000, toast:true, timerProgressBar:true, showConfirmButton:false });
+        </script>
+    }
+}

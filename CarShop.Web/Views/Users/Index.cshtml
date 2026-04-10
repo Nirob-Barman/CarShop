@@ -1,0 +1,104 @@
+@model List<CarShop.Web.ViewModels.Admin.UserWithRoleViewModel>
+@{
+    ViewData["Title"] = "Manage Users";
+    Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
+}
+
+<div class="container mt-4">
+    <h2>Manage Users</h2>
+
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Email</th>
+                <th>Full Name</th>
+                <th>Address</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Change Role</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr class="@(user.IsBanned ? "table-danger" : "")">
+                    <td>@user.Email</td>
+                    <td>@user.FullName</td>
+                    <td>@user.Address</td>
+                    <td>@user.CurrentRole</td>
+                    <td>
+                        @if (user.IsBanned)
+                        {
+                            <span class="badge bg-danger">Banned</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-controller="Users" asp-action="AssignRole" method="post" class="d-flex align-items-center gap-2">
+                            <input type="hidden" name="userId" value="@user.UserId" />
+                            <select name="roleName" asp-items="@(new SelectList(user.AllRoles, user.CurrentRole))" class="form-select form-select-sm" style="width:auto;"></select>
+                            <button type="submit" class="btn btn-sm btn-primary">Update</button>
+                        </form>
+                    </td>
+                    <td>
+                        @if (!user.IsBanned)
+                        {
+                            <form asp-controller="Users" asp-action="Ban" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@user.UserId" />
+                                <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="confirmBan(this, '@user.Email')">🚫 Ban</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-controller="Users" asp-action="Unban" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@user.UserId" />
+                                <button type="button" class="btn btn-sm btn-success"
+                                        onclick="confirmUnban(this, '@user.Email')">✅ Unban</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmUnban(btn, email) {
+            Swal.fire({
+                title: 'Unban user?', text: "Unban " + email + "?", icon: 'question',
+                showCancelButton: true, confirmButtonColor: '#198754', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, unban', cancelButtonText: 'Cancel'
+            }).then(function (result) { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+
+        function confirmBan(btn, email) {
+            Swal.fire({
+                title: 'Ban user?', text: "Ban " + email + "?", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#dc3545', cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, ban', cancelButtonText: 'Cancel'
+            }).then(function (result) { if (result.isConfirmed) btn.closest('form').submit(); });
+        }
+    </script>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon: 'success', title: 'Success', text: '@TempData["SuccessMessage"]', position: 'top-end', timer: 5000, toast: true, timerProgressBar: true, showConfirmButton: false });
+        </script>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script>
+            Swal.fire({ icon: 'error', title: 'Error', text: '@TempData["ErrorMessage"]', position: 'top-end', timer: 5000, toast: true, timerProgressBar: true, showConfirmButton: false });
+        </script>
+    }
+}

@@ -8,5 +8,6 @@
         public string? Address { get; set; }
         public string? CurrentRole { get; set; }
         public List<string>? AllRoles { get; set; }
+        public bool IsBanned { get; set; }
     }
 }
