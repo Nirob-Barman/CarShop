@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using CarShop.Application.Interfaces;
 using CarShop.Web.Models;
+using CarShop.Web.ViewModels.Home;
 using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -145,6 +146,27 @@ namespace CarShop.Web.Controllers
         }
 
         // ── Misc ───────────────────────────────────────────────────
+
+        public async Task<IActionResult> About()
+        {
+            var carsResult    = await _carService.GetAllCarsAsync();
+            var brandsResult  = await _brandService.GetAllBrandsAsync();
+            var reviewsResult = await _commentService.GetAllReviewsAsync();
+            var happyCustomers = await _orderService.GetCompletedOrdersCountAsync();
+
+            var model = new AboutViewModel
+            {
+                CarsCount      = carsResult.Success    ? carsResult.Data?.Count()    ?? 0 : 0,
+                BrandsCount    = brandsResult.Success  ? brandsResult.Data?.Count()  ?? 0 : 0,
+                ReviewsCount   = reviewsResult.Success ? reviewsResult.Data?.Count() ?? 0 : 0,
+                HappyCustomers = happyCustomers
+            };
+
+            ViewData["Title"]           = "About Us";
+            ViewData["MetaDescription"] = "Learn about CarShop — our mission, values, and the team behind the platform.";
+            return View(model);
+        }
+
         public IActionResult Privacy() => View();
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

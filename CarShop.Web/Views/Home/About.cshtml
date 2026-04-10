@@ -1,0 +1,222 @@
+@model CarShop.Web.ViewModels.Home.AboutViewModel
+@{
+    ViewData["Title"] = "About Us";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/about.css" asp-append-version="true" />
+}
+
+<!-- ── Hero ── -->
+<section class="about-hero text-white py-5">
+    <div class="container text-center">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb justify-content-center mb-0">
+                <li class="breadcrumb-item">
+                    <a asp-controller="Home" asp-action="Index" class="text-warning text-decoration-none">Home</a>
+                </li>
+                <li class="breadcrumb-item active text-white-50" aria-current="page">About Us</li>
+            </ol>
+        </nav>
+        <h1 class="display-4 fw-bold mt-3 mb-3">Our Story</h1>
+        <p class="lead mb-0 mx-auto" style="max-width:580px;color:rgba(255,255,255,.8);">
+            Built by car enthusiasts, for car buyers. We're on a mission to make finding and owning your dream car effortless.
+        </p>
+    </div>
+</section>
+
+<!-- ── Live Stats ── -->
+<section class="about-stats py-2">
+    <div class="container">
+        <div class="row g-0 text-center">
+            <div class="col-6 col-md-3 stat-item border-end border-secondary">
+                <div class="stat-number" data-target="@Model.CarsCount">0</div>
+                <div class="stat-label">Cars Listed</div>
+            </div>
+            <div class="col-6 col-md-3 stat-item border-end border-secondary">
+                <div class="stat-number" data-target="@Model.BrandsCount">0</div>
+                <div class="stat-label">Brands</div>
+            </div>
+            <div class="col-6 col-md-3 stat-item border-end border-secondary">
+                <div class="stat-number" data-target="@Model.HappyCustomers">0</div>
+                <div class="stat-label">Happy Customers</div>
+            </div>
+            <div class="col-6 col-md-3 stat-item">
+                <div class="stat-number" data-target="@Model.ReviewsCount">0</div>
+                <div class="stat-label">Verified Reviews</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Mission / Story ── -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="mission-badge">Our Mission</span>
+                <h2 class="fw-bold mb-3">Driven by passion.<br>Powered by technology.</h2>
+                <p class="text-muted mb-3">
+                    CarShop was founded with a single belief: buying a car should be exciting, not stressful.
+                    We built a platform that puts the buyer first — transparent pricing, verified reviews, and
+                    a checkout process that takes minutes, not days.
+                </p>
+                <p class="text-muted mb-4">
+                    From browsing to booking a test drive, from applying a promo code to completing a secure
+                    multi-gateway payment, every feature we build is designed to reduce friction and build trust.
+                </p>
+                <div class="d-flex gap-4 flex-wrap">
+                    <div>
+                        <div class="fw-bold fs-5 text-warning">2024</div>
+                        <small class="text-muted">Founded</small>
+                    </div>
+                    <div class="border-start ps-4">
+                        <div class="fw-bold fs-5 text-warning">4</div>
+                        <small class="text-muted">Payment Gateways</small>
+                    </div>
+                    <div class="border-start ps-4">
+                        <div class="fw-bold fs-5 text-warning">100%</div>
+                        <small class="text-muted">Secure Checkout</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="mission-visual">
+                    <div class="fs-1 mb-3">🚗</div>
+                    <blockquote class="blockquote mb-0">
+                        <p class="fs-5 fst-italic mb-3">
+                            "We believe everyone deserves access to their dream car — with zero compromise on transparency or trust."
+                        </p>
+                        <footer class="blockquote-footer text-warning mb-0">CarShop Team</footer>
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-2">How It Works</h2>
+        <p class="text-center text-muted mb-5">From browse to ownership in three simple steps.</p>
+        <div class="row g-4 text-center">
+            <div class="col-md-4 process-step">
+                <div class="step-number">1</div>
+                <div class="step-connector d-none d-md-block"></div>
+                <h5 class="fw-semibold">Browse &amp; Filter</h5>
+                <p class="text-muted small">
+                    Search by brand, price range, or keyword. Save favourites to your wishlist.
+                    Set a stock alert for sold-out cars so you never miss your match.
+                </p>
+            </div>
+            <div class="col-md-4 process-step">
+                <div class="step-number">2</div>
+                <div class="step-connector d-none d-md-block"></div>
+                <h5 class="fw-semibold">Book a Test Drive</h5>
+                <p class="text-muted small">
+                    Pick a date, add notes, and confirm your slot directly from the car page.
+                    Track your booking status from your personal dashboard.
+                </p>
+            </div>
+            <div class="col-md-4 process-step">
+                <div class="step-number">3</div>
+                <h5 class="fw-semibold">Checkout Securely</h5>
+                <p class="text-muted small">
+                    Choose from Stripe, SSLCommerz, BKash, or SurjoPay. Apply a promo code
+                    and complete your purchase in minutes with full confirmation by email.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Core Values ── -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-2">Our Values</h2>
+        <p class="text-center text-muted mb-5">The principles that guide every decision we make.</p>
+        <div class="row g-4 justify-content-center">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 py-4 px-3 text-center value-card">
+                    <div class="value-icon">🔍</div>
+                    <h5 class="fw-semibold">Transparency</h5>
+                    <p class="text-muted small mb-0">No hidden fees, no fake reviews, no inflated prices. What you see is exactly what you get.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 py-4 px-3 text-center value-card">
+                    <div class="value-icon">🛡️</div>
+                    <h5 class="fw-semibold">Security</h5>
+                    <p class="text-muted small mb-0">Every payment is encrypted. Every credential is stored with industry-grade data protection.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 py-4 px-3 text-center value-card">
+                    <div class="value-icon">💡</div>
+                    <h5 class="fw-semibold">Innovation</h5>
+                    <p class="text-muted small mb-0">Real-time notifications, multi-gateway checkout, and stock alerts — tools buyers actually need.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 py-4 px-3 text-center value-card">
+                    <div class="value-icon">🤝</div>
+                    <h5 class="fw-semibold">Customer First</h5>
+                    <p class="text-muted small mb-0">From promo codes to test drive bookings, every feature exists to serve the buyer, not the business.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Team ── -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center fw-bold mb-2">Meet the Team</h2>
+        <p class="text-center text-muted mb-5">A small, focused team with a big vision.</p>
+        <div class="row g-4 justify-content-center">
+            <div class="col-sm-6 col-lg-4">
+                <div class="card border-0 shadow-sm text-center py-4 px-3 team-card h-100">
+                    <div class="team-avatar">AR</div>
+                    <h5 class="fw-semibold mb-1">Alex Rahman</h5>
+                    <p class="text-warning fw-semibold small mb-2">CEO &amp; Founder</p>
+                    <p class="text-muted small mb-0">10+ years in automotive retail. Believes technology can make car buying human again.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card border-0 shadow-sm text-center py-4 px-3 team-card h-100">
+                    <div class="team-avatar">SC</div>
+                    <h5 class="fw-semibold mb-1">Sarah Chen</h5>
+                    <p class="text-warning fw-semibold small mb-2">Head of Operations</p>
+                    <p class="text-muted small mb-0">Ensures every order, booking, and customer interaction runs without a hitch.</p>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <div class="card border-0 shadow-sm text-center py-4 px-3 team-card h-100">
+                    <div class="team-avatar">ML</div>
+                    <h5 class="fw-semibold mb-1">Marcus Lee</h5>
+                    <p class="text-warning fw-semibold small mb-2">Lead Engineer</p>
+                    <p class="text-muted small mb-0">Architects the platform from database to browser — clean code, zero compromise.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="about-cta py-5 text-center text-white">
+    <div class="container">
+        <h2 class="fw-bold mb-3">Ready to find your dream car?</h2>
+        <p class="mb-4 mx-auto" style="max-width:520px;color:rgba(255,255,255,.8);">
+            Browse our full inventory, book a test drive, or check out today's deals — no account required to explore.
+        </p>
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <a asp-controller="Car" asp-action="AllCars" class="btn btn-warning btn-lg fw-semibold px-4">Browse Cars</a>
+            <a asp-controller="PromoCode" asp-action="Deals" class="btn btn-outline-light btn-lg px-4">View Deals</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/pages/about.js" asp-append-version="true"></script>
+}
