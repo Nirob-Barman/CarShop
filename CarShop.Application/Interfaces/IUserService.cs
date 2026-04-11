@@ -38,5 +38,6 @@ namespace CarShop.Application.Interfaces
         Task<Result<bool>> DeleteRoleAsync(string roleName);
         Task<Result<bool>> BanUserAsync(string userId);
         Task<Result<bool>> UnbanUserAsync(string userId);
+        Task<Result<string>> ExternalRegisterAndSignInAsync(string email, string fullName, string provider, string providerKey);
     }
 }

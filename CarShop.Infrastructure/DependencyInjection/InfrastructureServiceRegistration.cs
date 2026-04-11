@@ -78,6 +78,14 @@ namespace CarShop.Infrastructure.DependencyInjection
             }).AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    options.ClientId     = config["Authentication:Google:ClientId"]!;
+                    options.ClientSecret = config["Authentication:Google:ClientSecret"]!;
+                    options.CallbackPath = "/google/callback";
+                });
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/Account/Login";

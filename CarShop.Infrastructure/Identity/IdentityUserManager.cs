@@ -200,6 +200,47 @@ namespace CarShop.Infrastructure.Identity
             return await _userManager.IsInRoleAsync(identityUser, role);
         }
 
+        public async Task<(bool Succeeded, string? UserId, List<string> Errors)> CreateWithoutPasswordAsync(AppUser user)
+        {
+            var identityUser = new ApplicationUser
+            {
+                Email = user.Email,
+                UserName = user.Email,
+                FullName = user.FullName,
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(identityUser);
+            if (result.Succeeded)
+                return (true, identityUser.Id, new List<string>());
+
+            return (false, null, result.Errors.Select(e => e.Description).ToList());
+        }
+
+        public async Task<(bool Succeeded, List<string> Errors)> AddLoginAsync(string userId, string provider, string providerKey)
+        {
+            var identityUser = await _userManager.FindByIdAsync(userId);
+            if (identityUser == null)
+                return (false, new List<string> { "User not found." });
+
+            var loginInfo = new UserLoginInfo(provider, providerKey, provider);
+            var result = await _userManager.AddLoginAsync(identityUser, loginInfo);
+            return (result.Succeeded, result.Errors.Select(e => e.Description).ToList());
+        }
+
+        public async Task<AppUser?> FindByLoginAsync(string provider, string providerKey)
+        {
+            var identityUser = await _userManager.FindByLoginAsync(provider, providerKey);
+            if (identityUser == null) return null;
+
+            return new AppUser
+            {
+                Id = identityUser.Id,
+                Email = identityUser.Email!,
+                FullName = identityUser.FullName
+            };
+        }
+
         //public async Task<List<UserWithRoleDto>> GetAllUsersNonAdminAsync()
         //{
         //    var users = await _userManager.Users.ToListAsync();

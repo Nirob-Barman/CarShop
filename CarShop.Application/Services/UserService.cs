@@ -293,6 +293,28 @@ namespace CarShop.Application.Services
             return Result<bool>.Ok(true, "User has been unbanned.");
         }
 
+        public async Task<Result<string>> ExternalRegisterAndSignInAsync(string email, string fullName, string provider, string providerKey)
+        {
+            var user = new AppUser
+            {
+                Email = email,
+                FullName = string.IsNullOrWhiteSpace(fullName) ? email : fullName
+            };
+
+            var (succeeded, userId, errors) = await _userManager.CreateWithoutPasswordAsync(user);
+            if (!succeeded)
+                return Result<string>.Fail(errors, "Failed to create account.");
+
+            await _userManager.AddToRoleAsync(new AppUser { Id = userId }, "User");
+            await _userManager.AddLoginAsync(userId!, provider, providerKey);
+            await _signInManager.SignInAsync(new AppUser { Id = userId }, isPersistent: false);
+
+            var welcomeMessage = $"Hello {user.FullName},<br>Welcome to CarShop! Your account was created via Google sign-in.";
+            await _emailService.SendEmailAsync(email, "Welcome to CarShop", welcomeMessage);
+
+            return Result<string>.Ok(userId, "Account created successfully.");
+        }
+
         public async Task<Result<bool>> CreateRoleAsync(string roleName)
         {
             if (string.IsNullOrWhiteSpace(roleName))

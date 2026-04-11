@@ -23,6 +23,9 @@ namespace CarShop.Application.Interfaces.Identity
         Task<IEnumerable<AppUser>> GetAllUsersAsync();
         Task<bool> IsUserInRoleAsync(AppUser user, string role);
         Task<(bool Succeeded, List<string> Errors)> SetLockoutAsync(string userId, bool ban);
+        Task<(bool Succeeded, string? UserId, List<string> Errors)> CreateWithoutPasswordAsync(AppUser user);
+        Task<(bool Succeeded, List<string> Errors)> AddLoginAsync(string userId, string provider, string providerKey);
+        Task<AppUser?> FindByLoginAsync(string provider, string providerKey);
         //Task<List<UserWithRoleDto>> GetAllUsersNonAdminAsync();
     }
 }

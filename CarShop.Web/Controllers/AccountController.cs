@@ -1,9 +1,12 @@
 ﻿using CarShop.Application.Interfaces;
+using CarShop.Infrastructure.Identity;
 using CarShop.Web.ViewModels.Account;
 using CarShop.Web.ViewModels.Mappers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Security.Claims;
 
 namespace CarShop.Web.Controllers
 {
@@ -11,10 +14,19 @@ namespace CarShop.Web.Controllers
     {
         private readonly IUserService _userService;
         private readonly IUserContextService _userContextService;
-        public AccountController(IUserService userService, IUserContextService userContextService)
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public AccountController(
+            IUserService userService,
+            IUserContextService userContextService,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager)
         {
             _userService = userService;
             _userContextService = userContextService;
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         public IActionResult Register()
@@ -249,6 +261,61 @@ namespace CarShop.Web.Controllers
 
             TempData["SuccessMessage"] = result.Message;
             return RedirectToAction("Login");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { returnUrl });
+            var properties  = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl!);
+            return Challenge(properties, provider);
+        }
+
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null)
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["ErrorMessage"] = "Google sign-in failed. Please try again.";
+                return RedirectToAction("Login");
+            }
+
+            // 1. Existing linked account → sign in directly
+            var signInResult = await _signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+            if (signInResult.Succeeded)
+                return RedirectToLocal(returnUrl);
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["ErrorMessage"] = "Could not retrieve email from Google.";
+                return RedirectToAction("Login");
+            }
+
+            // 2. Account with same email exists → link Google and sign in
+            var existingUser = await _userManager.FindByEmailAsync(email);
+            if (existingUser != null)
+            {
+                await _userManager.AddLoginAsync(existingUser,
+                    new UserLoginInfo(info.LoginProvider, info.ProviderKey, info.ProviderDisplayName));
+                await _signInManager.SignInAsync(existingUser, isPersistent: false);
+                return RedirectToLocal(returnUrl);
+            }
+
+            // 3. No account at all → auto-register
+            var fullName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
+            var result   = await _userService.ExternalRegisterAndSignInAsync(email, fullName, info.LoginProvider, info.ProviderKey);
+
+            if (!result.Success)
+            {
+                TempData["ErrorMessage"] = result.Message ?? "Could not sign in with Google.";
+                return RedirectToAction("Login");
+            }
+
+            return RedirectToLocal(returnUrl);
         }
 
         [HttpGet]
