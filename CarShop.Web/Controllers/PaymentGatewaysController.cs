@@ -1,4 +1,5 @@
 using CarShop.Application.Interfaces;
+using CarShop.Application.Payment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,20 +24,29 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public IActionResult Add()
         {
-            ViewBag.Slugs = CarShop.Application.Payment.GatewayConfigSchema.KnownSlugs;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(
-            string name, string slug, string type, string? logoUrl,
+            string name, string slug, string? gatewayFamily, string type, string? logoUrl,
             bool isActive, bool isSandbox, string supportedCurrencies, int sortOrder,
             [FromForm] Dictionary<string, string> configFields)
         {
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                TempData["ErrorMessage"] = "Please select a gateway service type.";
+                return RedirectToAction("Add");
+            }
+
             var dto = new CarShop.Application.DTOs.Payment.PaymentGatewayDto
             {
-                Name = name, Slug = slug, Type = type, LogoUrl = logoUrl,
+                Name = name,
+                Slug = slug,
+                GatewayFamily = string.IsNullOrWhiteSpace(gatewayFamily) ? GatewayConfigSchema.GetFamilyKey(slug) : gatewayFamily,
+                Type = type,
+                LogoUrl = logoUrl,
                 IsActive = isActive, IsSandbox = isSandbox,
                 SupportedCurrencies = supportedCurrencies, SortOrder = sortOrder
             };
@@ -57,20 +67,24 @@ namespace CarShop.Web.Controllers
             if (!result.Success) return RedirectToAction("Index");
             var config = await _paymentGatewayService.GetDecryptedConfigAsync(id);
             ViewBag.Config = config;
-            ViewBag.Schema = CarShop.Application.Payment.GatewayConfigSchema.GetFields(result.Data!.Slug);
+            ViewBag.Schema = GatewayConfigSchema.Get(result.Data!.Slug);
+            ViewBag.Family = GatewayConfigSchema.GetFamily(result.Data!.Slug);
             return View(result.Data);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-            int id, string name, string type, string? logoUrl,
+            int id, string name, string? gatewayFamily, string type, string? logoUrl,
             bool isActive, bool isSandbox, string supportedCurrencies, int sortOrder,
             [FromForm] Dictionary<string, string> configFields)
         {
             var dto = new CarShop.Application.DTOs.Payment.PaymentGatewayDto
             {
-                Name = name, Type = type, LogoUrl = logoUrl,
+                Name = name,
+                GatewayFamily = gatewayFamily ?? string.Empty,
+                Type = type,
+                LogoUrl = logoUrl,
                 IsActive = isActive, IsSandbox = isSandbox,
                 SupportedCurrencies = supportedCurrencies, SortOrder = sortOrder
             };

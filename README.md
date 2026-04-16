@@ -7,6 +7,8 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
 ## 📋 Features
 
 ### For Users
+- **Google Sign-In** — one-click login or registration via Google OAuth; auto-links to existing accounts
+- **About Page** — company story, live stats, how it works, core values, team, and CTA at `/Home/About`
 - **Browse & Search** — keyword, brand, price range, and sort filters on `/Car/AllCars`
 - **Car Details** — image, specs, stock status, social share (WhatsApp, Facebook, Copy Link)
 - **Star Ratings & Reviews** — 1–5 star rating with written review; one per user per car
@@ -57,7 +59,7 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
 | Framework | ASP.NET Core 8 MVC |
 | ORM | Entity Framework Core 8 |
 | Database | SQL Server (SQLEXPRESS) |
-| Auth | ASP.NET Identity |
+| Auth | ASP.NET Identity + Google OAuth |
 | Cache | Redis (Upstash) via StackExchange.Redis |
 | Email | Gmail SMTP (`smtp.gmail.com:587`) |
 | Payments | Stripe SDK + SSLCommerz / BKash / SurjoPay via HttpClient |
@@ -143,6 +145,19 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
   "SecretKey": "sk_test_..."
 }
 ```
+
+### Google OAuth
+
+```json
+"Authentication": {
+  "Google": {
+    "ClientId": "your-client-id",
+    "ClientSecret": "your-client-secret"
+  }
+}
+```
+
+> Create credentials at [console.cloud.google.com](https://console.cloud.google.com). Add `https://localhost:5001/google/callback` as an Authorized redirect URI.
 
 > SSLCommerz, BKash, and SurjoPay credentials are stored **encrypted in the database** — managed via Admin → Payment Gateways UI, not appsettings.
 

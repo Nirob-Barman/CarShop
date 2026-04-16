@@ -309,6 +309,10 @@ namespace CarShop.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("GatewayFamily")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -595,15 +599,15 @@ namespace CarShop.Infrastructure.Migrations
                         {
                             Id = "9E22B5A0-3D5C-4F5D-B123-987654321DEF",
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "100e230e-1feb-46b0-9205-ad4bfbd5e2d3",
+                            ConcurrencyStamp = "5d68f71b-7c86-440c-bb1e-66fa0fbbc7aa",
                             Email = "admin@gmail.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN@GMAIL.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAEGfimMszQg91yekNxGXN45LCRe1wMJhqfzGHAjjVHItc9s9FmWnWSeD9n5NZoQJdtA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEA5oW8zVMKlKDf+42AW7XUr18ihWfJCe6S07ZOUSuNfRU1MLg1JlD6bT0zi8walmyQ==",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "f1db1606-ee19-42db-8114-fa5ad7cb4860",
+                            SecurityStamp = "93633c97-1212-4cc6-9b80-811ead545348",
                             TwoFactorEnabled = false,
                             UserName = "admin@gmail.com"
                         });

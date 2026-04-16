@@ -24,14 +24,14 @@
             <table class="table table-hover mb-0 align-middle">
                 <thead class="table-light">
                     <tr>
-                        <th>Name</th><th>Slug</th><th>Type</th><th>Currencies</th>
+                        <th>Name</th><th>Family</th><th>Slug</th><th>Type</th><th>Currencies</th>
                         <th>Sort</th><th>Status</th><th>Mode</th><th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="8" class="text-center text-muted py-4">No payment gateways configured.</td></tr>
+                        <tr><td colspan="9" class="text-center text-muted py-4">No payment gateways configured.</td></tr>
                     }
                     @foreach (var gw in Model.OrderBy(g => g.SortOrder))
                     {
@@ -43,6 +43,7 @@
                                 }
                                 <strong>@gw.Name</strong>
                             </td>
+                            <td><span class="badge bg-info text-dark">@gw.GatewayFamily</span></td>
                             <td><code>@gw.Slug</code></td>
                             <td><span class="badge bg-secondary">@gw.Type</span></td>
                             <td>@gw.SupportedCurrencies</td>

@@ -1,6 +1,7 @@
 using CarShop.Application.DTOs.Payment;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Persistence;
+using CarShop.Application.Payment;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
 using System.Text.Json;
@@ -51,17 +52,20 @@ namespace CarShop.Application.Services
 
             var gateway = new PaymentGateway
             {
-                Name               = dto.Name,
-                Slug               = dto.Slug.ToLower(),
-                Type               = dto.Type,
-                LogoUrl            = dto.LogoUrl,
-                IsActive           = dto.IsActive,
-                IsSandbox          = dto.IsSandbox,
+                Name                = dto.Name,
+                GatewayFamily       = string.IsNullOrWhiteSpace(dto.GatewayFamily)
+                    ? GatewayConfigSchema.GetFamilyKey(dto.Slug)
+                    : dto.GatewayFamily.ToLowerInvariant(),
+                Slug                = dto.Slug.ToLower(),
+                Type                = dto.Type,
+                LogoUrl             = dto.LogoUrl,
+                IsActive            = dto.IsActive,
+                IsSandbox           = dto.IsSandbox,
                 SupportedCurrencies = dto.SupportedCurrencies,
-                SortOrder          = dto.SortOrder,
-                Config             = config.Count > 0 ? _encryptor.Encrypt(JsonSerializer.Serialize(config)) : null,
-                CreatedAt          = DateTime.UtcNow,
-                UpdatedAt          = DateTime.UtcNow
+                SortOrder           = dto.SortOrder,
+                Config              = config.Count > 0 ? _encryptor.Encrypt(JsonSerializer.Serialize(config)) : null,
+                CreatedAt           = DateTime.UtcNow,
+                UpdatedAt           = DateTime.UtcNow
             };
 
             await _unitOfWork.Repository<PaymentGateway>().AddAsync(gateway);
@@ -75,7 +79,7 @@ namespace CarShop.Application.Services
                 userAgent: _userContextService.UserAgent,
                 newValues: JsonSerializer.Serialize(new
                 {
-                    gateway.Name, gateway.Slug, gateway.Type, gateway.IsActive,
+                    gateway.Name, gateway.GatewayFamily, gateway.Slug, gateway.Type, gateway.IsActive,
                     gateway.IsSandbox, gateway.SupportedCurrencies, gateway.SortOrder
                 }));
 
@@ -89,18 +93,21 @@ namespace CarShop.Application.Services
 
             var oldValues = JsonSerializer.Serialize(new
             {
-                gateway.Name, gateway.Type, gateway.IsActive,
+                gateway.Name, gateway.GatewayFamily, gateway.Type, gateway.IsActive,
                 gateway.IsSandbox, gateway.SupportedCurrencies, gateway.SortOrder
             });
 
-            gateway.Name               = dto.Name;
-            gateway.Type               = dto.Type;
-            gateway.LogoUrl            = dto.LogoUrl;
-            gateway.IsActive           = dto.IsActive;
-            gateway.IsSandbox          = dto.IsSandbox;
+            gateway.Name                = dto.Name;
+            gateway.GatewayFamily       = string.IsNullOrWhiteSpace(dto.GatewayFamily)
+                ? GatewayConfigSchema.GetFamilyKey(gateway.Slug)
+                : dto.GatewayFamily.ToLowerInvariant();
+            gateway.Type                = dto.Type;
+            gateway.LogoUrl             = dto.LogoUrl;
+            gateway.IsActive            = dto.IsActive;
+            gateway.IsSandbox           = dto.IsSandbox;
             gateway.SupportedCurrencies = dto.SupportedCurrencies;
-            gateway.SortOrder          = dto.SortOrder;
-            gateway.UpdatedAt          = DateTime.UtcNow;
+            gateway.SortOrder           = dto.SortOrder;
+            gateway.UpdatedAt           = DateTime.UtcNow;
 
             if (newConfig != null && newConfig.Any(kv => !string.IsNullOrWhiteSpace(kv.Value)))
             {
@@ -134,7 +141,7 @@ namespace CarShop.Application.Services
                 oldValues: oldValues,
                 newValues: JsonSerializer.Serialize(new
                 {
-                    gateway.Name, gateway.Type, gateway.IsActive,
+                    gateway.Name, gateway.GatewayFamily, gateway.Type, gateway.IsActive,
                     gateway.IsSandbox, gateway.SupportedCurrencies, gateway.SortOrder
                 }));
 
@@ -171,7 +178,7 @@ namespace CarShop.Application.Services
 
             var oldValues = JsonSerializer.Serialize(new
             {
-                gateway.Name, gateway.Slug, gateway.Type, gateway.IsActive,
+                gateway.Name, gateway.GatewayFamily, gateway.Slug, gateway.Type, gateway.IsActive,
                 gateway.IsSandbox, gateway.SupportedCurrencies, gateway.SortOrder
             });
 
@@ -214,6 +221,9 @@ namespace CarShop.Application.Services
         {
             Id                  = g.Id,
             Name                = g.Name,
+            GatewayFamily       = string.IsNullOrWhiteSpace(g.GatewayFamily)
+                ? GatewayConfigSchema.GetFamilyKey(g.Slug)
+                : g.GatewayFamily,
             Slug                = g.Slug,
             Type                = g.Type,
             LogoUrl             = g.LogoUrl,

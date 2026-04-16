@@ -1,4 +1,5 @@
 using CarShop.Application.Interfaces;
+using CarShop.Application.Payment;
 
 namespace CarShop.Infrastructure.Payments
 {
@@ -14,9 +15,12 @@ namespace CarShop.Infrastructure.Payments
         public IPaymentProcessor GetProcessor(string slug)
         {
             if (_processors.TryGetValue(slug, out var processor)) return processor;
+            var familyKey = GatewayConfigSchema.GetFamilyKey(slug);
+            if (_processors.TryGetValue(familyKey, out processor)) return processor;
             throw new InvalidOperationException($"No payment processor registered for gateway slug '{slug}'.");
         }
 
-        public bool HasProcessor(string slug) => _processors.ContainsKey(slug);
+        public bool HasProcessor(string slug) =>
+            _processors.ContainsKey(slug) || _processors.ContainsKey(GatewayConfigSchema.GetFamilyKey(slug));
     }
 }

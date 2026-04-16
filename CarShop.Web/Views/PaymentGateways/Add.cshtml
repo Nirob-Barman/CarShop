@@ -1,39 +1,48 @@
+@using CarShop.Application.Payment
 @{
     Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
     ViewData["Title"] = "Add Payment Gateway";
-    var slugs = ViewBag.Slugs as string[] ?? Array.Empty<string>();
-
-    var schemaJson = System.Text.Json.JsonSerializer.Serialize(
-        CarShop.Application.Payment.GatewayConfigSchema.Fields.ToDictionary(
-            kv => kv.Key,
-            kv => kv.Value.Select(f => new { f.Key, f.Label, f.IsSecret, f.Placeholder }).ToList()
-        )
-    );
 }
 
 <div class="container mt-4" style="max-width:700px;">
     <h2 class="fw-bold mb-4">Add Payment Gateway</h2>
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
     <form method="post" asp-action="Add">
         @Html.AntiForgeryToken()
+
+        <input type="hidden" name="slug" id="slugHidden" />
+        <input type="hidden" name="gatewayFamily" id="gatewayFamilyHidden" />
 
         <div class="card shadow-sm p-4 mb-4">
             <h5 class="mb-3 text-muted fw-semibold">General Settings</h5>
 
             <div class="mb-3">
-                <label class="form-label">Gateway Type <span class="text-danger">*</span></label>
-                <select name="slug" id="slugSelect" class="form-select" required onchange="onSlugChange(this.value)">
-                    <option value="">-- Select --</option>
-                    @foreach (var s in slugs)
+                <label class="form-label">Gateway Family <span class="text-danger">*</span></label>
+                <select id="familySelect" class="form-select" required>
+                    <option value="">-- Select a gateway --</option>
+                    @foreach (var family in GatewayConfigSchema.Families)
                     {
-                        <option value="@s">@System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(s)</option>
+                        <option value="@family.Key">@family.DisplayName</option>
                     }
                 </select>
             </div>
 
+            <div class="mb-3 d-none" id="variantRow">
+                <label class="form-label">Service Type <span class="text-danger">*</span></label>
+                <select id="variantSelect" class="form-select">
+                    <option value="">-- Select a service type --</option>
+                </select>
+                <div class="form-text text-muted">Choose the integration method offered by this gateway.</div>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label">Display Name <span class="text-danger">*</span></label>
-                <input type="text" name="name" class="form-control" placeholder="e.g. Stripe (USD)" required />
+                <input type="text" name="name" id="nameInput" class="form-control" placeholder="e.g. Stripe Checkout (USD)" required />
             </div>
 
             <div class="row g-3 mb-3">
@@ -73,15 +82,55 @@
             </div>
         </div>
 
-        <div id="configSection" class="card shadow-sm p-4 mb-4" style="display:none;">
-            <h5 class="mb-3 text-muted fw-semibold">Gateway Credentials</h5>
-            <div id="configFields"></div>
-        </div>
+        @foreach (var gateway in GatewayConfigSchema.All)
+        {
+            <div class="gateway-fields card shadow-sm p-4 mb-4 d-none" data-slug="@gateway.Slug">
+                @if (gateway.Fields.Any())
+                {
+                    <h5 class="mb-1 text-muted fw-semibold">Gateway Credentials</h5>
+                    <p class="text-muted small mb-3">@gateway.DisplayName credentials will be encrypted before storage.</p>
+
+                    @foreach (var field in gateway.Fields)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label">
+                                @field.Label
+                                @if (field.IsRequired)
+                                {
+                                    <span class="text-danger">*</span>
+                                }
+                                @if (field.IsSecret)
+                                {
+                                    <span class="badge bg-warning text-dark ms-1" style="font-size:.65rem;">Secret</span>
+                                }
+                            </label>
+                            <input type="@(field.IsSecret ? "password" : "text")"
+                                   name="configFields[@field.Key]"
+                                   class="form-control"
+                                   placeholder="@(field.Placeholder ?? string.Empty)"
+                                   autocomplete="new-password"
+                                   disabled />
+                        </div>
+                    }
+                }
+            </div>
+        }
 
         <button type="submit" class="btn btn-primary px-4">Save Gateway</button>
         <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
     </form>
 </div>
 
-<script>window._gatewaySchema = @Html.Raw(schemaJson);</script>
-<script src="~/js/pages/payment-gateways-add.js" asp-append-version="true"></script>
+@section Scripts {
+    <script>
+        window._gatewayFamilies = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            GatewayConfigSchema.Families.Select(f => new
+            {
+                f.Key,
+                f.DisplayName,
+                HasVariants = f.HasVariants,
+                Variants = f.Variants.Select(v => new { v.Slug, v.DisplayName, v.VariantLabel })
+            })));
+    </script>
+    <script src="~/js/pages/payment-gateways-add.js" asp-append-version="true"></script>
+}
