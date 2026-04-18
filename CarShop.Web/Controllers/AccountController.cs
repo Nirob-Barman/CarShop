@@ -89,9 +89,11 @@ namespace CarShop.Web.Controllers
                 if (result.FieldErrors != null)
                 {
                     foreach (var kvp in result.FieldErrors)
-                    {
                         ModelState.AddModelError(kvp.Key, kvp.Value);
-                    }
+                }
+                else if (result.Errors != null && result.Errors.Any())
+                {
+                    TempData["ErrorMessage"] = result.Errors.First();
                 }
 
                 ViewData["ReturnUrl"] = returnUrl;
