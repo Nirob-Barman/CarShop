@@ -27,13 +27,13 @@
 
 @foreach (var car in Model)
 {
-    <div class="card mb-2">
+    <div class="card mb-2" style="cursor:pointer;">
         <img src="@car.ImageUrl" alt="Car Image" class="card-img-top">
         <div class="card-body">
             <h5>@car.Title</h5>
             <p>Brand: @car.BrandName</p>
             <p>Price: $@car.Price</p>
-            <a href="/Car/Details/@car.Id" class="btn btn-primary">View Details</a>
+            <a href="/Car/Details/@car.Id" class="stretched-link" aria-label="View @car.Title"></a>
         </div>
     </div>
 }
