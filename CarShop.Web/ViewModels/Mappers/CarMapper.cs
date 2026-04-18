@@ -17,6 +17,7 @@ namespace CarShop.Web.ViewModels.Mappers
                 Price = dto.Price,
                 Quantity = dto.Quantity,
                 BrandId = dto.BrandId,
+                BrandName = dto.BrandName,
                 ImageUrl = dto.ImageUrl
             };
         }

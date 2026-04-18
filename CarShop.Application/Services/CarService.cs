@@ -27,7 +27,10 @@ namespace CarShop.Application.Services
 
         public async Task<Result<IEnumerable<CarDto>>> GetAllCarsAsync()
         {
-            var cars = await _unitOfWork.Repository<Car>().GetAllAsync();
+            var cars = await _unitOfWork.Repository<Car>().GetAllWithIncludesAsync(
+                selector: c => c,
+                c => c.Brand!
+            );
             var result = cars.Select(CarMapper.ToDto);
             return Result<IEnumerable<CarDto>>.Ok(result);
         }
@@ -45,7 +48,12 @@ namespace CarShop.Application.Services
 
         public async Task<Result<CarDto>> GetCarByIdAsync(int id)
         {
-            var car = await _unitOfWork.Repository<Car>().GetByIdAsync(id);
+            var cars = await _unitOfWork.Repository<Car>().GetAllWithIncludesAsync(
+                predicate: c => c.Id == id,
+                selector: c => c,
+                c => c.Brand!
+            );
+            var car = cars.FirstOrDefault();
             if (car == null)
                 return Result<CarDto>.Fail("Car not found");
 
