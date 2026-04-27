@@ -1,9 +1,5 @@
-@model IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>
-
 @{
     ViewData["Title"] = "Home Page";
-    var brands       = ViewBag.Brands as IEnumerable<CarShop.Web.ViewModels.Brand.BrandViewModel>;
-    string selBrand  = ViewBag.SelectedBrand as string ?? "";
     var activePromos = ViewBag.ActivePromos as List<CarShop.Application.DTOs.PromoCode.PromoCodeDto>;
     var recentCars   = ViewBag.RecentCars as IEnumerable<CarShop.Web.ViewModels.Car.CarViewModel>;
 }
@@ -52,22 +48,6 @@
         @await Html.PartialAsync("_PromoCodeBanner", activePromos)
     </div>
 }
-
-<!-- Featured Cars -->
-<section class="cs-section">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
-            <div>
-                <span class="cs-section__eyebrow">Catalogue</span>
-                <h2 class="cs-section__title mb-1">Featured Cars</h2>
-                <p class="cs-section__sub mb-0">Handpicked from our latest inventory.</p>
-            </div>
-            <a asp-controller="Car" asp-action="AllCars" class="cs-section-link align-self-center">View All →</a>
-        </div>
-        @await Html.PartialAsync("Car/_BrandFilter", (brands!, selBrand))
-        @await Html.PartialAsync("Car/_CarList.cshtml", Model)
-    </div>
-</section>
 
 <!-- New Arrivals -->
 @if (recentCars != null && recentCars.Any())

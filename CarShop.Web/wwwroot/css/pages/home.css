@@ -173,6 +173,42 @@
 
 /* Section layout, pills, car grid/cards, badges, fade-up — now in site.css */
 
+/* ── Browse by Brand ── */
+.cs-brand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: 12px;
+}
+.cs-brand-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 16px;
+    background: var(--cs-white);
+    border: 1.5px solid var(--cs-border);
+    border-radius: var(--cs-radius);
+    text-decoration: none;
+    text-align: center;
+    gap: 6px;
+    transition: var(--cs-ease);
+}
+.cs-brand-card:hover {
+    border-color: var(--cs-amber);
+    background: var(--cs-amber-pale);
+    transform: translateY(-2px);
+    box-shadow: var(--cs-shadow);
+}
+.cs-brand-card__name {
+    font-size: .9375rem;
+    font-weight: 700;
+    color: var(--cs-text);
+    transition: color .15s;
+}
+.cs-brand-card__cta { font-size: .75rem; font-weight: 500; color: var(--cs-muted); transition: color .15s; }
+.cs-brand-card:hover .cs-brand-card__name,
+.cs-brand-card:hover .cs-brand-card__cta { color: var(--cs-amber); }
+
 /* ── Feature cards ── */
 .cs-feature {
     padding: 32px 28px;

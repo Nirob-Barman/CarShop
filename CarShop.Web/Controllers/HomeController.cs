@@ -36,39 +36,8 @@ namespace CarShop.Web.Controllers
         }
 
         // ── Tier 1 — server-side (above the fold) ─────────────────
-        public async Task<IActionResult> Index(string? brandName)
+        public async Task<IActionResult> Index()
         {
-            int pageSize = 4;
-            int? brandId = null;
-
-            if (!string.IsNullOrWhiteSpace(brandName))
-            {
-                var brandResult = await _brandService.GetBrandByNameAsync(brandName);
-                if (brandResult.Success && brandResult.Data != null)
-                {
-                    brandId = brandResult.Data.Id;
-                    ViewBag.SelectedBrand = brandResult.Data.Name;
-                }
-            }
-
-            var carResult = brandId.HasValue
-                ? await _carService.GetCarsByBrandIdAsync(brandId.Value)
-                : await _carService.GetAllCarsAsync();
-
-            if (!carResult.Success)
-            {
-                TempData["ErrorMessage"] = carResult.Message ?? "Failed to load cars.";
-                return View(new List<CarShop.Web.ViewModels.Car.CarViewModel>());
-            }
-
-            var cars = CarMapper.ToViewModels(carResult.Data!);
-            int totalCars = cars.Count();
-            var paginatedCars = cars.Take(pageSize).ToList();
-            ViewBag.ShowAllButton = totalCars > pageSize;
-
-            var brandsResult = await _brandService.GetAllBrandsAsync();
-            ViewBag.Brands = BrandMapper.ToViewModels(brandsResult.Data!);
-
             // New Arrivals
             var recentResult = await _carService.GetRecentCarsAsync(4);
             ViewBag.RecentCars = recentResult.Success
@@ -76,8 +45,10 @@ namespace CarShop.Web.Controllers
                 : new List<CarShop.Web.ViewModels.Car.CarViewModel>();
 
             // Stats bar
+            var carsResult   = await _carService.GetAllCarsAsync();
+            var brandsResult = await _brandService.GetAllBrandsAsync();
             var completedOrders = await _orderService.GetCompletedOrdersCountAsync();
-            ViewBag.StatsCarsCount   = totalCars;
+            ViewBag.StatsCarsCount   = carsResult.Success ? carsResult.Data?.Count() ?? 0 : 0;
             ViewBag.StatsBrandsCount = brandsResult.Data?.Count() ?? 0;
             ViewBag.StatsOrdersCount = completedOrders;
 
@@ -85,7 +56,7 @@ namespace CarShop.Web.Controllers
             var promoResult = await _promoCodeService.GetAllActiveCodesAsync();
             ViewBag.ActivePromos = promoResult.Success ? promoResult.Data?.ToList() : null;
 
-            return View(paginatedCars);
+            return View();
         }
 
         // ── Tier 2 — lazy-loaded partials ─────────────────────────
