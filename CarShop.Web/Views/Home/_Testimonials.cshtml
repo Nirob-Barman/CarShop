@@ -2,35 +2,34 @@
 
 @if (Model != null && Model.Any())
 {
-    <section class="testimonials-section py-5">
+    <section class="cs-section">
         <div class="container">
-            <h2 class="text-center fw-bold mb-2">What Our Customers Say</h2>
-            <p class="text-center text-muted mb-5">Real reviews from real buyers.</p>
+            <div class="text-center mb-5">
+                <span class="cs-section__eyebrow">Reviews</span>
+                <h2 class="cs-section__title">What our customers say</h2>
+                <p class="cs-section__sub mx-auto">Real reviews from verified buyers — unfiltered and honest.</p>
+            </div>
             <div class="row g-4">
                 @foreach (var t in Model)
                 {
-                    <div class="col-12 col-md-6 col-lg-4">
-                        <div class="card border-0 shadow-sm h-100 p-4">
-                            <!-- Stars -->
-                            <div class="mb-2">
+                    <div class="col-12 col-md-6 col-lg-4 fade-up">
+                        <div class="cs-testimonial d-flex flex-column">
+                            <div class="cs-testimonial__stars">
                                 @for (int i = 1; i <= 5; i++)
                                 {
-                                    <span style="color:@(i <= (t.Rating ?? 0) ? "#ffc107" : "#dee2e6"); font-size:1.1rem;">★</span>
+                                    <span>@(i <= (t.Rating ?? 0) ? "★" : "☆")</span>
                                 }
                             </div>
-                            <!-- Review text -->
-                            <p class="text-muted fst-italic mb-3">"@t.Content"</p>
-                            <!-- Author -->
-                            <div class="mt-auto d-flex align-items-center gap-2">
-                                <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center fw-bold"
-                                     style="width:40px;height:40px;font-size:1rem;flex-shrink:0;">
+                            <p class="cs-testimonial__quote flex-grow-1">"@t.Content"</p>
+                            <div class="d-flex align-items-center gap-3 mt-auto">
+                                <div class="cs-testimonial__avatar">
                                     @(t.UserName?.Length > 0 ? t.UserName[0].ToString().ToUpper() : "?")
                                 </div>
                                 <div>
-                                    <div class="fw-semibold small">@(t.UserName ?? "Anonymous")</div>
+                                    <div class="cs-testimonial__name">@(t.UserName ?? "Anonymous")</div>
                                     @if (!string.IsNullOrEmpty(t.CarTitle))
                                     {
-                                        <div class="text-muted" style="font-size:0.75rem;">on @t.CarTitle</div>
+                                        <div class="cs-testimonial__meta">on @t.CarTitle</div>
                                     }
                                 </div>
                             </div>

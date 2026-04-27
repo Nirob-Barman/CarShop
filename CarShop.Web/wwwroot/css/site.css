@@ -39,3 +39,144 @@ input[type="password"]::-ms-clear { display: none; }
 }
 
 .footer-link:hover { color: #ffc107 !important; transition: color .2s; }
+
+/* ── CarShop design tokens (shared across all public pages) ── */
+:root {
+    --cs-amber:        #f59e0b;
+    --cs-amber-dark:   #d97706;
+    --cs-amber-pale:   rgba(245,158,11,.08);
+    --cs-dark:         #0f172a;
+    --cs-dark2:        #1e293b;
+    --cs-surface:      #f8fafc;
+    --cs-white:        #ffffff;
+    --cs-text:         #0f172a;
+    --cs-muted:        #64748b;
+    --cs-border:       #e2e8f0;
+    --cs-radius:       12px;
+    --cs-radius-lg:    20px;
+    --cs-shadow:       0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+    --cs-shadow-hover: 0 4px 12px rgba(0,0,0,.1), 0 16px 40px rgba(0,0,0,.1);
+    --cs-ease:         all .2s ease;
+}
+
+body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+/* ── Sticky navbar ── */
+.cs-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+    background: rgba(255,255,255,.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--cs-border);
+    padding: 0 !important;
+    transition: box-shadow .25s;
+}
+.cs-navbar.cs-nav-scrolled { box-shadow: 0 2px 24px rgba(0,0,0,.08); }
+.cs-navbar .navbar-brand {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--cs-dark) !important;
+    letter-spacing: -.02em;
+    padding: 18px 0;
+}
+.cs-navbar .nav-link {
+    font-size: .875rem;
+    font-weight: 500;
+    color: #475569 !important;
+    padding: 8px 12px !important;
+    border-radius: 8px;
+    transition: var(--cs-ease);
+}
+.cs-navbar .nav-link:hover { color: var(--cs-dark) !important; background: var(--cs-surface); }
+.cs-nav-btn-login {
+    font-size: .875rem;
+    font-weight: 600;
+    color: var(--cs-muted) !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    border: 1.5px solid var(--cs-border) !important;
+    transition: var(--cs-ease) !important;
+}
+.cs-nav-btn-login:hover { color: var(--cs-dark) !important; border-color: #94a3b8 !important; background: var(--cs-surface) !important; }
+.cs-nav-btn-register {
+    font-size: .875rem;
+    font-weight: 700;
+    background: var(--cs-amber) !important;
+    color: var(--cs-dark) !important;
+    padding: 8px 18px !important;
+    border-radius: 8px !important;
+    border: none !important;
+    transition: var(--cs-ease) !important;
+    box-shadow: 0 2px 8px rgba(245,158,11,.3);
+}
+.cs-nav-btn-register:hover {
+    background: var(--cs-amber-dark) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(245,158,11,.4) !important;
+}
+
+/* ── Footer ── */
+.cs-footer {
+    background: var(--cs-dark);
+    color: rgba(255,255,255,.55);
+    padding: 64px 0 28px;
+}
+.cs-footer__grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 48px;
+    margin-bottom: 48px;
+}
+.cs-footer__brand { font-size: 1.1rem; font-weight: 800; color: var(--cs-amber); letter-spacing: -.01em; margin-bottom: 12px; }
+.cs-footer__tagline { font-size: .875rem; line-height: 1.65; max-width: 260px; margin-bottom: 24px; }
+.cs-footer__socials { display: flex; gap: 12px; }
+.cs-footer__social {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,.5);
+    text-decoration: none;
+    font-size: .75rem; font-weight: 700;
+    transition: var(--cs-ease);
+}
+.cs-footer__social:hover { border-color: var(--cs-amber); color: var(--cs-amber); }
+.cs-footer__heading {
+    font-size: .72rem; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: rgba(255,255,255,.32);
+    margin-bottom: 18px;
+}
+.cs-footer__links { list-style: none; padding: 0; margin: 0; }
+.cs-footer__link {
+    display: block;
+    font-size: .875rem;
+    color: rgba(255,255,255,.52);
+    text-decoration: none;
+    margin-bottom: 10px;
+    transition: color .15s;
+}
+.cs-footer__link:hover { color: rgba(255,255,255,.9); }
+.cs-footer__contact-item { font-size: .875rem; color: rgba(255,255,255,.5); margin-bottom: 10px; }
+.cs-footer__bottom {
+    border-top: 1px solid rgba(255,255,255,.07);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: .8125rem;
+    color: rgba(255,255,255,.25);
+}
+
+@media (max-width: 991.98px) {
+    .cs-footer__grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+}
+@media (max-width: 767.98px) {
+    .cs-footer { padding: 48px 0 24px; }
+    .cs-footer__grid { grid-template-columns: 1fr; gap: 28px; }
+    .cs-footer__bottom { flex-direction: column; align-items: flex-start; }
+}

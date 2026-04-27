@@ -1,64 +1,63 @@
-<nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-    <div class="container-fluid">
-        <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">🚗 CarShop</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+<nav class="navbar navbar-expand-lg cs-navbar">
+    <div class="container">
+        <a class="navbar-brand" asp-controller="Home" asp-action="Index">🚗 CarShop</a>
+        <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#csNav" aria-controls="csNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-            <ul class="navbar-nav flex-grow-1">
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="Car" asp-action="AllCars">All Cars</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="PromoCode" asp-action="Deals">🏷️ Deals</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" asp-controller="About" asp-action="Index">About</a>
-                </li>
 
+        <div class="collapse navbar-collapse" id="csNav">
+            <ul class="navbar-nav mx-auto gap-1">
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="Car" asp-action="AllCars">All Cars</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="PromoCode" asp-action="Deals">🏷️ Deals</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="About" asp-action="Index">About</a>
+                </li>
                 @if (User.IsInRole("Admin"))
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark fw-semibold" asp-controller="Admin" asp-action="Dashboard">
-                            <span class="badge bg-warning text-dark me-1" style="font-size:.65rem;vertical-align:middle;">Admin</span>Dashboard
+                        <a class="nav-link" asp-controller="Admin" asp-action="Dashboard">
+                            <span class="badge bg-warning text-dark me-1" style="font-size:.62rem;vertical-align:middle;">Admin</span>Dashboard
                         </a>
                     </li>
                 }
             </ul>
 
-            <ul class="navbar-nav">
+            <ul class="navbar-nav align-items-center gap-2">
                 @if (User.Identity!.IsAuthenticated)
                 {
                     @if (!User.IsInRole("Admin"))
                     {
-                        <!-- Notification Bell -->
-                        <li class="nav-item me-2">
-                            <a class="nav-link text-dark position-relative" asp-controller="Notification" asp-action="Index">
+                        <li class="nav-item">
+                            <a class="nav-link position-relative px-2" asp-controller="Notification" asp-action="Index" title="Notifications">
                                 🔔
                                 <span id="notif-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                      style="font-size:0.65rem; display:none;">0</span>
+                                      style="font-size:.6rem;display:none;">0</span>
                             </a>
                         </li>
                     }
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Profile">Profile</a>
+                        <a class="nav-link" asp-controller="Account" asp-action="Profile">Profile</a>
                     </li>
                     <li class="nav-item">
-                        <form class="form-inline" asp-controller="Account" asp-action="Logout" method="post">
-                            <button type="submit" class="nav-link btn btn-link text-dark" style="text-decoration:none;">Logout</button>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="btn cs-nav-btn-login">Logout</button>
                         </form>
                     </li>
                 }
                 else
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+                        <a class="btn cs-nav-btn-login" asp-controller="Account" asp-action="Login">Log in</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Login</a>
+                        <a class="btn cs-nav-btn-register" asp-controller="Account" asp-action="Register">Get Started</a>
                     </li>
                 }
             </ul>
