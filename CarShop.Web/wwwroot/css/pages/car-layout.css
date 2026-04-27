@@ -1,12 +1,8 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-}
+body { background-color: var(--cs-surface); }
 
 .car-content {
-    background-color: #ffffff;
+    background-color: var(--cs-white);
     padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    border-radius: var(--cs-radius-lg);
+    box-shadow: var(--cs-shadow);
 }

@@ -10,153 +10,175 @@
     string sortBy     = ViewBag.SortBy    as string ?? "newest";
     int totalPages    = (int)(ViewBag.TotalPages ?? 1);
     int currentPage   = (int)(ViewBag.CurrentPage ?? 1);
+
+    bool hasFilters = !string.IsNullOrEmpty(selBrand) || !string.IsNullOrEmpty(keyword)
+                      || minPrice.HasValue || maxPrice.HasValue;
 }
 
-<div class="container-fluid mt-4 mb-5">
-    <div class="row g-4">
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/allcars.css" asp-append-version="true" />
+}
 
-        <!-- ══ SIDEBAR FILTERS ══ -->
-        <div class="col-lg-3 col-md-4">
+<div class="container">
+    <div class="ac-page">
+
+        <!-- ══ SIDEBAR ══ -->
+        <aside class="ac-sidebar">
             <form method="get" asp-controller="Car" asp-action="AllCars" id="filterForm">
 
-                <!-- Search -->
-                <div class="card border-0 shadow-sm rounded-3 mb-3">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3">🔍 Search</h6>
-                        <input type="text" name="keyword" value="@keyword"
-                               class="form-control form-control-sm" placeholder="Search cars..." />
-                    </div>
+                <div class="ac-filter-card">
+                    <span class="ac-filter-label">Search</span>
+                    <input type="text" name="keyword" value="@keyword"
+                           class="ac-search-input" placeholder="Search cars..." />
                 </div>
 
-                <!-- Brand -->
-                <div class="card border-0 shadow-sm rounded-3 mb-3">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3">🏷️ Brand</h6>
-                        <div class="brand-list" style="max-height:260px; overflow-y:auto;">
-                            <div class="form-check mb-1">
-                                <input class="form-check-input" type="radio" name="brandName"
-                                       id="brand-all" value=""
-                                       @(string.IsNullOrEmpty(selBrand) ? "checked" : "")
+                <div class="ac-filter-card">
+                    <span class="ac-filter-label">Brand</span>
+                    <div class="ac-brand-list">
+                        <label class="ac-radio">
+                            <input type="radio" name="brandName" value=""
+                                   @(string.IsNullOrEmpty(selBrand) ? "checked" : "")
+                                   onchange="this.form.submit()" />
+                            All Brands
+                        </label>
+                        @foreach (var brand in brands!)
+                        {
+                            <label class="ac-radio">
+                                <input type="radio" name="brandName" value="@brand.Name"
+                                       @(selBrand == brand.Name ? "checked" : "")
                                        onchange="this.form.submit()" />
-                                <label class="form-check-label" for="brand-all">All Brands</label>
-                            </div>
-                            @foreach (var brand in brands!)
-                            {
-                                <div class="form-check mb-1">
-                                    <input class="form-check-input" type="radio" name="brandName"
-                                           id="brand-@brand.Id" value="@brand.Name"
-                                           @(selBrand == brand.Name ? "checked" : "")
-                                           onchange="this.form.submit()" />
-                                    <label class="form-check-label" for="brand-@brand.Id">@brand.Name</label>
-                                </div>
-                            }
-                        </div>
+                                @brand.Name
+                            </label>
+                        }
                     </div>
                 </div>
 
-                <!-- Price Range -->
-                <div class="card border-0 shadow-sm rounded-3 mb-3">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3">💰 Price Range</h6>
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="number" name="minPrice" value="@minPrice" min="0"
-                                   class="form-control form-control-sm" placeholder="Min" />
-                            <span class="text-muted">–</span>
-                            <input type="number" name="maxPrice" value="@maxPrice" min="0"
-                                   class="form-control form-control-sm" placeholder="Max" />
-                        </div>
+                <div class="ac-filter-card">
+                    <span class="ac-filter-label">Price Range</span>
+                    <div class="ac-price-row">
+                        <input type="number" name="minPrice" value="@minPrice" min="0"
+                               class="ac-price-input" placeholder="Min" />
+                        <span class="ac-price-sep">–</span>
+                        <input type="number" name="maxPrice" value="@maxPrice" min="0"
+                               class="ac-price-input" placeholder="Max" />
                     </div>
                 </div>
 
-                <!-- Sort -->
-                <div class="card border-0 shadow-sm rounded-3 mb-3">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3">↕️ Sort By</h6>
-                        <select name="sortBy" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="newest"     selected="@(sortBy == "newest"     ? "selected" : null)">Newest First</option>
-                            <option value="price_asc"  selected="@(sortBy == "price_asc"  ? "selected" : null)">Price: Low to High</option>
-                            <option value="price_desc" selected="@(sortBy == "price_desc" ? "selected" : null)">Price: High to Low</option>
-                        </select>
-                    </div>
+                <div class="ac-filter-card">
+                    <span class="ac-filter-label">Sort By</span>
+                    <select name="sortBy" class="ac-sort-select" onchange="this.form.submit()">
+                        <option value="newest"     selected="@(sortBy == "newest"     ? "selected" : null)">Newest First</option>
+                        <option value="price_asc"  selected="@(sortBy == "price_asc"  ? "selected" : null)">Price: Low to High</option>
+                        <option value="price_desc" selected="@(sortBy == "price_desc" ? "selected" : null)">Price: High to Low</option>
+                    </select>
                 </div>
 
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm">Apply Filters</button>
-                    @if (!string.IsNullOrEmpty(selBrand) || !string.IsNullOrEmpty(keyword) || minPrice.HasValue || maxPrice.HasValue)
-                    {
-                        <a asp-action="AllCars" class="btn btn-outline-secondary btn-sm">Clear Filters</a>
-                    }
-                </div>
+                <button type="submit" class="ac-btn-apply">Apply Filters</button>
+                @if (hasFilters)
+                {
+                    <a asp-action="AllCars" class="ac-btn-clear">Clear Filters</a>
+                }
 
             </form>
-        </div>
+        </aside>
 
-        <!-- ══ CAR GRID ══ -->
-        <div class="col-lg-9 col-md-8">
+        <!-- ══ MAIN CONTENT ══ -->
+        <div>
+            <div class="ac-results-bar">
+                <div>
+                    <span class="ac-results-title">
+                        @(string.IsNullOrEmpty(selBrand) ? "All Cars" : selBrand)
+                    </span>
+                    <span class="ac-results-count">@Model.Count() results</span>
+                </div>
+            </div>
 
-            <!-- Results bar -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">
+            @if (hasFilters)
+            {
+                <div class="ac-active-filters">
                     @if (!string.IsNullOrEmpty(selBrand))
                     {
-                        <span>@selBrand</span>
+                        <a href="@Url.Action("AllCars", new { keyword, minPrice, maxPrice, sortBy })" class="ac-filter-tag">
+                            @selBrand ×
+                        </a>
                     }
-                    else
+                    @if (!string.IsNullOrEmpty(keyword))
                     {
-                        <span>All Cars</span>
+                        <a href="@Url.Action("AllCars", new { brandName = selBrand, minPrice, maxPrice, sortBy })" class="ac-filter-tag">
+                            "@keyword" ×
+                        </a>
                     }
-                    <span class="text-muted fw-normal fs-6 ms-2">(@Model.Count() results)</span>
-                </h5>
-            </div>
+                    @if (minPrice.HasValue || maxPrice.HasValue)
+                    {
+                        <a href="@Url.Action("AllCars", new { brandName = selBrand, keyword, sortBy })" class="ac-filter-tag">
+                            $@(minPrice?.ToString("N0") ?? "0") – $@(maxPrice?.ToString("N0") ?? "∞") ×
+                        </a>
+                    }
+                </div>
+            }
 
             @if (Model.Any())
             {
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-4">
+                <div class="cs-car-grid">
                     @foreach (var car in Model)
                     {
-                        <div class="col">
-                            <div class="card h-100 border-0 shadow-sm rounded-3 overflow-hidden" style="cursor:pointer;">
-                                <img src="@car.ImageUrl" class="card-img-top"
-                                     style="height:200px; object-fit:cover;" alt="@car.Title" />
-                                <div class="card-body d-flex flex-column">
-                                    <h6 class="card-title fw-bold mb-1">@car.Title</h6>
-                                    <small class="text-muted mb-2">@car.BrandName</small>
-                                    <p class="text-success fw-bold mb-0 mt-auto">$@car.Price.ToString("N0")</p>
-                                    <a href="/Car/Details/@car.Id" class="stretched-link" aria-label="View @car.Title"></a>
+                        <div class="cs-card">
+                            <div class="cs-card__img-wrap">
+                                <img src="@(string.IsNullOrEmpty(car.ImageUrl) ? "/images/no-image.png" : car.ImageUrl)"
+                                     class="cs-card__img" alt="@car.Title" />
+                            </div>
+                            <div class="cs-card__body">
+                                <div class="cs-card__brand">@car.BrandName</div>
+                                <div class="cs-card__title">@car.Title</div>
+                                <div class="cs-card__footer">
+                                    <span class="cs-card__price">$@car.Price.ToString("N0")</span>
+                                    @if (car.Quantity > 0) { <span class="cs-badge-in">In Stock</span> }
+                                    else { <span class="cs-badge-out">Sold Out</span> }
                                 </div>
                             </div>
+                            <a asp-controller="Car" asp-action="Details" asp-route-id="@car.Id"
+                               class="stretched-link" aria-label="View @car.Title"></a>
                         </div>
                     }
                 </div>
 
-                <!-- Pagination -->
                 @if (totalPages > 1)
                 {
-                    <nav class="mt-4 d-flex justify-content-center">
-                        <ul class="pagination">
-                            @for (int i = 1; i <= totalPages; i++)
-                            {
-                                <li class="page-item @(currentPage == i ? "active" : "")">
-                                    <a class="page-link"
-                                       href="@Url.Action("AllCars", new { page = i, brandName = selBrand, keyword, minPrice, maxPrice, sortBy })">
-                                        @i
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
+                    <div class="ac-pagination">
+                        @if (currentPage > 1)
+                        {
+                            <a class="ac-page-btn"
+                               href="@Url.Action("AllCars", new { page = currentPage - 1, brandName = selBrand, keyword, minPrice, maxPrice, sortBy })">
+                                ←
+                            </a>
+                        }
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            <a class="ac-page-btn @(currentPage == i ? "active" : "")"
+                               href="@Url.Action("AllCars", new { page = i, brandName = selBrand, keyword, minPrice, maxPrice, sortBy })">
+                                @i
+                            </a>
+                        }
+                        @if (currentPage < totalPages)
+                        {
+                            <a class="ac-page-btn"
+                               href="@Url.Action("AllCars", new { page = currentPage + 1, brandName = selBrand, keyword, minPrice, maxPrice, sortBy })">
+                                →
+                            </a>
+                        }
+                    </div>
                 }
             }
             else
             {
-                <div class="text-center py-5 text-muted">
-                    <div style="font-size:3rem;">🚗</div>
-                    <h5 class="mt-3">No cars found</h5>
-                    <p class="small">Try adjusting your filters.</p>
-                    <a asp-action="AllCars" class="btn btn-outline-primary btn-sm">Clear Filters</a>
+                <div class="ac-empty">
+                    <div class="ac-empty__icon">🚗</div>
+                    <div class="ac-empty__title">No cars found</div>
+                    <p class="ac-empty__sub">Try adjusting your filters.</p>
+                    <a asp-action="AllCars" class="cs-section-link">Clear Filters</a>
                 </div>
             }
-
         </div>
+
     </div>
 </div>
