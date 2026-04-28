@@ -1,5 +1,7 @@
 (function () {
-    // Password strength meter
+    var strengthColors = ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#22c55e'];
+    var strengthTexts  = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong'];
+
     var regPassword = document.getElementById('regPassword');
     if (regPassword) {
         regPassword.addEventListener('input', function () {
@@ -13,24 +15,16 @@
             document.getElementById('passwordRequirements').style.display = 'block';
 
             var checks = [p.length >= 6, /\d/.test(p), /[a-z]/.test(p), /[A-Z]/.test(p), /\W/.test(p)];
-            var ids = ['reqLength', 'reqDigit', 'reqLower', 'reqUpper', 'reqSpecial'];
-            var score = checks.filter(Boolean).length;
+            var ids    = ['reqLength', 'reqDigit', 'reqLower', 'reqUpper', 'reqSpecial'];
+            var score  = checks.filter(Boolean).length;
             checks.forEach(function (ok, i) {
                 document.getElementById(ids[i]).className = ok ? 'text-success' : 'text-danger';
             });
 
-            var levels = [
-                { pct: 20, cls: 'bg-danger',  text: 'Very Weak' },
-                { pct: 40, cls: 'bg-warning', text: 'Weak' },
-                { pct: 60, cls: 'bg-info',    text: 'Fair' },
-                { pct: 80, cls: 'bg-primary', text: 'Strong' },
-                { pct: 100, cls: 'bg-success', text: 'Very Strong' }
-            ];
-            var lvl = levels[score - 1] || levels[0];
             var bar = document.getElementById('strengthBar');
-            bar.style.width = lvl.pct + '%';
-            bar.className = 'progress-bar ' + lvl.cls;
-            document.getElementById('strengthLabel').textContent = lvl.text;
+            bar.style.width      = (score * 20) + '%';
+            bar.style.background = strengthColors[score - 1] || strengthColors[0];
+            document.getElementById('strengthLabel').textContent = strengthTexts[score - 1] || strengthTexts[0];
         });
     }
 
@@ -56,9 +50,9 @@
     var registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', function (e) {
-            var pwd = document.getElementById('regPassword').value;
+            var pwd     = document.getElementById('regPassword').value;
             var confirm = document.getElementById('confirmPassword').value;
-            var valid = true;
+            var valid   = true;
 
             if (pwd !== confirm) {
                 document.getElementById('confirmError').style.display = 'block';

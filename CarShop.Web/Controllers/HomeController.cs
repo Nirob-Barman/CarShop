@@ -48,6 +48,7 @@ namespace CarShop.Web.Controllers
             var carsResult   = await _carService.GetAllCarsAsync();
             var brandsResult = await _brandService.GetAllBrandsAsync();
             var completedOrders = await _orderService.GetCompletedOrdersCountAsync();
+            ViewBag.Brands = BrandMapper.ToViewModels(brandsResult.Data!);
             ViewBag.StatsCarsCount   = carsResult.Success ? carsResult.Data?.Count() ?? 0 : 0;
             ViewBag.StatsBrandsCount = brandsResult.Data?.Count() ?? 0;
             ViewBag.StatsOrdersCount = completedOrders;
