@@ -54,6 +54,7 @@ Migrations/*.Designer.cs
 *.tlog
 *.bak
 *.cache
+CarShop.Web/Logs/
 
 ## Others
 *.tmp

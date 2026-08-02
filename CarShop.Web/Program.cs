@@ -1,9 +1,18 @@
 using CarShop.Infrastructure.DependencyInjection;
 using CarShop.Application.DependencyInjection;
 using Microsoft.AspNetCore.RateLimiting;
+using Serilog;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext();
+});
 
 builder.Services.AddControllersWithViews();
 
@@ -34,6 +43,8 @@ builder.Services.AddRateLimiter(options =>
 
 var app = builder.Build();
 
+app.UseSerilogRequestLogging();
+
 // Custom error pages for all environments
 app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
@@ -60,5 +71,3 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
-
-public partial class Program { }
