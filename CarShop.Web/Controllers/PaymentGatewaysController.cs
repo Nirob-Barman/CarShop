@@ -1,5 +1,12 @@
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.PaymentGateway.Commands.CreateGateway;
+using CarShop.Application.Features.PaymentGateway.Commands.DeleteGateway;
+using CarShop.Application.Features.PaymentGateway.Commands.ToggleGatewayActive;
+using CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway;
+using CarShop.Application.Features.PaymentGateway.Queries.GetAllGateways;
+using CarShop.Application.Features.PaymentGateway.Queries.GetDecryptedGatewayConfig;
+using CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById;
 using CarShop.Application.Payment;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,16 +15,16 @@ namespace CarShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class PaymentGatewaysController : Controller
     {
-        private readonly IPaymentGatewayService _paymentGatewayService;
+        private readonly IMediator _mediator;
 
-        public PaymentGatewaysController(IPaymentGatewayService paymentGatewayService)
+        public PaymentGatewaysController(IMediator mediator)
         {
-            _paymentGatewayService = paymentGatewayService;
+            _mediator = mediator;
         }
 
         public async Task<IActionResult> Index()
         {
-            var result = await _paymentGatewayService.GetAllAsync();
+            var result = await _mediator.Send(new GetAllGatewaysQuery());
             return View(result.Data ?? []);
         }
 
@@ -51,7 +58,7 @@ namespace CarShop.Web.Controllers
                 SupportedCurrencies = supportedCurrencies, SortOrder = sortOrder
             };
 
-            var result = await _paymentGatewayService.CreateAsync(dto, configFields);
+            var result = await _mediator.Send(new CreateGatewayCommand(dto, configFields));
             if (result.Success)
                 TempData["SuccessMessage"] = result.Message;
             else
@@ -63,9 +70,9 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var result = await _paymentGatewayService.GetByIdAsync(id);
+            var result = await _mediator.Send(new GetGatewayByIdQuery(id));
             if (!result.Success) return RedirectToAction("Index");
-            var config = await _paymentGatewayService.GetDecryptedConfigAsync(id);
+            var config = await _mediator.Send(new GetDecryptedGatewayConfigQuery(id));
             ViewBag.Config = config;
             ViewBag.Schema = GatewayConfigSchema.Get(result.Data!.Slug);
             ViewBag.Family = GatewayConfigSchema.GetFamily(result.Data!.Slug);
@@ -90,7 +97,7 @@ namespace CarShop.Web.Controllers
             };
 
             var newConfig = configFields.Any(kv => !string.IsNullOrWhiteSpace(kv.Value)) ? configFields : null;
-            var result = await _paymentGatewayService.UpdateAsync(id, dto, newConfig);
+            var result = await _mediator.Send(new UpdateGatewayCommand(id, dto, newConfig));
             if (result.Success)
                 TempData["SuccessMessage"] = result.Message;
             else
@@ -103,7 +110,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Toggle(int id)
         {
-            await _paymentGatewayService.ToggleActiveAsync(id);
+            await _mediator.Send(new ToggleGatewayActiveCommand(id));
             return RedirectToAction("Index");
         }
 
@@ -111,7 +118,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _paymentGatewayService.DeleteAsync(id);
+            var result = await _mediator.Send(new DeleteGatewayCommand(id));
             if (result.Success) TempData["SuccessMessage"] = result.Message;
             else TempData["ErrorMessage"] = result.Errors?.FirstOrDefault();
             return RedirectToAction("Index");

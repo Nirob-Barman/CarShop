@@ -1,4 +1,6 @@
+using CarShop.Application.Features.User.Queries.GetProfile;
 using CarShop.Application.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,12 +12,12 @@ namespace CarShop.Web.Controllers
     /// </summary>
     public abstract class UserDashboardController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IMediator _mediator;
         private readonly IUserContextService _userContextService;
 
-        protected UserDashboardController(IUserService userService, IUserContextService userContextService)
+        protected UserDashboardController(IMediator mediator, IUserContextService userContextService)
         {
-            _userService = userService;
+            _mediator = mediator;
             _userContextService = userContextService;
         }
 
@@ -23,7 +25,7 @@ namespace CarShop.Web.Controllers
         {
             if (_userContextService.IsAuthenticated && !string.IsNullOrEmpty(_userContextService.UserId))
             {
-                var profile = await _userService.GetProfileAsync(_userContextService.UserId);
+                var profile = await _mediator.Send(new GetProfileQuery());
                 ViewBag.UserFullName = profile.Data?.FullName;
             }
 

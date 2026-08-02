@@ -1,5 +1,10 @@
+using CarShop.Application.Features.Order.Commands.CancelOrder;
+using CarShop.Application.Features.Order.Commands.ExpireStalePendingOrders;
+using CarShop.Application.Features.Order.Queries.GetOrderById;
+using CarShop.Application.Features.Order.Queries.GetOrdersByUserId;
 using CarShop.Application.Interfaces;
 using CarShop.Web.ViewModels.Mappers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,12 +13,12 @@ namespace CarShop.Web.Controllers
     [Authorize]
     public class OrderController : UserDashboardController
     {
-        private readonly IOrderService _orderService;
+        private readonly IMediator _mediator;
 
-        public OrderController(IOrderService orderService, IUserService userService, IUserContextService userContextService)
-            : base(userService, userContextService)
+        public OrderController(IMediator mediator, IUserContextService userContextService)
+            : base(mediator, userContextService)
         {
-            _orderService = orderService;
+            _mediator = mediator;
         }
 
         [HttpPost]
@@ -21,7 +26,7 @@ namespace CarShop.Web.Controllers
         {
             try
             {
-                await _orderService.CancelOrderAsync(orderId);
+                await _mediator.Send(new CancelOrderCommand(orderId));
                 TempData["SuccessMessage"] = "Order canceled successfully!";
             }
             catch (Exception ex)
@@ -35,7 +40,7 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var result = await _orderService.GetOrderByIdAsync(id);
+            var result = await _mediator.Send(new GetOrderByIdQuery(id));
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -47,8 +52,8 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> MyOrders()
         {
-            await _orderService.ExpireStalePendingOrdersAsync();
-            var orders = await _orderService.GetOrdersByUserIdAsync();
+            await _mediator.Send(new ExpireStalePendingOrdersCommand());
+            var orders = await _mediator.Send(new GetOrdersByUserIdQuery());
             var ordersVm = OrderMapper.ToViewModels(orders.Data!);
             return View(ordersVm);
         }

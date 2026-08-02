@@ -1,4 +1,5 @@
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.Analytics.Queries.GetDashboard;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,16 +8,16 @@ namespace CarShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
-        private readonly IAnalyticsService _analyticsService;
+        private readonly IMediator _mediator;
 
-        public AdminController(IAnalyticsService analyticsService)
+        public AdminController(IMediator mediator)
         {
-            _analyticsService = analyticsService;
+            _mediator = mediator;
         }
 
         public async Task<IActionResult> Dashboard()
         {
-            var result = await _analyticsService.GetDashboardAsync();
+            var result = await _mediator.Send(new GetDashboardQuery());
             return View(result.Data);
         }
     }

@@ -1,8 +1,20 @@
 ﻿using CarShop.Application.DTOs.Car;
 using CarShop.Application.DTOs.File;
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.Brand.Queries.GetAllBrands;
+using CarShop.Application.Features.Car.Commands.CreateCar;
+using CarShop.Application.Features.Car.Commands.DeleteCar;
+using CarShop.Application.Features.Car.Commands.UpdateCar;
+using CarShop.Application.Features.Car.Queries.GetAllCars;
+using CarShop.Application.Features.Car.Queries.GetCarById;
+using CarShop.Application.Features.Car.Queries.SearchCars;
+using CarShop.Application.Features.Comment.Queries.GetAverageRating;
+using CarShop.Application.Features.Comment.Queries.GetCommentsByCarId;
+using CarShop.Application.Features.Comment.Queries.HasUserReviewed;
+using CarShop.Application.Features.StockAlert.Queries.GetUserAlerts;
+using CarShop.Application.Features.Wishlist.Queries.IsInWishlist;
 using CarShop.Web.ViewModels.Car;
 using CarShop.Web.ViewModels.Mappers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,29 +23,16 @@ namespace CarShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class CarController : Controller
     {
-        private readonly ICarService _carService;
-        private readonly IBrandService _brandService;
-        private readonly ICommentService _commentService;
-        private readonly IWishlistService _wishlistService;
-        private readonly IStockAlertService _stockAlertService;
+        private readonly IMediator _mediator;
 
-        public CarController(
-            ICarService carService,
-            IBrandService brandService,
-            ICommentService commentService,
-            IWishlistService wishlistService,
-            IStockAlertService stockAlertService)
+        public CarController(IMediator mediator)
         {
-            _carService = carService;
-            _brandService = brandService;
-            _commentService = commentService;
-            _wishlistService = wishlistService;
-            _stockAlertService = stockAlertService;
+            _mediator = mediator;
         }
-        
+
         public async Task<IActionResult> Index()
         {
-            var result = await _carService.GetAllCarsAsync();
+            var result = await _mediator.Send(new GetAllCarsQuery());
             if (!result.Success)
             {
                 //TempData["ErrorMessage"] = result.Message ?? "Failed to load cars.";
@@ -46,7 +45,7 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var brandResult = await _brandService.GetAllBrandsAsync();
+            var brandResult = await _mediator.Send(new GetAllBrandsQuery());
             ViewBag.Brands = BrandMapper.ToViewModels(brandResult.Data!);
             return View();
         }
@@ -55,7 +54,7 @@ namespace CarShop.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CarViewModel model, IFormFile image)
         {
-            var brandResult = await _brandService.GetAllBrandsAsync();            
+            var brandResult = await _mediator.Send(new GetAllBrandsQuery());            
             ViewBag.Brands = BrandMapper.ToViewModels(brandResult.Data!);
 
             if (!ModelState.IsValid)
@@ -74,7 +73,7 @@ namespace CarShop.Web.Controllers
             }
 
             var dto = CarMapper.ToDto(model);
-            var result = await _carService.CreateCarAsync(dto, fileDto);
+            var result = await _mediator.Send(new CreateCarCommand(dto, fileDto));
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -89,8 +88,8 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var carResult = await _carService.GetCarByIdAsync(id);
-            var brandResult = await _brandService.GetAllBrandsAsync();
+            var carResult = await _mediator.Send(new GetCarByIdQuery(id));
+            var brandResult = await _mediator.Send(new GetAllBrandsQuery());
 
             //if (!carResult.Success || carResult.Data == null)
             //{
@@ -107,13 +106,13 @@ namespace CarShop.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(int id, CarViewModel model, IFormFile? image)
         {
-            var brandResult = await _brandService.GetAllBrandsAsync();
+            var brandResult = await _mediator.Send(new GetAllBrandsQuery());
             ViewBag.Brands = brandResult.Data;
 
             if (!ModelState.IsValid)
                 return View(model);
 
-            var existingCarResult = await _carService.GetCarByIdAsync(id);
+            var existingCarResult = await _mediator.Send(new GetCarByIdQuery(id));
             if (!existingCarResult.Success || existingCarResult.Data == null)
             {
                 TempData["ErrorMessage"] = existingCarResult.Message ?? "Car not found.";
@@ -136,7 +135,7 @@ namespace CarShop.Web.Controllers
             }
 
             var dto = CarMapper.ToDto(model);
-            var result = await _carService.UpdateCarAsync(id, dto, fileDto);
+            var result = await _mediator.Send(new UpdateCarCommand(id, dto, fileDto));
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -150,14 +149,14 @@ namespace CarShop.Web.Controllers
         [HttpPost]
         public async Task<IActionResult> Delete(int id)
         {
-            var carResult = await _carService.GetCarByIdAsync(id);
+            var carResult = await _mediator.Send(new GetCarByIdQuery(id));
             if (!carResult.Success || carResult.Data == null)
             {
                 TempData["ErrorMessage"] = carResult.Message ?? "Car not found.";
                 return RedirectToAction("Index");
             }
 
-            var deleteResult = await _carService.DeleteCarAsync(id);
+            var deleteResult = await _mediator.Send(new DeleteCarCommand(id));
             //if (!deleteResult.Success)
             //    TempData["ErrorMessage"] = deleteResult.Message;
             //else
@@ -171,7 +170,7 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            var carResult = await _carService.GetCarByIdAsync(id);
+            var carResult = await _mediator.Send(new GetCarByIdQuery(id));
             if (!carResult.Success || carResult.Data == null)
             {
                 TempData["ErrorMessage"] = carResult.Message ?? "Car not found.";
@@ -198,22 +197,22 @@ namespace CarShop.Web.Controllers
 
             var vm = CarMapper.ToViewModel(carResult.Data);
 
-            var commentResult = await _commentService.GetCommentsByCarIdAsync(id);
+            var commentResult = await _mediator.Send(new GetCommentsByCarIdQuery(id));
             ViewBag.Comments = commentResult.Success ? commentResult.Data
                 : new List<CarShop.Application.DTOs.Comment.CommentDto>();
 
-            var avgResult = await _commentService.GetAverageRatingAsync(id);
+            var avgResult = await _mediator.Send(new GetAverageRatingQuery(id));
             ViewBag.AverageRating = avgResult.Data;
 
             if (User.Identity?.IsAuthenticated == true)
             {
-                var wishResult  = await _wishlistService.IsInWishlistAsync(id);
+                var wishResult  = await _mediator.Send(new IsInWishlistQuery(id));
                 ViewBag.IsInWishlist = wishResult.Data;
 
-                var alertResult = await _stockAlertService.GetUserAlertsAsync();
+                var alertResult = await _mediator.Send(new GetUserAlertsQuery());
                 ViewBag.IsStockAlerted = alertResult.Data?.Any(a => a.CarId == id) ?? false;
 
-                var reviewedResult = await _commentService.HasUserReviewedAsync(id);
+                var reviewedResult = await _mediator.Send(new HasUserReviewedQuery(id));
                 ViewBag.HasReviewed = reviewedResult.Data;
             }
 
@@ -236,8 +235,8 @@ namespace CarShop.Web.Controllers
                 PageSize = 10
             };
 
-            var result = await _carService.SearchCarsAsync(searchDto);
-            var brandList = await _brandService.GetAllBrandsAsync();
+            var result = await _mediator.Send(new SearchCarsQuery(searchDto));
+            var brandList = await _mediator.Send(new GetAllBrandsQuery());
 
             ViewBag.Brands = BrandMapper.ToViewModels(brandList.Data!);
             ViewBag.TotalPages = result.Data?.TotalPages ?? 1;

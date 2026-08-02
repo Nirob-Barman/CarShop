@@ -1,4 +1,5 @@
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.BulkImport.Commands.ImportCarsFromCsv;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,11 +8,11 @@ namespace CarShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class BulkImportController : Controller
     {
-        private readonly IBulkImportService _bulkImportService;
+        private readonly IMediator _mediator;
 
-        public BulkImportController(IBulkImportService bulkImportService)
+        public BulkImportController(IMediator mediator)
         {
-            _bulkImportService = bulkImportService;
+            _mediator = mediator;
         }
 
         [HttpGet]
@@ -28,7 +29,7 @@ namespace CarShop.Web.Controllers
             }
 
             using var stream = csvFile.OpenReadStream();
-            var result = await _bulkImportService.ImportCarsFromCsvAsync(stream);
+            var result = await _mediator.Send(new ImportCarsFromCsvCommand(stream));
 
             ViewBag.ImportResult = result.Data;
             TempData["SuccessMessage"] = result.Message;

@@ -1,41 +1,35 @@
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.Brand.Queries.GetAllBrands;
+using CarShop.Application.Features.Car.Queries.GetAllCars;
+using CarShop.Application.Features.Comment.Queries.GetAllReviews;
+using CarShop.Application.Features.Order.Queries.GetCompletedOrdersCount;
 using CarShop.Web.ViewModels.Home;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarShop.Web.Controllers
 {
     public class AboutController : Controller
     {
-        private readonly ICarService _carService;
-        private readonly IBrandService _brandService;
-        private readonly ICommentService _commentService;
-        private readonly IOrderService _orderService;
+        private readonly IMediator _mediator;
 
-        public AboutController(
-            ICarService carService,
-            IBrandService brandService,
-            ICommentService commentService,
-            IOrderService orderService)
+        public AboutController(IMediator mediator)
         {
-            _carService = carService;
-            _brandService = brandService;
-            _commentService = commentService;
-            _orderService = orderService;
+            _mediator = mediator;
         }
 
         public async Task<IActionResult> Index()
         {
-            var carsResult    = await _carService.GetAllCarsAsync();
-            var brandsResult  = await _brandService.GetAllBrandsAsync();
-            var reviewsResult = await _commentService.GetAllReviewsAsync();
-            var happyCustomers = await _orderService.GetCompletedOrdersCountAsync();
+            var carsResult    = await _mediator.Send(new GetAllCarsQuery());
+            var brandsResult  = await _mediator.Send(new GetAllBrandsQuery());
+            var reviewsResult = await _mediator.Send(new GetAllReviewsQuery());
+            var happyCustomersResult = await _mediator.Send(new GetCompletedOrdersCountQuery());
 
             var model = new AboutViewModel
             {
                 CarsCount      = carsResult.Success    ? carsResult.Data?.Count()    ?? 0 : 0,
                 BrandsCount    = brandsResult.Success  ? brandsResult.Data?.Count()  ?? 0 : 0,
                 ReviewsCount   = reviewsResult.Success ? reviewsResult.Data?.Count() ?? 0 : 0,
-                HappyCustomers = happyCustomers
+                HappyCustomers = happyCustomersResult.Success ? happyCustomersResult.Data : 0
             };
 
             ViewData["Title"]           = "About Us";

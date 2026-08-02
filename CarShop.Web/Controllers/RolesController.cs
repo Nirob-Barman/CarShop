@@ -1,4 +1,8 @@
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.Roles.Commands.CreateRole;
+using CarShop.Application.Features.Roles.Commands.DeleteRole;
+using CarShop.Application.Features.Roles.Commands.RenameRole;
+using CarShop.Application.Features.Roles.Queries.GetAllRoles;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,16 +11,16 @@ namespace CarShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class RolesController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IMediator _mediator;
 
-        public RolesController(IUserService userService)
+        public RolesController(IMediator mediator)
         {
-            _userService = userService;
+            _mediator = mediator;
         }
 
         public async Task<IActionResult> Index()
         {
-            var result = await _userService.GetAllRolesAsync();
+            var result = await _mediator.Send(new GetAllRolesQuery());
             if (!result.Success || result.Data == null)
             {
                 TempData["ErrorMessage"] = result.Message ?? "Failed to retrieve roles.";
@@ -38,7 +42,7 @@ namespace CarShop.Web.Controllers
                 return View();
             }
 
-            var result = await _userService.CreateRoleAsync(roleName);
+            var result = await _mediator.Send(new CreateRoleCommand(roleName));
             if (!result.Success)
             {
                 foreach (var error in result.Errors ?? new())
@@ -63,7 +67,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(string currentName, string newName)
         {
-            var result = await _userService.RenameRoleAsync(currentName, newName);
+            var result = await _mediator.Send(new RenameRoleCommand(currentName, newName));
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -77,7 +81,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string roleName)
         {
-            var result = await _userService.DeleteRoleAsync(roleName);
+            var result = await _mediator.Send(new DeleteRoleCommand(roleName));
             if (!result.Success)
                 TempData["ErrorMessage"] = result.Message;
             else

@@ -1,4 +1,10 @@
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.Car.Queries.GetCarById;
+using CarShop.Application.Features.Payment.Commands.HandlePaymentCancel;
+using CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess;
+using CarShop.Application.Features.Payment.Commands.InitiatePayment;
+using CarShop.Application.Features.PaymentGateway.Queries.GetActiveGateways;
+using CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,27 +13,17 @@ namespace CarShop.Web.Controllers
     [Authorize]
     public class PaymentController : Controller
     {
-        private readonly IPaymentService        _paymentService;
-        private readonly IPaymentGatewayService _gatewayService;
-        private readonly ICarService            _carService;
-        private readonly IPromoCodeService      _promoCodeService;
+        private readonly IMediator              _mediator;
 
-        public PaymentController(
-            IPaymentService paymentService,
-            IPaymentGatewayService gatewayService,
-            ICarService carService,
-            IPromoCodeService promoCodeService)
+        public PaymentController(IMediator mediator)
         {
-            _paymentService   = paymentService;
-            _gatewayService   = gatewayService;
-            _carService       = carService;
-            _promoCodeService = promoCodeService;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> Checkout(int carId, string? promoCode)
         {
-            var carResult = await _carService.GetCarByIdAsync(carId);
+            var carResult = await _mediator.Send(new GetCarByIdQuery(carId));
             if (!carResult.Success || carResult.Data == null)
             {
                 TempData["ErrorMessage"] = "Car not found.";
@@ -41,14 +37,14 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Details", "Car", new { id = carId });
             }
 
-            var gateways = (await _gatewayService.GetActiveAsync()).Data?.ToList() ?? [];
+            var gateways = (await _mediator.Send(new GetActiveGatewaysQuery())).Data?.ToList() ?? [];
 
             decimal finalPrice = car.Price;
             decimal discount   = 0;
 
             if (!string.IsNullOrWhiteSpace(promoCode))
             {
-                var promoResult = await _promoCodeService.ValidateCodeAsync(promoCode);
+                var promoResult = await _mediator.Send(new ValidatePromoCodeQuery(promoCode));
                 if (promoResult.Success && promoResult.Data != null)
                 {
                     discount   = car.Price * (promoResult.Data.DiscountPercent / 100m);
@@ -73,8 +69,8 @@ namespace CarShop.Web.Controllers
             var successUrl = Url.Action("Success", "Payment", null, Request.Scheme)!;
             var cancelUrl  = Url.Action("Cancel",  "Payment", null, Request.Scheme)!;
 
-            var result = await _paymentService.InitiatePaymentAsync(
-                carId, gatewayId, promoCode, successUrl, cancelUrl);
+            var result = await _mediator.Send(new InitiatePaymentCommand(
+                carId, gatewayId, promoCode, successUrl, cancelUrl));
 
             if (!result.Success)
             {
@@ -88,7 +84,7 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Success(int txId, string gateway)
         {
-            var result = await _paymentService.HandleSuccessAsync(txId, gateway);
+            var result = await _mediator.Send(new HandlePaymentSuccessCommand(txId, gateway));
             ViewBag.IsSuccess = result.Success;
             ViewBag.Message   = result.Success
                 ? "Payment confirmed! Your order is now active."
@@ -102,7 +98,7 @@ namespace CarShop.Web.Controllers
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> Success(int txId, string gateway, [FromForm] string? val_id)
         {
-            var result = await _paymentService.HandleSuccessAsync(txId, gateway, val_id);
+            var result = await _mediator.Send(new HandlePaymentSuccessCommand(txId, gateway, val_id));
             ViewBag.IsSuccess = result.Success;
             ViewBag.Message   = result.Success
                 ? "Payment confirmed! Your order is now active."
@@ -113,7 +109,7 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Cancel(int txId)
         {
-            await _paymentService.HandleCancelAsync(txId);
+            await _mediator.Send(new HandlePaymentCancelCommand(txId));
             return View();
         }
     }

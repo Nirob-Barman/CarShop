@@ -1,4 +1,9 @@
+using CarShop.Application.Features.Notification.Commands.MarkAllAsRead;
+using CarShop.Application.Features.Notification.Commands.MarkAsRead;
+using CarShop.Application.Features.Notification.Queries.GetUnreadCount;
+using CarShop.Application.Features.Notification.Queries.GetUserNotifications;
 using CarShop.Application.Interfaces;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,38 +12,38 @@ namespace CarShop.Web.Controllers
     [Authorize]
     public class NotificationController : UserDashboardController
     {
-        private readonly INotificationService _notificationService;
+        private readonly IMediator _mediator;
 
-        public NotificationController(INotificationService notificationService, IUserService userService, IUserContextService userContextService)
-            : base(userService, userContextService)
+        public NotificationController(IMediator mediator, IUserContextService userContextService)
+            : base(mediator, userContextService)
         {
-            _notificationService = notificationService;
+            _mediator = mediator;
         }
 
         public async Task<IActionResult> Index()
         {
-            var result = await _notificationService.GetUserNotificationsAsync();
+            var result = await _mediator.Send(new GetUserNotificationsQuery());
             return View(result.Data ?? Enumerable.Empty<CarShop.Application.DTOs.Notification.AppNotificationDto>());
         }
 
         [HttpGet]
         public async Task<IActionResult> UnreadCount()
         {
-            var result = await _notificationService.GetUnreadCountAsync();
+            var result = await _mediator.Send(new GetUnreadCountQuery());
             return Json(new { count = result.Data });
         }
 
         [HttpPost]
         public async Task<IActionResult> MarkRead(int id)
         {
-            await _notificationService.MarkAsReadAsync(id);
+            await _mediator.Send(new MarkAsReadCommand(id));
             return Ok();
         }
 
         [HttpPost]
         public async Task<IActionResult> MarkAllRead()
         {
-            await _notificationService.MarkAllAsReadAsync();
+            await _mediator.Send(new MarkAllAsReadCommand());
             TempData["SuccessMessage"] = "All notifications marked as read.";
             return RedirectToAction("Index");
         }

@@ -1,5 +1,12 @@
 using CarShop.Application.DTOs.PromoCode;
-using CarShop.Application.Interfaces;
+using CarShop.Application.Features.PromoCode.Commands.CreatePromoCode;
+using CarShop.Application.Features.PromoCode.Commands.DeletePromoCode;
+using CarShop.Application.Features.PromoCode.Commands.TogglePromoCodeActive;
+using CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode;
+using CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes;
+using CarShop.Application.Features.PromoCode.Queries.GetAllPromoCodes;
+using CarShop.Application.Features.PromoCode.Queries.GetPromoCodeById;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,18 +15,18 @@ namespace CarShop.Web.Controllers
     [Authorize(Roles = "Admin")]
     public class PromoCodeController : Controller
     {
-        private readonly IPromoCodeService _promoCodeService;
+        private readonly IMediator _mediator;
 
-        public PromoCodeController(IPromoCodeService promoCodeService)
+        public PromoCodeController(IMediator mediator)
         {
-            _promoCodeService = promoCodeService;
+            _mediator = mediator;
         }
 
         // ── Admin actions ──────────────────────────────────────────
 
         public async Task<IActionResult> Index()
         {
-            var result = await _promoCodeService.GetAllCodesAsync();
+            var result = await _mediator.Send(new GetAllPromoCodesQuery());
             return View(result.Data ?? Enumerable.Empty<PromoCodeDto>());
         }
 
@@ -33,7 +40,7 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(dto);
 
-            var result = await _promoCodeService.CreateCodeAsync(dto);
+            var result = await _mediator.Send(new CreatePromoCodeCommand(dto));
             if (result.Success)
             {
                 TempData["SuccessMessage"] = result.Message;
@@ -46,7 +53,7 @@ namespace CarShop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var result = await _promoCodeService.GetByIdAsync(id);
+            var result = await _mediator.Send(new GetPromoCodeByIdQuery(id));
             if (!result.Success) return RedirectToAction("Index");
             return View(result.Data);
         }
@@ -55,7 +62,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, PromoCodeDto dto)
         {
-            var result = await _promoCodeService.UpdateCodeAsync(id, dto);
+            var result = await _mediator.Send(new UpdatePromoCodeCommand(id, dto));
             if (result.Success)
                 TempData["SuccessMessage"] = result.Message;
             else
@@ -67,7 +74,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Toggle(int id)
         {
-            var result = await _promoCodeService.ToggleActiveAsync(id);
+            var result = await _mediator.Send(new TogglePromoCodeActiveCommand(id));
             if (result.Success)
                 TempData["SuccessMessage"] = result.Message;
             else
@@ -79,7 +86,7 @@ namespace CarShop.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var result = await _promoCodeService.DeleteCodeAsync(id);
+            var result = await _mediator.Send(new DeletePromoCodeCommand(id));
             if (result.Success)
                 TempData["SuccessMessage"] = result.Message;
             else
@@ -92,7 +99,7 @@ namespace CarShop.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Deals()
         {
-            var result = await _promoCodeService.GetAllActiveCodesAsync();
+            var result = await _mediator.Send(new GetActivePromoCodesQuery());
             return View(result.Data ?? Enumerable.Empty<PromoCodeDto>());
         }
     }

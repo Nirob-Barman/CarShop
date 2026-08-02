@@ -20,16 +20,5 @@ namespace CarShop.Web.ViewModels.Mappers
         {
             return dtos.Select(ToViewModel);
         }
-
-        public static BrandDto ToDto(this BrandViewModel vm)
-        {
-            if (vm == null) return null!;
-
-            return new BrandDto
-            {
-                Id = vm.Id,
-                Name = vm.Name?.Trim()
-            };
-        }
     }
 }

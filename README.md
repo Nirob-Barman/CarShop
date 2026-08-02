@@ -38,8 +38,10 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
 
 ### Technical
 - **Clean Architecture** — Domain → Application → Infrastructure → Web; no layer skip
+- **CQRS + MediatR** — Application layer organized as Commands/Queries/Handlers under `Application/Features/{Feature}/`, not a traditional service layer; controllers depend only on `IMediator`
+- **FluentValidation pipeline** — a shared MediatR pipeline behavior validates commands before they reach their handler
 - **Unit of Work + Generic Repository** — `_unitOfWork.Repository<T>()` throughout; no direct DbContext injection
-- **Result<T> wrapper** — consistent `Ok`/`Fail`/`FailField` returns from all services
+- **Result<T> wrapper** — consistent `Ok`/`Fail`/`FailField` returns from every Command/Query handler
 - **Strategy pattern** — payment processors resolved by gateway slug via `PaymentProcessorFactory`
 - **Config encryption** — gateway API keys encrypted at rest via ASP.NET Data Protection
 - **Redis cache** — Upstash cloud (StackExchange.Redis)
@@ -57,6 +59,7 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
 | Layer | Technology |
 |---|---|
 | Framework | ASP.NET Core 8 MVC |
+| Application patterns | CQRS via MediatR + FluentValidation |
 | ORM | Entity Framework Core 8 |
 | Database | SQL Server (SQLEXPRESS) |
 | Auth | ASP.NET Identity + Google OAuth |
@@ -170,7 +173,7 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
 ```
 CarShop/
 ├── CarShop.Domain/          # Entities only — no dependencies
-├── CarShop.Application/     # Business logic, DTOs, interfaces, services
+├── CarShop.Application/     # CQRS (Commands/Queries/Handlers via MediatR), DTOs, interfaces
 ├── CarShop.Infrastructure/  # EF Core, Identity, email, Redis, payment processors
 └── CarShop.Web/             # MVC controllers, Razor views, ViewModels, static files
     ├── wwwroot/css/pages/   # Page-scoped CSS (admin-layout, car-layout, checkout, order-print)

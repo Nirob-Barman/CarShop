@@ -1,7 +1,18 @@
-﻿using CarShop.Application.Interfaces;
+using CarShop.Application.Features.Auth.Commands.ExternalRegisterAndSignIn;
+using CarShop.Application.Features.Auth.Commands.GeneratePasswordResetToken;
+using CarShop.Application.Features.Auth.Commands.Login;
+using CarShop.Application.Features.Auth.Commands.Logout;
+using CarShop.Application.Features.Auth.Commands.Register;
+using CarShop.Application.Features.Auth.Commands.ResetPassword;
+using CarShop.Application.Features.Auth.Queries.EmailExists;
+using CarShop.Application.Features.User.Commands.ChangePassword;
+using CarShop.Application.Features.User.Commands.UpdateProfile;
+using CarShop.Application.Features.User.Queries.GetProfile;
+using CarShop.Application.Interfaces;
 using CarShop.Infrastructure.Identity;
 using CarShop.Web.ViewModels.Account;
 using CarShop.Web.ViewModels.Mappers;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,18 +23,18 @@ namespace CarShop.Web.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IUserService _userService;
+        private readonly IMediator _mediator;
         private readonly IUserContextService _userContextService;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly UserManager<ApplicationUser> _userManager;
 
         public AccountController(
-            IUserService userService,
+            IMediator mediator,
             IUserContextService userContextService,
             SignInManager<ApplicationUser> signInManager,
             UserManager<ApplicationUser> userManager)
         {
-            _userService = userService;
+            _mediator = mediator;
             _userContextService = userContextService;
             _signInManager = signInManager;
             _userManager = userManager;
@@ -47,7 +58,7 @@ namespace CarShop.Web.Controllers
                 return View(model);
 
             var dto = AccountMapper.ToDto(model);
-            var result = await _userService.RegisterAsync(dto);
+            var result = await _mediator.Send(new RegisterCommand(dto));
 
             if (!result.Success)
             {
@@ -82,7 +93,7 @@ namespace CarShop.Web.Controllers
             }
 
             var dto = AccountMapper.ToDto(model);
-            var result = await _userService.LoginAsync(dto);
+            var result = await _mediator.Send(new LoginCommand(dto));
 
             if (!result.Success)
             {
@@ -107,24 +118,22 @@ namespace CarShop.Web.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            var result = await _userService.LogoutAsync();
+            var result = await _mediator.Send(new LogoutCommand());
             return RedirectToAction("Login");
         }
 
         [HttpPost]
         public async Task<IActionResult> CheckEmailExists(string email)
         {
-            bool emailExists = await _userService.EmailExistsAsync(email);
-            return Json(emailExists);
+            var result = await _mediator.Send(new EmailExistsQuery(email));
+            return Json(result.Data);
         }
 
 
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            string userId = _userContextService.UserId!;
-
-            var result = await _userService.GetProfileAsync(userId);
+            var result = await _mediator.Send(new GetProfileQuery());
 
             if (!result.Success || result.Data == null)
             {
@@ -145,9 +154,8 @@ namespace CarShop.Web.Controllers
                 return View("Profile", model);
 
             var dto = AccountMapper.ToDto(model);
-            string userId = _userContextService.UserId!;
 
-            var result = await _userService.UpdateProfileAsync(userId, dto);
+            var result = await _mediator.Send(new UpdateProfileCommand(dto));
 
             if (!result.Success)
             {
@@ -163,7 +171,7 @@ namespace CarShop.Web.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword()
         {
-            var profile = await _userService.GetProfileAsync(_userContextService.UserId!);
+            var profile = await _mediator.Send(new GetProfileQuery());
             ViewBag.FullName = profile.Data?.FullName;
             ViewBag.Email    = profile.Data?.Email;
             return View();
@@ -176,15 +184,14 @@ namespace CarShop.Web.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var profile = await _userService.GetProfileAsync(_userContextService.UserId!);
+                var profile = await _mediator.Send(new GetProfileQuery());
                 ViewBag.FullName = profile.Data?.FullName;
                 ViewBag.Email    = profile.Data?.Email;
                 return View(model);
             }
 
-            string userId = _userContextService.UserId!;
             var dto = AccountMapper.ToDto(model);
-            var result = await _userService.ChangePasswordAsync(userId, dto);
+            var result = await _mediator.Send(new ChangePasswordCommand(dto));
 
             if (result.Success)
             {
@@ -220,7 +227,7 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var dto = AccountMapper.ToDto(model);
-            var result = await _userService.GeneratePasswordResetTokenAsync(dto.Email!);
+            var result = await _mediator.Send(new GeneratePasswordResetTokenCommand(dto.Email!));
 
             if (!result.Success)
             {
@@ -253,7 +260,7 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var dto = AccountMapper.ToDto(model);
-            var result = await _userService.ResetPasswordAsync(dto.Email!, dto.Token!, dto.NewPassword!);
+            var result = await _mediator.Send(new ResetPasswordCommand(dto.Email!, dto.Token!, dto.NewPassword!));
 
             if (!result.Success)
             {
@@ -309,7 +316,7 @@ namespace CarShop.Web.Controllers
 
             // 3. No account at all → auto-register
             var fullName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
-            var result   = await _userService.ExternalRegisterAndSignInAsync(email, fullName, info.LoginProvider, info.ProviderKey);
+            var result   = await _mediator.Send(new ExternalRegisterAndSignInCommand(email, fullName, info.LoginProvider, info.ProviderKey));
 
             if (!result.Success)
             {
