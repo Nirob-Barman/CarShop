@@ -5,7 +5,7 @@ using CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway;
 using CarShop.Application.Features.PaymentGateway.Queries.GetAllGateways;
 using CarShop.Application.Features.PaymentGateway.Queries.GetDecryptedGatewayConfig;
 using CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById;
-using CarShop.Application.Payment;
+using CarShop.Application.Features.PaymentGateway;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

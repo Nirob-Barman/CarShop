@@ -1,4 +1,4 @@
-namespace CarShop.Application.Payment
+namespace CarShop.Application.Features.PaymentGateway
 {
     public class GatewayFieldDefinition
     {

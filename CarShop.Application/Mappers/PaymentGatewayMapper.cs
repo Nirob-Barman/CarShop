@@ -1,5 +1,5 @@
 using CarShop.Application.DTOs.Payment;
-using CarShop.Application.Payment;
+using CarShop.Application.Features.PaymentGateway;
 using CarShop.Domain.Entities;
 
 namespace CarShop.Application.Mappers

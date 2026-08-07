@@ -3,8 +3,8 @@
     Layout = "~/Views/Shared/Admin/_AdminLayout.cshtml";
     ViewData["Title"] = "Edit Payment Gateway";
     var config = ViewBag.Config as Dictionary<string, string>;
-    var schema = ViewBag.Schema as CarShop.Application.Payment.GatewayDefinition;
-    var family = ViewBag.Family as CarShop.Application.Payment.GatewayFamily;
+    var schema = ViewBag.Schema as CarShop.Application.Features.PaymentGateway.GatewayDefinition;
+    var family = ViewBag.Family as CarShop.Application.Features.PaymentGateway.GatewayFamily;
 }
 
 <div class="container mt-4" style="max-width:700px;">

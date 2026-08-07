@@ -1,5 +1,5 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Payment;
+using CarShop.Application.Features.PaymentGateway;
 
 namespace CarShop.Infrastructure.Payments
 {

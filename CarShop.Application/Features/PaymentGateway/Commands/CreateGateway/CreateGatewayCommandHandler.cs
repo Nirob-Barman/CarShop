@@ -1,7 +1,6 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Persistence;
-using CarShop.Application.Payment;
 using CarShop.Application.Wrappers;
 using MediatR;
 using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
