@@ -37,7 +37,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.DeactivatePromoCode
                 return Result<string>.Fail("Promo code not found.");
 
             var oldIsActive = promo.IsActive;
-            promo.IsActive = false;
+            promo.Deactivate();
             _unitOfWork.Repository<PromoCodeEntity>().Update(promo);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

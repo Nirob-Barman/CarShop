@@ -41,7 +41,6 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
                 MaxDiscountAmount = dto.MaxDiscountAmount,
                 MaxUsages = dto.MaxUsages,
                 ExpiresAt = dto.ExpiresAt,
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
 

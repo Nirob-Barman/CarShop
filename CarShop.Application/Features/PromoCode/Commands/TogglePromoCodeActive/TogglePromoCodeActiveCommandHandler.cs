@@ -36,7 +36,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.TogglePromoCodeActive
             if (promo == null) return Result<string>.Fail("Promo code not found.");
 
             var oldIsActive = promo.IsActive;
-            promo.IsActive = !promo.IsActive;
+            promo.ToggleActive();
             _unitOfWork.Repository<PromoCodeEntity>().Update(promo);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

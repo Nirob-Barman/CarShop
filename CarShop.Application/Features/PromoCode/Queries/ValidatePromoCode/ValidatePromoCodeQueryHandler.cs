@@ -23,10 +23,10 @@ namespace CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode
             if (promo == null)
                 return Result<ValidatePromoCodeResult>.Fail("Invalid or inactive promo code.");
 
-            if (promo.ExpiresAt.HasValue && promo.ExpiresAt.Value < DateTime.UtcNow)
+            if (promo.IsExpired)
                 return Result<ValidatePromoCodeResult>.Fail("Promo code has expired.");
 
-            if (promo.MaxUsages.HasValue && promo.UsageCount >= promo.MaxUsages.Value)
+            if (promo.HasReachedUsageLimit)
                 return Result<ValidatePromoCodeResult>.Fail("Promo code usage limit reached.");
 
             return Result<ValidatePromoCodeResult>.Ok(new ValidatePromoCodeResult

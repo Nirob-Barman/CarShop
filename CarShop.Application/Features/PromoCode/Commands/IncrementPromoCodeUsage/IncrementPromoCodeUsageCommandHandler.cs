@@ -26,7 +26,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.IncrementPromoCodeUsag
             if (promo == null)
                 return Result<string>.Fail("Promo code not found.");
 
-            promo.UsageCount++;
+            promo.RecordUsage();
             _unitOfWork.Repository<PromoCodeEntity>().Update(promo);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
