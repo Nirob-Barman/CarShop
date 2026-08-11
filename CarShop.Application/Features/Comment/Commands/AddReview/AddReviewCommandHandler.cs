@@ -22,13 +22,11 @@ namespace CarShop.Application.Features.Comment.Commands.AddReview
             var userId   = _userContextService.UserId!;
             var userName = _userContextService.Email ?? "User";
 
-            var comment = new CommentEntity
+            var comment = new CommentEntity(request.Content!, request.Rating)
             {
                 CarId = request.CarId,
                 UserId = userId,
                 UserName = userName.Trim(),
-                Content = request.Content!.Trim(),
-                Rating = request.Rating,
                 CreatedAt = DateTime.UtcNow
             };
 

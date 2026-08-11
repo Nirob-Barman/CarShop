@@ -29,8 +29,7 @@ namespace CarShop.Application.Features.Comment.Commands.EditReview
             if (!isAdmin && comment.UserId != userId)
                 return Result<string>.Fail("You are not allowed to edit this review.");
 
-            comment.Content = request.Content!.Trim();
-            comment.Rating = request.Rating;
+            comment.Edit(request.Content!, request.Rating);
             _unitOfWork.Repository<CommentEntity>().Update(comment);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
