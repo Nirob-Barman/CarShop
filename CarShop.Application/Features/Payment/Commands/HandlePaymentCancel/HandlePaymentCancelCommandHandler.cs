@@ -1,6 +1,7 @@
 using CarShop.Application.Features.Order.Commands.CancelPendingOrderById;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 using PaymentTransactionEntity = CarShop.Domain.Entities.PaymentTransaction;
 
@@ -22,10 +23,10 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentCancel
             var transaction = await _unitOfWork.Repository<PaymentTransactionEntity>()
                 .GetByIdAsync(request.TransactionDbId);
 
-            if (transaction == null || transaction.Status != "Pending")
+            if (transaction == null || transaction.Status != PaymentTransactionStatus.Pending)
                 return Result<string>.Ok(null, "Nothing to cancel.");
 
-            transaction.Status = "Failed";
+            transaction.MarkFailed();
             _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

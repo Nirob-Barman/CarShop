@@ -5,6 +5,7 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 using CarEntity = CarShop.Domain.Entities.Car;
 using OrderEntity = CarShop.Domain.Entities.Order;
@@ -42,7 +43,7 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
             if (transaction == null)
                 return Result<string>.Fail("Transaction not found.");
 
-            if (transaction.Status == "Success")
+            if (transaction.Status == PaymentTransactionStatus.Success)
                 return Result<string>.Ok(null, "Already confirmed.");
 
             var config = await _mediator.Send(new GetDecryptedGatewayConfigQuery(transaction.PaymentGatewayId), cancellationToken);
@@ -50,9 +51,7 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
 
             var verifyResult = await processor.VerifyAsync(request.SessionRefOverride ?? transaction.SessionRef ?? request.TransactionDbId.ToString(), config);
 
-            transaction.Status        = verifyResult.Success ? "Success" : "Failed";
-            transaction.TransactionId = verifyResult.ProviderTransactionId;
-            transaction.RawResponse   = verifyResult.RawResponse;
+            transaction.RecordVerificationResult(verifyResult.Success, verifyResult.ProviderTransactionId, verifyResult.RawResponse);
             _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

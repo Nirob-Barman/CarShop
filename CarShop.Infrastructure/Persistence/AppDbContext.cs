@@ -115,6 +115,10 @@ namespace CarShop.Infrastructure.Persistence
                 .HasForeignKey(t => t.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<PaymentTransaction>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+
             // PaymentTransaction -> PaymentGateway relationship
             builder.Entity<PaymentTransaction>()
                 .HasOne(t => t.PaymentGateway)

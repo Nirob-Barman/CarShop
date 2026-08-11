@@ -6,6 +6,7 @@ using CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 using PaymentTransactionEntity = CarShop.Domain.Entities.PaymentTransaction;
 
@@ -54,7 +55,6 @@ namespace CarShop.Application.Features.Payment.Commands.InitiatePayment
                 PaymentGatewayId = request.GatewayId,
                 Amount           = finalPrice,
                 Currency         = "USD",
-                Status           = "Pending",
                 CreatedAt        = DateTime.UtcNow
             };
             await _unitOfWork.Repository<PaymentTransactionEntity>().AddAsync(transaction);
@@ -74,7 +74,7 @@ namespace CarShop.Application.Features.Payment.Commands.InitiatePayment
             if (!initResult.Success)
             {
                 await _mediator.Send(new CancelPendingOrderByIdCommand(orderId), cancellationToken);
-                transaction.Status = "Failed";
+                transaction.MarkFailed();
                 _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 return Result<string>.Fail(initResult.Error ?? "Payment initiation failed.");
