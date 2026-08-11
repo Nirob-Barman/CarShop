@@ -26,21 +26,32 @@ namespace CarShop.Application.Features.TestDrive.Commands.UpdateStatus
             if (booking == null)
                 return Result<string>.Fail("Booking not found.");
 
+            if (!Enum.TryParse<TestDriveStatus>(request.Status, ignoreCase: true, out var newStatus))
+                return Result<string>.Fail("Invalid status.");
+
             var oldStatus = booking.Status;
-            booking.Status = request.Status;
+            var changed = newStatus switch
+            {
+                TestDriveStatus.Confirmed => booking.Confirm(),
+                TestDriveStatus.Cancelled => booking.Cancel(),
+                _ => false
+            };
+            if (!changed)
+                return Result<string>.Fail("Could not update status.");
+
             _unitOfWork.Repository<TestDriveBooking>().Update(booking);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("TestDrive", "StatusUpdate",
                 _userContextService.UserId, _userContextService.Email,
-                $"Status changed from '{oldStatus}' to '{request.Status}'",
+                $"Status changed from '{oldStatus}' to '{newStatus}'",
                 entityId: request.BookingId,
                 ipAddress: _userContextService.IpAddress,
                 userAgent: _userContextService.UserAgent,
-                oldValues: JsonSerializer.Serialize(new { Status = oldStatus }),
-                newValues: JsonSerializer.Serialize(new { Status = request.Status }));
+                oldValues: JsonSerializer.Serialize(new { Status = oldStatus.ToString() }),
+                newValues: JsonSerializer.Serialize(new { Status = newStatus.ToString() }));
 
-            return Result<string>.Ok(null, $"Booking status updated to {request.Status}.");
+            return Result<string>.Ok(null, $"Booking status updated to {newStatus}.");
         }
     }
 }

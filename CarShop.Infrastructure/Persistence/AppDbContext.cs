@@ -69,6 +69,10 @@ namespace CarShop.Infrastructure.Persistence
                 .HasForeignKey(t => t.CarId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<TestDriveBooking>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
+
             // Car-StockAlert Relationship
             builder.Entity<StockAlert>()
                 .HasOne(s => s.Car)

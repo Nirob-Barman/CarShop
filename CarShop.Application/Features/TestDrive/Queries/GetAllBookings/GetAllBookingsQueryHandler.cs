@@ -17,8 +17,10 @@ namespace CarShop.Application.Features.TestDrive.Queries.GetAllBookings
 
         public async Task<Result<IEnumerable<TestDriveBookingDto>>> Handle(GetAllBookingsQuery request, CancellationToken cancellationToken)
         {
+            TestDriveStatus? statusFilter = Enum.TryParse<TestDriveStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
+
             var bookings = await _unitOfWork.Repository<TestDriveBooking>().GetAllWithIncludesAsync(
-                predicate: b => request.Status == null || b.Status == request.Status,
+                predicate: b => statusFilter == null || b.Status == statusFilter,
                 selector: b => b,
                 b => b.Car!
             );
@@ -31,7 +33,7 @@ namespace CarShop.Application.Features.TestDrive.Queries.GetAllBookings
                 CarTitle = b.Car?.Title,
                 BookingDate = b.BookingDate,
                 Notes = b.Notes,
-                Status = b.Status,
+                Status = b.Status.ToString(),
                 CreatedAt = b.CreatedAt
             });
 

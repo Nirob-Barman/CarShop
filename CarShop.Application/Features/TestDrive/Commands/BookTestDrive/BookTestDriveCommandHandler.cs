@@ -35,7 +35,6 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
                 CarId = request.CarId,
                 BookingDate = request.BookingDate,
                 Notes = request.Notes,
-                Status = "Pending",
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -52,7 +51,7 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
                 {
                     booking.CarId, CarTitle = car.Title,
                     BookingDate = request.BookingDate.ToString("yyyy-MM-dd HH:mm"),
-                    booking.Notes, booking.Status
+                    booking.Notes, Status = booking.Status.ToString()
                 }));
 
             return Result<string>.Ok(null, "Test drive booked successfully. We'll confirm your booking shortly.");

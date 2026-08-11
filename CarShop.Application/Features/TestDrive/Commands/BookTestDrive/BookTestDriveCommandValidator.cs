@@ -27,7 +27,7 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
             var userId = _userContextService.UserId!;
             var recentBooking = await _unitOfWork.Repository<TestDriveBooking>().AnyAsync(
                 b => b.UserId == userId && b.CarId == command.CarId &&
-                     b.Status != "Cancelled" &&
+                     b.Status != TestDriveStatus.Cancelled &&
                      b.BookingDate >= DateTime.UtcNow.AddDays(-7));
             return !recentBooking;
         }

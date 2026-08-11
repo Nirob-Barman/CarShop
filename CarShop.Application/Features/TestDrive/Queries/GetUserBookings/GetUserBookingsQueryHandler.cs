@@ -35,7 +35,7 @@ namespace CarShop.Application.Features.TestDrive.Queries.GetUserBookings
                 CarTitle = b.Car?.Title,
                 BookingDate = b.BookingDate,
                 Notes = b.Notes,
-                Status = b.Status,
+                Status = b.Status.ToString(),
                 CreatedAt = b.CreatedAt
             });
 

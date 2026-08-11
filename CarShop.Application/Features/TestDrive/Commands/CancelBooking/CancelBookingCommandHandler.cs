@@ -29,11 +29,11 @@ namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
             if (booking == null)
                 return Result<string>.Fail("Booking not found or you are not authorized to cancel it.");
 
-            if (booking.Status == "Cancelled")
+            if (booking.Status == TestDriveStatus.Cancelled)
                 return Result<string>.Fail("Booking is already cancelled.");
 
             var oldStatus = booking.Status;
-            booking.Status = "Cancelled";
+            booking.Cancel();
             _unitOfWork.Repository<TestDriveBooking>().Update(booking);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -42,7 +42,7 @@ namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
                 entityId: request.BookingId,
                 ipAddress: _userContextService.IpAddress,
                 userAgent: _userContextService.UserAgent,
-                oldValues: JsonSerializer.Serialize(new { Status = oldStatus }),
+                oldValues: JsonSerializer.Serialize(new { Status = oldStatus.ToString() }),
                 newValues: JsonSerializer.Serialize(new { Status = "Cancelled" }));
 
             return Result<string>.Ok(null, "Test drive booking cancelled.");
