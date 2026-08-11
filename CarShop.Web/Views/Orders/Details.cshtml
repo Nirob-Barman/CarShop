@@ -6,10 +6,10 @@
 
     string badgeClass = Model.Status switch
     {
-        "Paid" or "Confirmed" => "bg-success",
-        "Cancelled"           => "bg-danger",
-        "Pending"             => "bg-warning text-dark",
-        _                     => "bg-secondary"
+        "Confirmed" => "bg-success",
+        "Cancelled" => "bg-danger",
+        "Pending"   => "bg-warning text-dark",
+        _           => "bg-secondary"
     };
 }
 

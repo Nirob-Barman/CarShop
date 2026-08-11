@@ -6,6 +6,7 @@ using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
+using CarShop.Domain.Entities;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
 namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
@@ -42,7 +43,7 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
             if (order == null)
                 return Result<string>.Fail("Order not found.");
 
-            if (order.Status == "Cancelled")
+            if (order.Status == OrderStatus.Cancelled)
                 return Result<string>.Fail("Order is already cancelled.");
 
             bool wasOutOfStock = order.Car != null && order.Car.Quantity == 0;
@@ -52,7 +53,7 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
             if (order.Car != null)
                 order.Car.Quantity += order.Quantity;
 
-            order.Status = "Cancelled";
+            order.Cancel();
             _unitOfWork.Repository<OrderEntity>().Update(order);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -63,7 +64,7 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
                 null, null,
                 $"Admin cancelled order #{request.OrderId} for user {order.UserId} (car: '{order.Car?.Title}')",
                 entityId: request.OrderId,
-                oldValues: JsonSerializer.Serialize(new { Status = oldStatus }),
+                oldValues: JsonSerializer.Serialize(new { Status = oldStatus.ToString() }),
                 newValues: JsonSerializer.Serialize(new { Status = "Cancelled" }));
 
             if (order.UserId != null)

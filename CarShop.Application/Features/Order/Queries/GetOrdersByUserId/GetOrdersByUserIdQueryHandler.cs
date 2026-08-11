@@ -37,7 +37,7 @@ namespace CarShop.Application.Features.Order.Queries.GetOrdersByUserId
                 CarTitle = o.Car?.Title ?? "N/A",
                 CarPrice = o.Car?.Price ?? 0,
                 CarImageUrl = o.Car?.ImageUrl,
-                Status = o.Status,
+                Status = o.Status.ToString(),
                 PromoCode = o.PromoCode,
                 DiscountAmount = o.DiscountAmount,
                 FinalPrice = o.FinalPrice > 0 ? o.FinalPrice : o.Car?.Price ?? 0

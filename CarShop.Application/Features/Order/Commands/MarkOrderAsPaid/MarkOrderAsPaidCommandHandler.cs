@@ -3,6 +3,7 @@ using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
+using CarShop.Domain.Entities;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
 namespace CarShop.Application.Features.Order.Commands.MarkOrderAsPaid
@@ -22,10 +23,10 @@ namespace CarShop.Application.Features.Order.Commands.MarkOrderAsPaid
         {
             var order = await _unitOfWork.Repository<OrderEntity>().GetByIdAsync(request.OrderId);
             if (order == null) return Result<string>.Fail("Order not found.");
-            if (order.Status == "Confirmed") return Result<string>.Ok(null, "Already confirmed.");
+            if (order.Status == OrderStatus.Confirmed) return Result<string>.Ok(null, "Already confirmed.");
 
             var oldStatus = order.Status;
-            order.Status = "Confirmed";
+            order.Confirm();
             _unitOfWork.Repository<OrderEntity>().Update(order);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
@@ -33,7 +34,7 @@ namespace CarShop.Application.Features.Order.Commands.MarkOrderAsPaid
                 order.UserId, null,
                 $"Payment confirmed for order #{request.OrderId}",
                 entityId: request.OrderId,
-                oldValues: JsonSerializer.Serialize(new { Status = oldStatus }),
+                oldValues: JsonSerializer.Serialize(new { Status = oldStatus.ToString() }),
                 newValues: JsonSerializer.Serialize(new { Status = "Confirmed" }));
 
             return Result<string>.Ok(null, "Order confirmed.");

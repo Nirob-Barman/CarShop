@@ -1,6 +1,7 @@
 using CarShop.Application.DTOs.Analytics;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 using CarEntity = CarShop.Domain.Entities.Car;
 using OrderEntity = CarShop.Domain.Entities.Order;
@@ -19,7 +20,7 @@ namespace CarShop.Application.Features.Analytics.Queries.GetDashboard
         public async Task<Result<AnalyticsDashboardDto>> Handle(GetDashboardQuery request, CancellationToken cancellationToken)
         {
             var orders = await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                predicate: o => o.Status != "Cancelled",
+                predicate: o => o.Status != OrderStatus.Cancelled,
                 selector: o => o,
                 o => o.Car!
             );

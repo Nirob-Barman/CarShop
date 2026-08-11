@@ -1,5 +1,6 @@
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
@@ -17,7 +18,7 @@ namespace CarShop.Application.Features.Order.Queries.GetCompletedOrdersCount
         public async Task<Result<int>> Handle(GetCompletedOrdersCountQuery request, CancellationToken cancellationToken)
         {
             var count = await _unitOfWork.Repository<OrderEntity>()
-                .CountAsync(o => o.Status == "Confirmed" || o.Status == "Paid");
+                .CountAsync(o => o.Status == OrderStatus.Confirmed);
             return Result<int>.Ok(count);
         }
     }

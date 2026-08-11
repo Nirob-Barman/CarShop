@@ -39,7 +39,7 @@ namespace CarShop.Application.Features.Order.Queries.GetOrderById
                 CarTitle       = order.Car?.Title ?? "N/A",
                 CarPrice       = order.Car?.Price ?? 0,
                 CarImageUrl    = order.Car?.ImageUrl,
-                Status         = order.Status,
+                Status         = order.Status.ToString(),
                 PromoCode      = order.PromoCode,
                 DiscountAmount = order.DiscountAmount,
                 FinalPrice     = order.FinalPrice > 0 ? order.FinalPrice : order.Car?.Price ?? 0

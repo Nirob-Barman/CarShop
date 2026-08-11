@@ -50,6 +50,11 @@ namespace CarShop.Infrastructure.Persistence
                 .HasForeignKey(o => o.CarId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Store OrderStatus as its string name, not the enum's underlying int, to match existing data
+            builder.Entity<Order>()
+                .Property(o => o.Status)
+                .HasConversion<string>();
+
             // Car-WishlistItem Relationship
             builder.Entity<WishlistItem>()
                 .HasOne(w => w.Car)

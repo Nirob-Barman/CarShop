@@ -2,6 +2,7 @@ using CarShop.Application.DTOs.Order;
 using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
@@ -20,8 +21,10 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
 
         public async Task<Result<PagedResult<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
         {
+            OrderStatus? statusFilter = Enum.TryParse<OrderStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
+
             var allOrders = await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                predicate: o => request.Status == null || o.Status == request.Status,
+                predicate: o => statusFilter == null || o.Status == statusFilter,
                 selector: o => o,
                 o => o.Car!
             );
@@ -45,7 +48,7 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
                     CarTitle = o.Car?.Title ?? "N/A",
                     CarPrice = o.Car?.Price ?? 0,
                     CarImageUrl = o.Car?.ImageUrl,
-                    Status = o.Status,
+                    Status = o.Status.ToString(),
                     PromoCode = o.PromoCode,
                     DiscountAmount = o.DiscountAmount,
                     FinalPrice = o.FinalPrice > 0 ? o.FinalPrice : o.Car?.Price ?? 0,

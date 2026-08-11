@@ -2,6 +2,7 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
+using CarShop.Domain.Entities;
 using CarEntity = CarShop.Domain.Entities.Car;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
@@ -23,7 +24,7 @@ namespace CarShop.Application.Features.Order.Commands.ExpireStalePendingOrders
             var userId = _userContextService.UserId!;
             var cutoff = DateTime.UtcNow.AddMinutes(-request.OlderThanMinutes);
             var stale  = await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                predicate: o => o.UserId == userId && o.Status == "Pending" && o.OrderedAt < cutoff,
+                predicate: o => o.UserId == userId && o.Status == OrderStatus.Pending && o.OrderedAt < cutoff,
                 selector:  o => o,
                 o => o.Car!);
 
@@ -34,7 +35,7 @@ namespace CarShop.Application.Features.Order.Commands.ExpireStalePendingOrders
                     order.Car.Quantity += order.Quantity;
                     _unitOfWork.Repository<CarEntity>().Update(order.Car);
                 }
-                order.Status = "Cancelled";
+                order.Cancel();
                 _unitOfWork.Repository<OrderEntity>().Update(order);
             }
 

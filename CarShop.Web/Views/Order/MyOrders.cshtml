@@ -3,7 +3,7 @@
     ViewData["Title"] = "My Orders";
     Layout = "~/Views/Shared/User/_UserLayout.cshtml";
     var orders     = Model.OrderByDescending(o => o.OrderedAt).ToList();
-    var totalSpent = orders.Where(o => o.Status is "Paid" or "Confirmed").Sum(o => o.FinalPrice);
+    var totalSpent = orders.Where(o => o.Status == "Confirmed").Sum(o => o.FinalPrice);
     const int pageSize = 5;
     var totalPages = (int)Math.Ceiling(orders.Count / (double)pageSize);
 }
@@ -32,13 +32,12 @@
             string badgeLabel;
             (badgeClass, badgeLabel) = order.Status switch
             {
-                "Paid"      => ("bg-success",            "Paid"),
                 "Confirmed" => ("bg-success",            "Confirmed"),
                 "Cancelled" => ("bg-danger",             "Cancelled"),
                 "Pending"   => ("bg-warning text-dark",  "Pending Payment"),
                 _           => ("bg-secondary",          order.Status)
             };
-            bool canCancel = order.Status is "Paid" or "Confirmed";
+            bool canCancel = order.Status == "Confirmed";
 
             <div class="card shadow-sm mb-3 border-0 order-card">
                 <div class="card-body d-flex gap-3 align-items-start">

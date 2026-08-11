@@ -5,6 +5,7 @@ using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
+using CarShop.Domain.Entities;
 using CarEntity = CarShop.Domain.Entities.Car;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
@@ -38,10 +39,10 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
 
             // Cancel any existing pending order for this user + car to prevent stock double-hold
             var existingPending = await _unitOfWork.Repository<OrderEntity>().FirstOrDefaultAsync(
-                o => o.UserId == userId && o.CarId == request.CarId && o.Status == "Pending");
+                o => o.UserId == userId && o.CarId == request.CarId && o.Status == OrderStatus.Pending);
             if (existingPending != null)
             {
-                existingPending.Status = "Cancelled";
+                existingPending.Cancel();
                 car.Quantity += existingPending.Quantity;  // restore the previously held stock
                 _unitOfWork.Repository<OrderEntity>().Update(existingPending);
             }
@@ -76,7 +77,6 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
                 CarId          = request.CarId,
                 OrderedAt      = DateTime.UtcNow,
                 Quantity       = 1,
-                Status         = "Pending",
                 PromoCode      = appliedCode,
                 DiscountAmount = discountAmount,
                 FinalPrice     = finalPrice
@@ -96,7 +96,7 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
                 {
                     order.CarId, CarTitle = car.Title,
                     order.FinalPrice, order.DiscountAmount,
-                    order.PromoCode, order.Status
+                    order.PromoCode, Status = order.Status.ToString()
                 }));
 
             return Result<(int, decimal, string)>.Ok((order.Id, finalPrice, car.Title ?? "Car"));
