@@ -1,8 +1,7 @@
 ﻿namespace CarShop.Domain.Entities
 {
-    public class IntegrationSetting
+    public class IntegrationSetting : BaseAuditableEntity
     {
-        public int Id { get; set; }
         public string? ServiceName { get; set; }
         public bool IsEnabled { get; set; }
         // Optional JSON or string config for the service
@@ -17,8 +16,6 @@
         public DateTime? LastUsedAt { get; set; }
         // Optional: service status
         public ServiceStatus Status { get; set; } = ServiceStatus.Inactive;
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
     public enum ServiceStatus
     {

@@ -1,9 +1,8 @@
 ﻿
 namespace CarShop.Domain.Entities
 {
-    public class Car
+    public class Car : BaseEntity
     {
-        public int Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public decimal Price { get; set; }

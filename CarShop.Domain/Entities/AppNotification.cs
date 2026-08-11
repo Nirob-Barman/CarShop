@@ -1,8 +1,7 @@
 namespace CarShop.Domain.Entities
 {
-    public class AppNotification
+    public class AppNotification : BaseEntity
     {
-        public int Id { get; set; }
         public string UserId { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public string? Link { get; set; }

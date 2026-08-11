@@ -1,8 +1,7 @@
 namespace CarShop.Domain.Entities
 {
-    public class PaymentGateway
+    public class PaymentGateway : BaseAuditableEntity
     {
-        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string GatewayFamily { get; set; } = string.Empty;
         public string Slug { get; set; } = string.Empty;
@@ -13,8 +12,6 @@ namespace CarShop.Domain.Entities
         public string SupportedCurrencies { get; set; } = "USD";
         public string? Config { get; set; }
         public int SortOrder { get; set; } = 0;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public ICollection<PaymentTransaction> Transactions { get; set; } = [];
         public ICollection<Order> Orders { get; set; } = [];

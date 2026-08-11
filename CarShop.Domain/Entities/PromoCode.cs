@@ -1,8 +1,7 @@
 namespace CarShop.Domain.Entities
 {
-    public class PromoCode
+    public class PromoCode : BaseEntity
     {
-        public int Id { get; set; }
         public string Code { get; set; } = string.Empty;
         public decimal DiscountPercent { get; set; }
         public decimal? MaxDiscountAmount { get; set; }

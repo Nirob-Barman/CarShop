@@ -1,8 +1,7 @@
 namespace CarShop.Domain.Entities
 {
-    public class StockAlert
+    public class StockAlert : BaseEntity
     {
-        public int Id { get; set; }
         public string UserId { get; set; } = string.Empty;
         public int CarId { get; set; }
         public bool IsTriggered { get; set; }
