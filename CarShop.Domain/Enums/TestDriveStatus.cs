@@ -1,4 +1,4 @@
-namespace CarShop.Domain.Entities
+namespace CarShop.Domain.Enums
 {
     public enum TestDriveStatus
     {

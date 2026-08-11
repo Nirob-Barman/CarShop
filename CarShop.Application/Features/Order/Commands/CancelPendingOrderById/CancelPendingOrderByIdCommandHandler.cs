@@ -4,6 +4,7 @@ using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 using CarEntity = CarShop.Domain.Entities.Car;
 using OrderEntity = CarShop.Domain.Entities.Order;
 

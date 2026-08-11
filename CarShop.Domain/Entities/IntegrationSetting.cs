@@ -1,4 +1,6 @@
-﻿namespace CarShop.Domain.Entities
+using CarShop.Domain.Enums;
+
+namespace CarShop.Domain.Entities
 {
     public class IntegrationSetting : BaseAuditableEntity
     {
@@ -16,12 +18,5 @@
         public DateTime? LastUsedAt { get; set; }
         // Optional: service status
         public ServiceStatus Status { get; set; } = ServiceStatus.Inactive;
-    }
-    public enum ServiceStatus
-    {
-        Active,   // Service is enabled and can be used
-        Inactive, // Service is intentionally turned off
-        Paused,   // Temporarily unavailable, maybe for maintenance
-        Error     // Service has failed or is unreliable
     }
 }

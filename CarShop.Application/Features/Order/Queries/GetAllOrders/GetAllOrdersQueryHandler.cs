@@ -3,6 +3,7 @@ using CarShop.Application.Interfaces.Identity;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 using MediatR;
 using OrderEntity = CarShop.Domain.Entities.Order;
 

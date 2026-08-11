@@ -2,6 +2,7 @@ using CarShop.Application.Features.Order.Commands.CancelPendingOrderById;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 using MediatR;
 using PaymentTransactionEntity = CarShop.Domain.Entities.PaymentTransaction;
 

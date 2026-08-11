@@ -7,6 +7,7 @@ using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 using OrderEntity = CarShop.Domain.Entities.Order;
 
 namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder

@@ -2,6 +2,7 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Persistence;
 using FluentValidation;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 
 namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
 {

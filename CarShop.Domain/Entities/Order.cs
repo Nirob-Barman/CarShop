@@ -1,3 +1,5 @@
+using CarShop.Domain.Enums;
+
 namespace CarShop.Domain.Entities
 {
     public class Order : BaseEntity

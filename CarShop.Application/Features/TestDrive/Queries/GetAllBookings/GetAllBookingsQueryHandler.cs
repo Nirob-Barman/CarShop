@@ -2,6 +2,7 @@ using CarShop.Application.DTOs.TestDrive;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 using MediatR;
 
 namespace CarShop.Application.Features.TestDrive.Queries.GetAllBookings

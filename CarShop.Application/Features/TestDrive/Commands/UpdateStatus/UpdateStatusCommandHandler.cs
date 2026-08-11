@@ -2,6 +2,7 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
+using CarShop.Domain.Enums;
 using MediatR;
 using System.Text.Json;
 
