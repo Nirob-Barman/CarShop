@@ -44,7 +44,7 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
             if (existingPending != null)
             {
                 existingPending.Cancel();
-                car.Quantity += existingPending.Quantity;  // restore the previously held stock
+                car.RestoreStock(existingPending.Quantity);  // restore the previously held stock
                 _unitOfWork.Repository<OrderEntity>().Update(existingPending);
             }
 
@@ -70,7 +70,7 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
                 }
             }
 
-            car.Quantity--;
+            car.DecrementStock(1);
 
             var order = new OrderEntity
             {

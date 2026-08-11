@@ -14,5 +14,18 @@ namespace CarShop.Domain.Entities
 
         public ICollection<Comment>? Comments { get; set; }
         //public ICollection<Order>? Orders { get; set; }
+
+        public bool DecrementStock(int quantity)
+        {
+            if (quantity <= 0 || Quantity < quantity) return false;
+            Quantity -= quantity;
+            return true;
+        }
+
+        public void RestoreStock(int quantity)
+        {
+            if (quantity <= 0) return;
+            Quantity += quantity;
+        }
     }
 }

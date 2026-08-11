@@ -49,7 +49,7 @@ namespace CarShop.Application.Features.Order.Commands.CancelOrder
             var oldStatus = order.Status;
 
             if (order.Car != null)
-                order.Car.Quantity += order.Quantity;
+                order.Car.RestoreStock(order.Quantity);
 
             order.Cancel();
             _unitOfWork.Repository<OrderEntity>().Update(order);

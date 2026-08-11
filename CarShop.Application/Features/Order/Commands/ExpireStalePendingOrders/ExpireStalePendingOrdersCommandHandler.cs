@@ -33,7 +33,7 @@ namespace CarShop.Application.Features.Order.Commands.ExpireStalePendingOrders
             {
                 if (order.Car != null)
                 {
-                    order.Car.Quantity += order.Quantity;
+                    order.Car.RestoreStock(order.Quantity);
                     _unitOfWork.Repository<CarEntity>().Update(order.Car);
                 }
                 order.Cancel();

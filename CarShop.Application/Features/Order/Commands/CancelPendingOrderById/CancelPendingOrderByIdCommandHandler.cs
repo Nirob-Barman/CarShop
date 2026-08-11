@@ -29,7 +29,7 @@ namespace CarShop.Application.Features.Order.Commands.CancelPendingOrderById
                 return Result<string>.Ok(null, "Nothing to cancel.");
 
             var car = await _unitOfWork.Repository<CarEntity>().GetByIdAsync(order.CarId);
-            if (car != null) { car.Quantity += order.Quantity; _unitOfWork.Repository<CarEntity>().Update(car); }
+            if (car != null) { car.RestoreStock(order.Quantity); _unitOfWork.Repository<CarEntity>().Update(car); }
 
             var oldStatus = order.Status;
             order.Cancel();
