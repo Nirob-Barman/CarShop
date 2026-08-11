@@ -38,7 +38,7 @@ namespace CarShop.Application.Features.Brand.Commands.UpdateBrand
                 return Result<string>.Fail("Brand not found.");
 
             var oldValues = JsonSerializer.Serialize(new { brand.Id, brand.Name });
-            brand.Name = request.Name!.Trim();
+            brand.Rename(request.Name!);
             _unitOfWork.Repository<BrandEntity>().Update(brand);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

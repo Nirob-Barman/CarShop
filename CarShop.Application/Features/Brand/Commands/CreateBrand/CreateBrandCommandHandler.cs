@@ -32,7 +32,7 @@ namespace CarShop.Application.Features.Brand.Commands.CreateBrand
 
         public async Task<Result<int>> Handle(CreateBrandCommand request, CancellationToken cancellationToken)
         {
-            var brand = new BrandEntity { Name = request.Name!.Trim() };
+            var brand = new BrandEntity(request.Name!);
             await _unitOfWork.Repository<BrandEntity>().AddAsync(brand);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

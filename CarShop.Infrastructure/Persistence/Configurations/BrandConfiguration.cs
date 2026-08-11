@@ -10,10 +10,10 @@ namespace CarShop.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Brand> builder)
         {
             builder.HasData(
-                new Brand { Id = 1, Name = "Toyota" },
-                new Brand { Id = 2, Name = "BMW" },
-                new Brand { Id = 3, Name = "Tesla" },
-                new Brand { Id = 4, Name = "Ford" }
+                new Brand("Toyota") { Id = 1 },
+                new Brand("BMW") { Id = 2 },
+                new Brand("Tesla") { Id = 3 },
+                new Brand("Ford") { Id = 4 }
             );
         }
     }
