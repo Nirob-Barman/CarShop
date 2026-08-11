@@ -29,8 +29,7 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.ToggleGatewayActi
             if (gateway == null) return Result<string>.Fail("Gateway not found.");
 
             var oldIsActive = gateway.IsActive;
-            gateway.IsActive  = !gateway.IsActive;
-            gateway.UpdatedAt = DateTime.UtcNow;
+            gateway.ToggleActive();
             _unitOfWork.Repository<PaymentGatewayEntity>().Update(gateway);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

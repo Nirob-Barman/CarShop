@@ -15,5 +15,11 @@ namespace CarShop.Domain.Entities
 
         public ICollection<PaymentTransaction> Transactions { get; set; } = [];
         public ICollection<Order> Orders { get; set; } = [];
+
+        public void ToggleActive()
+        {
+            IsActive = !IsActive;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }
