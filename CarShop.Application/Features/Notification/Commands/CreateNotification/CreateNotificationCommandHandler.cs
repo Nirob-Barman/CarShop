@@ -20,7 +20,6 @@ namespace CarShop.Application.Features.Notification.Commands.CreateNotification
                 UserId = request.UserId,
                 Message = request.Message,
                 Link = request.Link,
-                IsRead = false,
                 CreatedAt = DateTime.UtcNow
             };
 

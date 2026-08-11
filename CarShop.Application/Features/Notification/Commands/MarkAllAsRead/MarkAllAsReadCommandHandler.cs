@@ -25,7 +25,7 @@ namespace CarShop.Application.Features.Notification.Commands.MarkAllAsRead
 
             var list = notifications.ToList();
             foreach (var n in list)
-                n.IsRead = true;
+                n.MarkAsRead();
 
             _unitOfWork.Repository<CarShop.Domain.Entities.AppNotification>().UpdateRange(list);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

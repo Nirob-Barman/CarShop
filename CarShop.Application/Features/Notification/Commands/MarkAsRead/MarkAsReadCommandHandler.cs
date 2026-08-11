@@ -25,7 +25,7 @@ namespace CarShop.Application.Features.Notification.Commands.MarkAsRead
             if (notification == null)
                 return Result<string>.Fail("Notification not found.");
 
-            notification.IsRead = true;
+            notification.MarkAsRead();
             _unitOfWork.Repository<CarShop.Domain.Entities.AppNotification>().Update(notification);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
