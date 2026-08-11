@@ -33,7 +33,6 @@ namespace CarShop.Application.Features.StockAlert.Commands.SubscribeStockAlert
             {
                 UserId = userId,
                 CarId = request.CarId,
-                IsTriggered = false,
                 SubscribedAt = DateTime.UtcNow
             };
 

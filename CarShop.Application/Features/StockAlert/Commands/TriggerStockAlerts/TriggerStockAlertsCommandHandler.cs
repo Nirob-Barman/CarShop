@@ -40,8 +40,7 @@ namespace CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts
 
             foreach (var alert in alerts)
             {
-                alert.IsTriggered = true;
-                alert.TriggeredAt = DateTime.UtcNow;
+                alert.Trigger();
                 _unitOfWork.Repository<StockAlertEntity>().Update(alert);
 
                 await _mediator.Send(new CreateNotificationCommand(
