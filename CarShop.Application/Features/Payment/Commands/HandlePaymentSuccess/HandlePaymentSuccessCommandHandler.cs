@@ -20,20 +20,20 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
         private readonly IPaymentProcessorFactory _processorFactory;
         private readonly IMediator _mediator;
         private readonly IEmailService _emailService;
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
         public HandlePaymentSuccessCommandHandler(
             IUnitOfWork unitOfWork,
             IPaymentProcessorFactory processorFactory,
             IMediator mediator,
             IEmailService emailService,
-            IUserManager userManager)
+            IIdentityService identityService)
         {
             _unitOfWork = unitOfWork;
             _processorFactory = processorFactory;
             _mediator = mediator;
             _emailService = emailService;
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<string>> Handle(HandlePaymentSuccessCommand request, CancellationToken cancellationToken)
@@ -72,7 +72,7 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
 
                 try
                 {
-                    var user = await _userManager.FindByIdAsync(order.UserId);
+                    var user = await _identityService.FindByIdAsync(order.UserId);
                     if (user?.Email != null)
                         await _emailService.SendEmailAsync(user.Email,
                             "Order Confirmed - CarShop",

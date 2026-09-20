@@ -6,16 +6,16 @@ namespace CarShop.Application.Features.Users.Commands.UnbanUser
 {
     public class UnbanUserCommandHandler : IRequestHandler<UnbanUserCommand, Result<bool>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public UnbanUserCommandHandler(IUserManager userManager)
+        public UnbanUserCommandHandler(IIdentityService identityService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<bool>> Handle(UnbanUserCommand request, CancellationToken cancellationToken)
         {
-            var result = await _userManager.SetLockoutAsync(request.UserId, ban: false);
+            var result = await _identityService.SetLockoutAsync(request.UserId, ban: false);
             if (!result.Succeeded)
                 return Result<bool>.Fail(result.Errors, "Failed to unban user.");
             return Result<bool>.Ok(true, "User has been unbanned.");

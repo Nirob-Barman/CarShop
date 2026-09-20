@@ -7,26 +7,26 @@ namespace CarShop.Application.Features.Users.Queries.GetAllUsersNonAdmin
 {
     public class GetAllUsersNonAdminQueryHandler : IRequestHandler<GetAllUsersNonAdminQuery, Result<List<UserWithRoleDto>>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public GetAllUsersNonAdminQueryHandler(IUserManager userManager)
+        public GetAllUsersNonAdminQueryHandler(IIdentityService identityService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<List<UserWithRoleDto>>> Handle(GetAllUsersNonAdminQuery request, CancellationToken cancellationToken)
         {
             try
             {
-                var allUsers = await _userManager.GetAllUsersAsync();
+                var allUsers = await _identityService.GetAllUsersAsync();
                 var nonAdminUsers = new List<UserWithRoleDto>();
 
                 foreach (var user in allUsers)
                 {
-                    bool isAdmin = await _userManager.IsUserInRoleAsync(user, "Admin");
+                    bool isAdmin = await _identityService.IsUserInRoleAsync(user, "Admin");
                     if (isAdmin) continue;
 
-                    var roles = await _userManager.GetRolesAsync(user);
+                    var roles = await _identityService.GetRolesAsync(user);
 
                     nonAdminUsers.Add(new UserWithRoleDto
                     {

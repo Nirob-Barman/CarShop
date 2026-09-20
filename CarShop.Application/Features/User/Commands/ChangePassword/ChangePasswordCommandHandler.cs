@@ -7,14 +7,12 @@ namespace CarShop.Application.Features.User.Commands.ChangePassword
 {
     public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result<bool>>
     {
-        private readonly IUserManager _userManager;
-        private readonly ISignInManager _signInManager;
+        private readonly IIdentityService _identityService;
         private readonly IUserContextService _userContextService;
 
-        public ChangePasswordCommandHandler(IUserManager userManager, ISignInManager signInManager, IUserContextService userContextService)
+        public ChangePasswordCommandHandler(IIdentityService identityService, IUserContextService userContextService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _identityService = identityService;
             _userContextService = userContextService;
         }
 
@@ -32,11 +30,11 @@ namespace CarShop.Application.Features.User.Commands.ChangePassword
                 return Result<bool>.FailField(nameof(model.NewPassword), "Password fields cannot be empty.");
             }
 
-            var user = await _userManager.FindByIdAsync(_userContextService.UserId!);
+            var user = await _identityService.FindByIdAsync(_userContextService.UserId!);
             if (user == null)
                 return Result<bool>.Fail("User not found.");
 
-            var result = await _userManager.ChangePasswordAsync(user.Id!, model.CurrentPassword, model.NewPassword);
+            var result = await _identityService.ChangePasswordAsync(user.Id!, model.CurrentPassword, model.NewPassword);
 
             if (!result.Succeeded)
             {
@@ -44,7 +42,7 @@ namespace CarShop.Application.Features.User.Commands.ChangePassword
             }
 
             // Re-sign in to refresh security stamp/cookies
-            await _signInManager.RefreshSignInAsync(user);
+            await _identityService.RefreshSignInAsync(user);
 
             return Result<bool>.Ok(true, "Password changed successfully.");
         }

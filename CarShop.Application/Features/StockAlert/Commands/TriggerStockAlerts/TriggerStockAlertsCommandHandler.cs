@@ -14,18 +14,18 @@ namespace CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts
         private readonly IUnitOfWork _unitOfWork;
         private readonly IEmailService _emailService;
         private readonly IMediator _mediator;
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
         public TriggerStockAlertsCommandHandler(
             IUnitOfWork unitOfWork,
             IEmailService emailService,
             IMediator mediator,
-            IUserManager userManager)
+            IIdentityService identityService)
         {
             _unitOfWork = unitOfWork;
             _emailService = emailService;
             _mediator = mediator;
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<string>> Handle(TriggerStockAlertsCommand request, CancellationToken cancellationToken)
@@ -50,7 +50,7 @@ namespace CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts
 
                 try
                 {
-                    var user = await _userManager.FindByIdAsync(alert.UserId);
+                    var user = await _identityService.FindByIdAsync(alert.UserId);
                     if (user?.Email != null)
                     {
                         await _emailService.SendEmailAsync(

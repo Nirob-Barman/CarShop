@@ -6,16 +6,16 @@ namespace CarShop.Application.Features.Users.Commands.BanUser
 {
     public class BanUserCommandHandler : IRequestHandler<BanUserCommand, Result<bool>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public BanUserCommandHandler(IUserManager userManager)
+        public BanUserCommandHandler(IIdentityService identityService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<bool>> Handle(BanUserCommand request, CancellationToken cancellationToken)
         {
-            var result = await _userManager.SetLockoutAsync(request.UserId, ban: true);
+            var result = await _identityService.SetLockoutAsync(request.UserId, ban: true);
             if (!result.Succeeded)
                 return Result<bool>.Fail(result.Errors, "Failed to ban user.");
             return Result<bool>.Ok(true, "User has been banned.");

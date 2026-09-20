@@ -26,18 +26,15 @@ namespace CarShop.Web.Controllers
         private readonly IMediator _mediator;
         private readonly IUserContextService _userContextService;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly UserManager<ApplicationUser> _userManager;
 
         public AccountController(
             IMediator mediator,
             IUserContextService userContextService,
-            SignInManager<ApplicationUser> signInManager,
-            UserManager<ApplicationUser> userManager)
+            SignInManager<ApplicationUser> signInManager)
         {
             _mediator = mediator;
             _userContextService = userContextService;
             _signInManager = signInManager;
-            _userManager = userManager;
         }
 
         public IActionResult Register()
@@ -290,13 +287,6 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Login");
             }
 
-            // 1. Existing linked account → sign in directly
-            var signInResult = await _signInManager.ExternalLoginSignInAsync(
-                info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
-
-            if (signInResult.Succeeded)
-                return RedirectToLocal(returnUrl);
-
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email))
             {
@@ -304,17 +294,7 @@ namespace CarShop.Web.Controllers
                 return RedirectToAction("Login");
             }
 
-            // 2. Account with same email exists → link Google and sign in
-            var existingUser = await _userManager.FindByEmailAsync(email);
-            if (existingUser != null)
-            {
-                await _userManager.AddLoginAsync(existingUser,
-                    new UserLoginInfo(info.LoginProvider, info.ProviderKey, info.ProviderDisplayName));
-                await _signInManager.SignInAsync(existingUser, isPersistent: false);
-                return RedirectToLocal(returnUrl);
-            }
-
-            // 3. No account at all → auto-register
+            // The controller owns the OAuth callback; the handler owns account linking, provisioning, and sign-in.
             var fullName = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
             var result   = await _mediator.Send(new ExternalRegisterAndSignInCommand(email, fullName, info.LoginProvider, info.ProviderKey));
 

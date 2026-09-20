@@ -7,25 +7,25 @@ namespace CarShop.Application.Features.User.Commands.UpdateProfile
 {
     public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand, Result<bool>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IUserContextService _userContextService;
 
-        public UpdateProfileCommandHandler(IUserManager userManager, IUserContextService userContextService)
+        public UpdateProfileCommandHandler(IIdentityService identityService, IUserContextService userContextService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
             _userContextService = userContextService;
         }
 
         public async Task<Result<bool>> Handle(UpdateProfileCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(_userContextService.UserId!);
+            var user = await _identityService.FindByIdAsync(_userContextService.UserId!);
             if (user == null)
                 return Result<bool>.Fail("User not found.");
 
             user.FullName = request.Model.FullName;
             user.Address = request.Model.Address;
 
-            var updateResult = await _userManager.UpdateAsync(user);
+            var updateResult = await _identityService.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
                 return Result<bool>.Fail(updateResult.Errors, "Failed to update profile.");

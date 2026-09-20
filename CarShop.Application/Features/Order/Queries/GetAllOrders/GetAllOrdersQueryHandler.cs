@@ -12,12 +12,12 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
     public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Result<PagedResult<OrderDto>>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public GetAllOrdersQueryHandler(IUnitOfWork unitOfWork, IUserManager userManager)
+        public GetAllOrdersQueryHandler(IUnitOfWork unitOfWork, IIdentityService identityService)
         {
             _unitOfWork = unitOfWork;
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<PagedResult<OrderDto>>> Handle(GetAllOrdersQuery request, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
             var dtos = new List<OrderDto>();
             foreach (var o in pagedItems)
             {
-                var user = await _userManager.FindByIdAsync(o.UserId ?? "");
+                var user = await _identityService.FindByIdAsync(o.UserId ?? "");
                 dtos.Add(new OrderDto
                 {
                     Id = o.Id,

@@ -8,18 +8,18 @@ namespace CarShop.Application.Features.User.Queries.GetProfile
 {
     public class GetProfileQueryHandler : IRequestHandler<GetProfileQuery, Result<EditProfileDto>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IUserContextService _userContextService;
 
-        public GetProfileQueryHandler(IUserManager userManager, IUserContextService userContextService)
+        public GetProfileQueryHandler(IIdentityService identityService, IUserContextService userContextService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
             _userContextService = userContextService;
         }
 
         public async Task<Result<EditProfileDto>> Handle(GetProfileQuery request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(_userContextService.UserId!);
+            var user = await _identityService.FindByIdAsync(_userContextService.UserId!);
 
             if (user == null)
                 return Result<EditProfileDto>.Fail("User not found.");

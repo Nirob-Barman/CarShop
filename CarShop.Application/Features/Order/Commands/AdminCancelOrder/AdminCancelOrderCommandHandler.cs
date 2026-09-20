@@ -17,20 +17,20 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMediator _mediator;
         private readonly IEmailService _emailService;
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IAuditLogService _auditLogService;
 
         public AdminCancelOrderCommandHandler(
             IUnitOfWork unitOfWork,
             IMediator mediator,
             IEmailService emailService,
-            IUserManager userManager,
+            IIdentityService identityService,
             IAuditLogService auditLogService)
         {
             _unitOfWork = unitOfWork;
             _mediator = mediator;
             _emailService = emailService;
-            _userManager = userManager;
+            _identityService = identityService;
             _auditLogService = auditLogService;
         }
 
@@ -76,7 +76,7 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
 
                 try
                 {
-                    var user = await _userManager.FindByIdAsync(order.UserId);
+                    var user = await _identityService.FindByIdAsync(order.UserId);
                     if (user?.Email != null)
                     {
                         await _emailService.SendEmailAsync(

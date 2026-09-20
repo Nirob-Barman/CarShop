@@ -8,12 +8,12 @@ namespace CarShop.Application.Features.Auth.Commands.Register
 {
     public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<string>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
         private readonly IEmailService _emailService;
 
-        public RegisterCommandHandler(IUserManager userManager, IEmailService emailService)
+        public RegisterCommandHandler(IIdentityService identityService, IEmailService emailService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
             _emailService = emailService;
         }
 
@@ -28,17 +28,17 @@ namespace CarShop.Application.Features.Auth.Commands.Register
                 Address = model.Address
             };
 
-            var (succeeded, userId, errors) = await _userManager.CreateAsync(user, model.Password!);
+            var (succeeded, userId, errors) = await _identityService.CreateAsync(user, model.Password!);
 
             if (!succeeded)
                 return Result<string>.Fail(errors!, "Registration failed");
 
-            var roleResult = await _userManager.AddToRoleAsync(new AppUser { Id = userId }, "User");
+            var roleResult = await _identityService.AddToRoleAsync(new AppUser { Id = userId }, "User");
 
             if (!roleResult.Succeeded)
             {
                 // Cleanup: delete user if role assignment fails
-                await _userManager.RemoveFromRoleAsync(new AppUser { Id = userId }, "User");
+                await _identityService.RemoveFromRoleAsync(new AppUser { Id = userId }, "User");
 
                 return Result<string>.Fail("Failed to assign default role to user.");
             }

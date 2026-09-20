@@ -6,22 +6,22 @@ namespace CarShop.Application.Features.Users.Commands.AssignRoleToUser
 {
     public class AssignRoleToUserCommandHandler : IRequestHandler<AssignRoleToUserCommand, Result<bool>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public AssignRoleToUserCommandHandler(IUserManager userManager)
+        public AssignRoleToUserCommandHandler(IIdentityService identityService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<bool>> Handle(AssignRoleToUserCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userManager.FindByIdAsync(request.UserId);
+            var user = await _identityService.FindByIdAsync(request.UserId);
             if (user == null)
                 return Result<bool>.Fail("User not found.");
 
             // Remove existing roles
-            var existingRoles = await _userManager.GetRolesAsync(user);
-            var removalResult = await _userManager.RemoveFromRoleAsync(user, existingRoles.FirstOrDefault()!);
+            var existingRoles = await _identityService.GetRolesAsync(user);
+            var removalResult = await _identityService.RemoveFromRoleAsync(user, existingRoles.FirstOrDefault()!);
 
             if (!removalResult.Succeeded)
             {
@@ -29,7 +29,7 @@ namespace CarShop.Application.Features.Users.Commands.AssignRoleToUser
             }
 
             // Add new role
-            var addResult = await _userManager.AddToRoleAsync(user, request.RoleName);
+            var addResult = await _identityService.AddToRoleAsync(user, request.RoleName);
             if (!addResult.Succeeded)
             {
                 return Result<bool>.Fail(addResult.Errors, "Failed to assign new role.");

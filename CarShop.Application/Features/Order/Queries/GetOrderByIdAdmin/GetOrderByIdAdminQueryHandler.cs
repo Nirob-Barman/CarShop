@@ -10,12 +10,12 @@ namespace CarShop.Application.Features.Order.Queries.GetOrderByIdAdmin
     public class GetOrderByIdAdminQueryHandler : IRequestHandler<GetOrderByIdAdminQuery, Result<OrderDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public GetOrderByIdAdminQueryHandler(IUnitOfWork unitOfWork, IUserManager userManager)
+        public GetOrderByIdAdminQueryHandler(IUnitOfWork unitOfWork, IIdentityService identityService)
         {
             _unitOfWork = unitOfWork;
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<OrderDto>> Handle(GetOrderByIdAdminQuery request, CancellationToken cancellationToken)
@@ -28,7 +28,7 @@ namespace CarShop.Application.Features.Order.Queries.GetOrderByIdAdmin
             if (order == null)
                 return Result<OrderDto>.Fail("Order not found.");
 
-            var user = await _userManager.FindByIdAsync(order.UserId ?? "");
+            var user = await _identityService.FindByIdAsync(order.UserId ?? "");
 
             return Result<OrderDto>.Ok(new OrderDto
             {

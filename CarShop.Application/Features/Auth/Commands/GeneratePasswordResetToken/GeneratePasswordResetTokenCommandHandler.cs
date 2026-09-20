@@ -6,11 +6,11 @@ namespace CarShop.Application.Features.Auth.Commands.GeneratePasswordResetToken
 {
     public class GeneratePasswordResetTokenCommandHandler : IRequestHandler<GeneratePasswordResetTokenCommand, Result<string>>
     {
-        private readonly IUserManager _userManager;
+        private readonly IIdentityService _identityService;
 
-        public GeneratePasswordResetTokenCommandHandler(IUserManager userManager)
+        public GeneratePasswordResetTokenCommandHandler(IIdentityService identityService)
         {
-            _userManager = userManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<string>> Handle(GeneratePasswordResetTokenCommand request, CancellationToken cancellationToken)
@@ -18,11 +18,11 @@ namespace CarShop.Application.Features.Auth.Commands.GeneratePasswordResetToken
             if (string.IsNullOrWhiteSpace(request.Email))
                 return Result<string>.Fail("Email is required.");
 
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _identityService.FindByEmailAsync(request.Email);
             if (user == null)
                 return Result<string>.Fail("User not found.");
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var token = await _identityService.GeneratePasswordResetTokenAsync(user);
             return Result<string>.Ok(token);
         }
     }

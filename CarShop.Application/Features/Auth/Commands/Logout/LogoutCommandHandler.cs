@@ -6,16 +6,16 @@ namespace CarShop.Application.Features.Auth.Commands.Logout
 {
     public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result<string>>
     {
-        private readonly ISignInManager _signInManager;
+        private readonly IIdentityService _identityService;
 
-        public LogoutCommandHandler(ISignInManager signInManager)
+        public LogoutCommandHandler(IIdentityService identityService)
         {
-            _signInManager = signInManager;
+            _identityService = identityService;
         }
 
         public async Task<Result<string>> Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
-            await _signInManager.SignOutAsync();
+            await _identityService.SignOutAsync();
             return Result<string>.Ok("Success", "Logout successful");
         }
     }

@@ -42,8 +42,7 @@ namespace CarShop.Infrastructure.DependencyInjection
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
-            services.AddScoped<IUserManager, IdentityUserManager>();
-            services.AddScoped<ISignInManager, IdentitySignInManager>();
+            services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IRoleManager, RoleManager>();
 
             services.AddHttpClient();
