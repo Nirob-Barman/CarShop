@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.Comment.Queries.GetRecentTestimonials
 
         public async Task<Result<IEnumerable<CommentDto>>> Handle(GetRecentTestimonialsQuery request, CancellationToken cancellationToken)
         {
-            var comments = await _context.Comments.Include(c => c.Car).Where(c => c.Rating.HasValue && c.Rating >= 4 && !string.IsNullOrEmpty(c.Content)).Select(c => new CommentDto
+            var comments = await _context.Comments.AsNoTracking().Include(c => c.Car).Where(c => c.Rating.HasValue && c.Rating >= 4 && !string.IsNullOrEmpty(c.Content)).Select(c => new CommentDto
                 {
                     Id = c.Id,
                     UserName = c.UserName,

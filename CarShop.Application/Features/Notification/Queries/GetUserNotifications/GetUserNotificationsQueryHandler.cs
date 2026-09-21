@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Notification.Queries.GetUserNotifications
         public async Task<Result<IEnumerable<AppNotificationDto>>> Handle(GetUserNotificationsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var notifications = await _context.AppNotifications.Where(n => n.UserId == userId).Select(n => new AppNotificationDto
+            var notifications = await _context.AppNotifications.AsNoTracking().Where(n => n.UserId == userId).Select(n => new AppNotificationDto
                 {
                     Id = n.Id,
                     Message = n.Message,

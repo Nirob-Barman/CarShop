@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode
 
         public async Task<Result<ValidatePromoCodeResult>> Handle(ValidatePromoCodeQuery request, CancellationToken cancellationToken)
         {
-            var promo = await _context.PromoCodes.FirstOrDefaultAsync(
+            var promo = await _context.PromoCodes.AsNoTracking().FirstOrDefaultAsync(
                 p => p.Code == request.Code.ToUpper() && p.IsActive);
 
             if (promo == null)

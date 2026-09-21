@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Order.Queries.GetOrderById
         public async Task<Result<OrderDto>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var order = await _context.Orders.Include(o => o.Car)
+            var order = await _context.Orders.AsNoTracking().Include(o => o.Car)
                 .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == userId, cancellationToken);
 
             if (order == null)

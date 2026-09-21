@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.TestDrive.Queries.GetAllBookings
         {
             TestDriveStatus? statusFilter = Enum.TryParse<TestDriveStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
 
-            var bookings = await _context.TestDriveBookings
+            var bookings = await _context.TestDriveBookings.AsNoTracking()
                 .Include(b => b.Car)
                 .Where(b => statusFilter == null || b.Status == statusFilter)
                 .ToListAsync(cancellationToken);

@@ -19,6 +19,7 @@ namespace CarShop.Application.Features.Analytics.Queries.GetDashboard
         public async Task<Result<AnalyticsDashboardDto>> Handle(GetDashboardQuery request, CancellationToken cancellationToken)
         {
             var orders = await _context.Orders
+                .AsNoTracking()
                 .Include(o => o.Car)
                 .Where(o => o.Status != OrderStatus.Cancelled)
                 .ToListAsync(cancellationToken);
@@ -40,7 +41,7 @@ namespace CarShop.Application.Features.Analytics.Queries.GetDashboard
                 .Take(5)
                 .ToList();
 
-            var allCars = await _context.Cars.ToListAsync();
+            var allCars = await _context.Cars.AsNoTracking().ToListAsync();
             var carList = allCars.ToList();
 
             var lowStockCars = carList

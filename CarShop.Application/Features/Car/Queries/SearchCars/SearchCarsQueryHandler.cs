@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Car.Queries.SearchCars
         {
             var searchDto = request.SearchDto;
 
-            var cars = await _context.Cars.Include(c => c.Brand).Where(c =>
+            var cars = await _context.Cars.AsNoTracking().Include(c => c.Brand).Where(c =>
                     (string.IsNullOrEmpty(searchDto.Keyword) ||
                         (c.Title != null && c.Title.ToLower().Contains(searchDto.Keyword.ToLower())) ||
                         (c.Description != null && c.Description.ToLower().Contains(searchDto.Keyword.ToLower()))) &&

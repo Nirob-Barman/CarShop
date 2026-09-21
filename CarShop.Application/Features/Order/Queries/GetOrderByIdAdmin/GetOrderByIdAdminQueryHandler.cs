@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Order.Queries.GetOrderByIdAdmin
 
         public async Task<Result<OrderDto>> Handle(GetOrderByIdAdminQuery request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders.Include(o => o.Car)
+            var order = await _context.Orders.AsNoTracking().Include(o => o.Car)
                 .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
 
             if (order == null)

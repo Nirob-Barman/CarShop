@@ -22,7 +22,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
 
         public async Task<Result<IEnumerable<PromoCodeDto>>> Handle(GetActivePromoCodesQuery request, CancellationToken cancellationToken)
         {
-            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
+            var redis = await _context.IntegrationSettings.AsNoTracking().Where(s => s.ServiceName == "Redis")
                 .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
             var isRedisEnabled = redis != null && redis.IsEnabled;
 
@@ -34,7 +34,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
             }
 
             var now   = DateTime.UtcNow;
-            var codes = await _context.PromoCodes.Where(p => p.IsActive &&
+            var codes = await _context.PromoCodes.AsNoTracking().Where(p => p.IsActive &&
                      (!p.MaxUsages.HasValue || p.UsageCount < p.MaxUsages.Value) &&
                      (!p.ExpiresAt.HasValue || p.ExpiresAt.Value > now))
                 .Select(p => new PromoCodeDto

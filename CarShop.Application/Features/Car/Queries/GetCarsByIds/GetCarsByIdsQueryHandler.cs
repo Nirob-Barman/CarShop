@@ -19,7 +19,7 @@ namespace CarShop.Application.Features.Car.Queries.GetCarsByIds
         public async Task<Result<IEnumerable<CarDto>>> Handle(GetCarsByIdsQuery request, CancellationToken cancellationToken)
         {
             var idList = request.Ids.ToList();
-            var cars = await _context.Cars
+            var cars = await _context.Cars.AsNoTracking()
                 .Include(c => c.Brand)
                 .Where(c => idList.Contains(c.Id))
                 .ToListAsync(cancellationToken);

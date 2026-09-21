@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Wishlist.Queries.GetWishlist
         public async Task<Result<IEnumerable<WishlistItemDto>>> Handle(GetWishlistQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var items = await _context.WishlistItems
+            var items = await _context.WishlistItems.AsNoTracking()
                 .Include(w => w.Car)
                 .Where(w => w.UserId == userId)
                 .ToListAsync(cancellationToken);

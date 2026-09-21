@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.Comment.Queries.GetCommentsByCarId
 
         public async Task<Result<IEnumerable<CommentDto>>> Handle(GetCommentsByCarIdQuery request, CancellationToken cancellationToken)
         {
-            var comments = await _context.Comments.Where(c => c.CarId == request.CarId).Select(c => new CommentDto
+            var comments = await _context.Comments.AsNoTracking().Where(c => c.CarId == request.CarId).Select(c => new CommentDto
             {
                 Id = c.Id,
                 UserName = c.UserName,

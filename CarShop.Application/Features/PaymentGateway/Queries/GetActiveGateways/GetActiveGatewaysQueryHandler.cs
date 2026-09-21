@@ -18,7 +18,7 @@ namespace CarShop.Application.Features.PaymentGateway.Queries.GetActiveGateways
 
         public async Task<Result<IEnumerable<PaymentGatewayDto>>> Handle(GetActiveGatewaysQuery request, CancellationToken cancellationToken)
         {
-            var gateways = await _context.PaymentGateways
+            var gateways = await _context.PaymentGateways.AsNoTracking()
                 .Where(g => g.IsActive)
                 .Select(g => PaymentGatewayMapper.ToDto(g))
                 .ToListAsync(cancellationToken);

@@ -22,7 +22,7 @@ namespace CarShop.Application.Features.Brand.Queries.GetBrandById
 
         public async Task<Result<BrandDto>> Handle(GetBrandByIdQuery request, CancellationToken cancellationToken)
         {
-            var redis = await _context.IntegrationSettings
+            var redis = await _context.IntegrationSettings.AsNoTracking()
                 .Where(s => s.ServiceName == "Redis")
                 .Select(s => new { s.IsEnabled })
                 .FirstOrDefaultAsync(cancellationToken);

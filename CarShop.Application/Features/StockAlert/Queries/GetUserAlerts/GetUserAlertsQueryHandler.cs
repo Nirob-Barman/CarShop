@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.StockAlert.Queries.GetUserAlerts
         public async Task<Result<IEnumerable<StockAlertDto>>> Handle(GetUserAlertsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var alerts = await _context.StockAlerts
+            var alerts = await _context.StockAlerts.AsNoTracking()
                 .Include(s => s.Car)
                 .Where(s => s.UserId == userId && !s.IsTriggered)
                 .ToListAsync(cancellationToken);

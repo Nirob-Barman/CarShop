@@ -19,7 +19,7 @@ namespace CarShop.Application.Features.Wishlist.Queries.IsInWishlist
         public async Task<Result<bool>> Handle(IsInWishlistQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var exists = await _context.WishlistItems.AnyAsync(w => w.UserId == userId && w.CarId == request.CarId);
+            var exists = await _context.WishlistItems.AsNoTracking().AnyAsync(w => w.UserId == userId && w.CarId == request.CarId);
             return Result<bool>.Ok(exists);
         }
     }

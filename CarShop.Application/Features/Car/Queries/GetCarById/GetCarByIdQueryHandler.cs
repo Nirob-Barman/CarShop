@@ -18,7 +18,7 @@ namespace CarShop.Application.Features.Car.Queries.GetCarById
 
         public async Task<Result<CarDto>> Handle(GetCarByIdQuery request, CancellationToken cancellationToken)
         {
-            var car = await _context.Cars
+            var car = await _context.Cars.AsNoTracking()
                 .Include(c => c.Brand)
                 .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
             if (car == null)

@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.Comment.Queries.GetAllReviews
 
         public async Task<Result<IEnumerable<CommentDto>>> Handle(GetAllReviewsQuery request, CancellationToken cancellationToken)
         {
-            var reviews = await _context.Comments.Include(c => c.Car).Where(c => c.Rating.HasValue).Select(c => new CommentDto
+            var reviews = await _context.Comments.AsNoTracking().Include(c => c.Car).Where(c => c.Rating.HasValue).Select(c => new CommentDto
                 {
                     Id          = c.Id,
                     UserName    = c.UserName,

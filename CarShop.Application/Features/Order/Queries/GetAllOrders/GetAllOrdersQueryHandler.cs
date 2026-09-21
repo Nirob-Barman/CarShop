@@ -23,7 +23,7 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
         {
             OrderStatus? statusFilter = Enum.TryParse<OrderStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
 
-            var allOrders = await _context.Orders.Include(o => o.Car)
+            var allOrders = await _context.Orders.AsNoTracking().Include(o => o.Car)
                 .Where(o => statusFilter == null || o.Status == statusFilter)
                 .ToListAsync(cancellationToken);
 

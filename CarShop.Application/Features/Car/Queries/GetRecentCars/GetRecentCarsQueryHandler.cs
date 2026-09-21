@@ -18,7 +18,7 @@ namespace CarShop.Application.Features.Car.Queries.GetRecentCars
 
         public async Task<Result<IEnumerable<CarDto>>> Handle(GetRecentCarsQuery request, CancellationToken cancellationToken)
         {
-            var cars = await _context.Cars
+            var cars = await _context.Cars.AsNoTracking()
                 .Include(c => c.Brand)
                 .ToListAsync(cancellationToken);
 

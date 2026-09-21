@@ -19,7 +19,7 @@ namespace CarShop.Application.Features.Comment.Queries.HasUserReviewed
         public async Task<Result<bool>> Handle(HasUserReviewedQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var hasReviewed = await _context.Comments.AnyAsync(
+            var hasReviewed = await _context.Comments.AsNoTracking().AnyAsync(
                 c => c.CarId == request.CarId && c.UserId == userId && c.Rating.HasValue);
 
             return Result<bool>.Ok(hasReviewed);

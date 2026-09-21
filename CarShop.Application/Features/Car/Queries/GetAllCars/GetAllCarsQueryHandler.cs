@@ -19,6 +19,7 @@ namespace CarShop.Application.Features.Car.Queries.GetAllCars
         public async Task<Result<IEnumerable<CarDto>>> Handle(GetAllCarsQuery request, CancellationToken cancellationToken)
         {
             var cars = await _context.Cars
+                .AsNoTracking()
                 .Include(c => c.Brand)
                 .ToListAsync(cancellationToken);
             var result = cars.Select(CarMapper.ToDto);

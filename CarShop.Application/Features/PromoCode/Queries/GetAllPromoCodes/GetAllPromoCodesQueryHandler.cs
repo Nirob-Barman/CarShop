@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetAllPromoCodes
 
         public async Task<Result<IEnumerable<PromoCodeDto>>> Handle(GetAllPromoCodesQuery request, CancellationToken cancellationToken)
         {
-            var codes = await _context.PromoCodes.ToListAsync();
+            var codes = await _context.PromoCodes.AsNoTracking().ToListAsync();
             var dtos = codes.Select(p => new PromoCodeDto
             {
                 Id = p.Id,

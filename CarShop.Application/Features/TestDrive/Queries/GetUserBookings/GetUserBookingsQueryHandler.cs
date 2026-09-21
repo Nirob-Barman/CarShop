@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.TestDrive.Queries.GetUserBookings
         public async Task<Result<IEnumerable<TestDriveBookingDto>>> Handle(GetUserBookingsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var bookings = await _context.TestDriveBookings
+            var bookings = await _context.TestDriveBookings.AsNoTracking()
                 .Include(b => b.Car)
                 .Where(b => b.UserId == userId)
                 .ToListAsync(cancellationToken);

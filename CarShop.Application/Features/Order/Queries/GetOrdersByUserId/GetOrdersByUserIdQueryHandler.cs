@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Order.Queries.GetOrdersByUserId
         public async Task<Result<IEnumerable<OrderDto>>> Handle(GetOrdersByUserIdQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var orders = await _context.Orders.Include(o => o.Car)
+            var orders = await _context.Orders.AsNoTracking().Include(o => o.Car)
                 .Where(o => o.UserId == userId).ToListAsync(cancellationToken);
 
             var dtos = orders.OrderByDescending(o => o.OrderedAt).Select(o => new OrderDto
