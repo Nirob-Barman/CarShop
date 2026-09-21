@@ -1,31 +1,27 @@
 using CarShop.Application.DTOs.Order;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Queries.GetOrdersByUserId
 {
     public class GetOrdersByUserIdQueryHandler : IRequestHandler<GetOrdersByUserIdQuery, Result<IEnumerable<OrderDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public GetOrdersByUserIdQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetOrdersByUserIdQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<IEnumerable<OrderDto>>> Handle(GetOrdersByUserIdQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var orders = await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                predicate: o => o.UserId == userId,
-                selector: o => o,
-                o => o.Car!
-            );
+            var orders = await _context.Orders.Include(o => o.Car)
+                .Where(o => o.UserId == userId).ToListAsync(cancellationToken);
 
             var dtos = orders.OrderByDescending(o => o.OrderedAt).Select(o => new OrderDto
             {

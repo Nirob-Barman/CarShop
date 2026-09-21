@@ -1,19 +1,18 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using FluentValidation;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
 {
     public class BookTestDriveCommandValidator : AbstractValidator<BookTestDriveCommand>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public BookTestDriveCommandValidator(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public BookTestDriveCommandValidator(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
 
             RuleFor(x => x.BookingDate)
@@ -26,7 +25,7 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
         private async Task<bool> NotHaveRecentBooking(BookTestDriveCommand command, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var recentBooking = await _unitOfWork.Repository<TestDriveBooking>().AnyAsync(
+            var recentBooking = await _context.TestDriveBookings.AnyAsync(
                 b => b.UserId == userId && b.CarId == command.CarId &&
                      b.Status != TestDriveStatus.Cancelled &&
                      b.BookingDate >= DateTime.UtcNow.AddDays(-7));

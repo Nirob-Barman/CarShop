@@ -1,30 +1,29 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.TestDrive;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.TestDrive.Queries.GetAllBookings
 {
     public class GetAllBookingsQueryHandler : IRequestHandler<GetAllBookingsQuery, Result<IEnumerable<TestDriveBookingDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetAllBookingsQueryHandler(IUnitOfWork unitOfWork)
+        public GetAllBookingsQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<IEnumerable<TestDriveBookingDto>>> Handle(GetAllBookingsQuery request, CancellationToken cancellationToken)
         {
             TestDriveStatus? statusFilter = Enum.TryParse<TestDriveStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
 
-            var bookings = await _unitOfWork.Repository<TestDriveBooking>().GetAllWithIncludesAsync(
-                predicate: b => statusFilter == null || b.Status == statusFilter,
-                selector: b => b,
-                b => b.Car!
-            );
+            var bookings = await _context.TestDriveBookings
+                .Include(b => b.Car)
+                .Where(b => statusFilter == null || b.Status == statusFilter)
+                .ToListAsync(cancellationToken);
 
             var dtos = bookings.OrderByDescending(b => b.CreatedAt).Select(b => new TestDriveBookingDto
             {

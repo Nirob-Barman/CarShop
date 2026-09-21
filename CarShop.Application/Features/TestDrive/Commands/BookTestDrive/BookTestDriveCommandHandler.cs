@@ -1,22 +1,20 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
 using MediatR;
 using System.Text.Json;
-using CarEntity = CarShop.Domain.Entities.Car;
 
 namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
 {
     public class BookTestDriveCommandHandler : IRequestHandler<BookTestDriveCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        public BookTestDriveCommandHandler(IUnitOfWork unitOfWork, IAuditLogService auditLogService, IUserContextService userContextService)
+        public BookTestDriveCommandHandler(IApplicationDbContext context, IAuditLogService auditLogService, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
@@ -25,7 +23,7 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
         {
             var userId = _userContextService.UserId!;
 
-            var car = await _unitOfWork.Repository<CarEntity>().GetByIdAsync(request.CarId);
+            var car = await _context.Cars.FindAsync(request.CarId);
             if (car == null)
                 return Result<string>.Fail("Car not found.");
 
@@ -38,8 +36,8 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.Repository<TestDriveBooking>().AddAsync(booking);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.TestDriveBookings.AddAsync(booking);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("TestDrive", "Book",
                 _userContextService.UserId, _userContextService.Email,

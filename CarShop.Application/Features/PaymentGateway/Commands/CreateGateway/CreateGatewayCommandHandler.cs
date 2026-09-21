@@ -1,6 +1,5 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
@@ -9,18 +8,18 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.CreateGateway
 {
     public class CreateGatewayCommandHandler : IRequestHandler<CreateGatewayCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IConfigEncryptor _encryptor;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public CreateGatewayCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IConfigEncryptor encryptor,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _encryptor = encryptor;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -49,8 +48,8 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.CreateGateway
                 UpdatedAt           = DateTime.UtcNow
             };
 
-            await _unitOfWork.Repository<PaymentGatewayEntity>().AddAsync(gateway);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.PaymentGateways.AddAsync(gateway);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PaymentGateway", "Create",
                 _userContextService.UserId, _userContextService.Email,

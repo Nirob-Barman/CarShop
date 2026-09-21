@@ -1,31 +1,29 @@
 using CarShop.Application.DTOs.TestDrive;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.TestDrive.Queries.GetUserBookings
 {
     public class GetUserBookingsQueryHandler : IRequestHandler<GetUserBookingsQuery, Result<IEnumerable<TestDriveBookingDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public GetUserBookingsQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetUserBookingsQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<IEnumerable<TestDriveBookingDto>>> Handle(GetUserBookingsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var bookings = await _unitOfWork.Repository<TestDriveBooking>().GetAllWithIncludesAsync(
-                predicate: b => b.UserId == userId,
-                selector: b => b,
-                b => b.Car!
-            );
+            var bookings = await _context.TestDriveBookings
+                .Include(b => b.Car)
+                .Where(b => b.UserId == userId)
+                .ToListAsync(cancellationToken);
 
             var dtos = bookings.OrderByDescending(b => b.CreatedAt).Select(b => new TestDriveBookingDto
             {

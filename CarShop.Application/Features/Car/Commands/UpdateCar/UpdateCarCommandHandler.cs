@@ -1,28 +1,26 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.FileStorage;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
 
 namespace CarShop.Application.Features.Car.Commands.UpdateCar
 {
     public class UpdateCarCommandHandler : IRequestHandler<UpdateCarCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IFileStorage _fileStorage;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public UpdateCarCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IFileStorage fileStorage,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _fileStorage = fileStorage;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -30,7 +28,7 @@ namespace CarShop.Application.Features.Car.Commands.UpdateCar
 
         public async Task<Result<string>> Handle(UpdateCarCommand request, CancellationToken cancellationToken)
         {
-            var car = await _unitOfWork.Repository<CarEntity>().GetByIdAsync(request.Id);
+            var car = await _context.Cars.FindAsync(request.Id);
             if (car == null)
                 return Result<string>.Fail("Car not found.");
 
@@ -51,7 +49,7 @@ namespace CarShop.Application.Features.Car.Commands.UpdateCar
             }
 
             CarMapper.UpdateEntity(car, dto);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("Car", "Update", _userContextService.UserId, _userContextService.Email,
                 $"Updated car: {car.Title} (Id: {car.Id})",

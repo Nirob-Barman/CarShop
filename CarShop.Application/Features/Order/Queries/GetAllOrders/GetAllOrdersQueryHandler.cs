@@ -1,22 +1,21 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Order;
 using CarShop.Application.Interfaces.Identity;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Queries.GetAllOrders
 {
     public class GetAllOrdersQueryHandler : IRequestHandler<GetAllOrdersQuery, Result<PagedResult<OrderDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IIdentityService _identityService;
 
-        public GetAllOrdersQueryHandler(IUnitOfWork unitOfWork, IIdentityService identityService)
+        public GetAllOrdersQueryHandler(IApplicationDbContext context, IIdentityService identityService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _identityService = identityService;
         }
 
@@ -24,11 +23,9 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
         {
             OrderStatus? statusFilter = Enum.TryParse<OrderStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
 
-            var allOrders = await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                predicate: o => statusFilter == null || o.Status == statusFilter,
-                selector: o => o,
-                o => o.Car!
-            );
+            var allOrders = await _context.Orders.Include(o => o.Car)
+                .Where(o => statusFilter == null || o.Status == statusFilter)
+                .ToListAsync(cancellationToken);
 
             var ordered = allOrders.OrderByDescending(o => o.OrderedAt).ToList();
             var totalCount = ordered.Count;

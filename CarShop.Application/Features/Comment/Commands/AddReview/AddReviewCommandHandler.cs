@@ -1,5 +1,4 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using CommentEntity = CarShop.Domain.Entities.Comment;
@@ -8,12 +7,12 @@ namespace CarShop.Application.Features.Comment.Commands.AddReview
 {
     public class AddReviewCommandHandler : IRequestHandler<AddReviewCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public AddReviewCommandHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public AddReviewCommandHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
@@ -30,8 +29,8 @@ namespace CarShop.Application.Features.Comment.Commands.AddReview
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.Repository<CommentEntity>().AddAsync(comment);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.Comments.AddAsync(comment);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Result<string>.Ok(null, "Review added successfully.");
         }

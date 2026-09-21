@@ -1,37 +1,35 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
 
 namespace CarShop.Application.Features.PaymentGateway.Commands.ToggleGatewayActive
 {
     public class ToggleGatewayActiveCommandHandler : IRequestHandler<ToggleGatewayActiveCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public ToggleGatewayActiveCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
 
         public async Task<Result<string>> Handle(ToggleGatewayActiveCommand request, CancellationToken cancellationToken)
         {
-            var gateway = await _unitOfWork.Repository<PaymentGatewayEntity>().GetByIdAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
             if (gateway == null) return Result<string>.Fail("Gateway not found.");
 
             var oldIsActive = gateway.IsActive;
             gateway.ToggleActive();
-            _unitOfWork.Repository<PaymentGatewayEntity>().Update(gateway);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PaymentGateways.Update(gateway);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PaymentGateway", gateway.IsActive ? "Enable" : "Disable",
                 _userContextService.UserId, _userContextService.Email,

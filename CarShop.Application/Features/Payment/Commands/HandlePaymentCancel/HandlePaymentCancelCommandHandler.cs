@@ -1,35 +1,33 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.Features.Order.Commands.CancelPendingOrderById;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
-using PaymentTransactionEntity = CarShop.Domain.Entities.PaymentTransaction;
 
 namespace CarShop.Application.Features.Payment.Commands.HandlePaymentCancel
 {
     public class HandlePaymentCancelCommandHandler : IRequestHandler<HandlePaymentCancelCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IMediator _mediator;
 
-        public HandlePaymentCancelCommandHandler(IUnitOfWork unitOfWork, IMediator mediator)
+        public HandlePaymentCancelCommandHandler(IApplicationDbContext context, IMediator mediator)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _mediator = mediator;
         }
 
         public async Task<Result<string>> Handle(HandlePaymentCancelCommand request, CancellationToken cancellationToken)
         {
-            var transaction = await _unitOfWork.Repository<PaymentTransactionEntity>()
-                .GetByIdAsync(request.TransactionDbId);
+            var transaction = await _context.PaymentTransactions
+                .FindAsync(request.TransactionDbId);
 
             if (transaction == null || transaction.Status != PaymentTransactionStatus.Pending)
                 return Result<string>.Ok(null, "Nothing to cancel.");
 
             transaction.MarkFailed();
-            _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PaymentTransactions.Update(transaction);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _mediator.Send(new CancelPendingOrderByIdCommand(transaction.OrderId), cancellationToken);
             return Result<string>.Ok(null, "Payment cancelled.");

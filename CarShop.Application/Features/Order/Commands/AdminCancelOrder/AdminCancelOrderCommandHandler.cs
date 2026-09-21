@@ -2,32 +2,30 @@ using CarShop.Application.Features.Notification.Commands.CreateNotification;
 using CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Identity;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
 {
     public class AdminCancelOrderCommandHandler : IRequestHandler<AdminCancelOrderCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IMediator _mediator;
         private readonly IEmailService _emailService;
         private readonly IIdentityService _identityService;
         private readonly IAuditLogService _auditLogService;
 
         public AdminCancelOrderCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IMediator mediator,
             IEmailService emailService,
             IIdentityService identityService,
             IAuditLogService auditLogService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _mediator = mediator;
             _emailService = emailService;
             _identityService = identityService;
@@ -36,10 +34,8 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
 
         public async Task<Result<string>> Handle(AdminCancelOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = (await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                o => o.Id == request.OrderId,
-                o => o,
-                o => o.Car!)).FirstOrDefault();
+            var order = await _context.Orders.Include(o => o.Car)
+                .FirstOrDefaultAsync(o => o.Id == request.OrderId, cancellationToken);
 
             if (order == null)
                 return Result<string>.Fail("Order not found.");
@@ -55,8 +51,8 @@ namespace CarShop.Application.Features.Order.Commands.AdminCancelOrder
                 order.Car.RestoreStock(order.Quantity);
 
             order.Cancel();
-            _unitOfWork.Repository<OrderEntity>().Update(order);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync(cancellationToken);
 
             if (wasOutOfStock && order.Car != null)
                 await _mediator.Send(new TriggerStockAlertsCommand(order.Car.Id));

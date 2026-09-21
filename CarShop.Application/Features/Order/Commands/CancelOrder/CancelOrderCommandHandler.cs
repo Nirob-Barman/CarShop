@@ -1,30 +1,28 @@
 using CarShop.Application.Features.Notification.Commands.CreateNotification;
 using CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Commands.CancelOrder
 {
     public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IMediator _mediator;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public CancelOrderCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IMediator mediator,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _mediator = mediator;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -33,10 +31,8 @@ namespace CarShop.Application.Features.Order.Commands.CancelOrder
         public async Task<Result<string>> Handle(CancelOrderCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var order = (await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                o => o.Id == request.OrderId && o.UserId == userId,
-                o => o,
-                o => o.Car!)).FirstOrDefault();
+            var order = await _context.Orders.Include(o => o.Car)
+                .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == userId, cancellationToken);
 
             if (order == null)
                 return Result<string>.Fail("Order not found or you are not authorized to cancel it.");
@@ -52,8 +48,8 @@ namespace CarShop.Application.Features.Order.Commands.CancelOrder
                 order.Car.RestoreStock(order.Quantity);
 
             order.Cancel();
-            _unitOfWork.Repository<OrderEntity>().Update(order);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("Order", "UserCancel",
                 userId, null,

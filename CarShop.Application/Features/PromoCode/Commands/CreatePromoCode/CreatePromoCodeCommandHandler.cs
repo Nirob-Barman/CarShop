@@ -1,17 +1,16 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using PromoCodeEntity = CarShop.Domain.Entities.PromoCode;
 
 namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
 {
     public class CreatePromoCodeCommandHandler : IRequestHandler<CreatePromoCodeCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
@@ -19,12 +18,12 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
         private const string ActiveCodesKey = "promos:active";
 
         public CreatePromoCodeCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             ICacheService cacheService,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -44,11 +43,11 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.Repository<PromoCodeEntity>().AddAsync(promo);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.PromoCodes.AddAsync(promo);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            var redis = await _unitOfWork.Repository<IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
             if (redis != null && redis.IsEnabled)
                 await _cacheService.RemoveAsync(ActiveCodesKey);
 

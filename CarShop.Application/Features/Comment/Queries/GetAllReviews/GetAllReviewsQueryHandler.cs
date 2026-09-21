@@ -1,25 +1,23 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Comment;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CommentEntity = CarShop.Domain.Entities.Comment;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Comment.Queries.GetAllReviews
 {
     public class GetAllReviewsQueryHandler : IRequestHandler<GetAllReviewsQuery, Result<IEnumerable<CommentDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetAllReviewsQueryHandler(IUnitOfWork unitOfWork)
+        public GetAllReviewsQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<IEnumerable<CommentDto>>> Handle(GetAllReviewsQuery request, CancellationToken cancellationToken)
         {
-            var reviews = await _unitOfWork.Repository<CommentEntity>().GetAllWithIncludesAsync(
-                predicate: c => c.Rating.HasValue,
-                selector: c => new CommentDto
+            var reviews = await _context.Comments.Include(c => c.Car).Where(c => c.Rating.HasValue).Select(c => new CommentDto
                 {
                     Id          = c.Id,
                     UserName    = c.UserName,
@@ -30,9 +28,7 @@ namespace CarShop.Application.Features.Comment.Queries.GetAllReviews
                     UserId      = c.UserId,
                     CarTitle    = c.Car != null ? c.Car.Title : null,
                     CarImageUrl = c.Car != null ? c.Car.ImageUrl : null
-                },
-                c => c.Car!
-            );
+                }).ToListAsync(cancellationToken);
 
             return Result<IEnumerable<CommentDto>>.Ok(
                 reviews.OrderByDescending(c => c.CreatedAt));

@@ -2,10 +2,11 @@ using CarShop.Domain.Entities;
 using CarShop.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using CarShop.Application.Interfaces;
 
 namespace CarShop.Infrastructure.Persistence
 {
-    public class AppDbContext : IdentityDbContext<ApplicationUser>
+    public class AppDbContext : IdentityDbContext<ApplicationUser>, IApplicationDbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         public DbSet<Car> Cars { get; set; }

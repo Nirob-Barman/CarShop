@@ -1,30 +1,27 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Analytics;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Analytics.Queries.GetDashboard
 {
     public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Result<AnalyticsDashboardDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetDashboardQueryHandler(IUnitOfWork unitOfWork)
+        public GetDashboardQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<AnalyticsDashboardDto>> Handle(GetDashboardQuery request, CancellationToken cancellationToken)
         {
-            var orders = await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                predicate: o => o.Status != OrderStatus.Cancelled,
-                selector: o => o,
-                o => o.Car!
-            );
+            var orders = await _context.Orders
+                .Include(o => o.Car)
+                .Where(o => o.Status != OrderStatus.Cancelled)
+                .ToListAsync(cancellationToken);
 
             var orderList = orders.ToList();
 
@@ -43,7 +40,7 @@ namespace CarShop.Application.Features.Analytics.Queries.GetDashboard
                 .Take(5)
                 .ToList();
 
-            var allCars = await _unitOfWork.Repository<CarEntity>().GetAllAsync();
+            var allCars = await _context.Cars.ToListAsync();
             var carList = allCars.ToList();
 
             var lowStockCars = carList

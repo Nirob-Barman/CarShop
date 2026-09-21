@@ -1,37 +1,34 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Car;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Car.Queries.SearchCars
 {
     public class SearchCarsQueryHandler : IRequestHandler<SearchCarsQuery, Result<PagedResult<CarDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public SearchCarsQueryHandler(IUnitOfWork unitOfWork)
+        public SearchCarsQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<PagedResult<CarDto>>> Handle(SearchCarsQuery request, CancellationToken cancellationToken)
         {
             var searchDto = request.SearchDto;
 
-            var cars = await _unitOfWork.Repository<CarEntity>().GetAllWithIncludesAsync(
-                predicate: c =>
+            var cars = await _context.Cars.Include(c => c.Brand).Where(c =>
                     (string.IsNullOrEmpty(searchDto.Keyword) ||
                         (c.Title != null && c.Title.ToLower().Contains(searchDto.Keyword.ToLower())) ||
                         (c.Description != null && c.Description.ToLower().Contains(searchDto.Keyword.ToLower()))) &&
                     (string.IsNullOrEmpty(searchDto.BrandName) ||
                         (c.Brand != null && c.Brand.Name != null && c.Brand.Name.ToLower() == searchDto.BrandName.ToLower())) &&
                     (!searchDto.MinPrice.HasValue || c.Price >= searchDto.MinPrice.Value) &&
-                    (!searchDto.MaxPrice.HasValue || c.Price <= searchDto.MaxPrice.Value),
-                selector: c => c,
-                c => c.Brand!
-            );
+                    (!searchDto.MaxPrice.HasValue || c.Price <= searchDto.MaxPrice.Value))
+                .ToListAsync(cancellationToken);
 
             var carList = cars.ToList();
 

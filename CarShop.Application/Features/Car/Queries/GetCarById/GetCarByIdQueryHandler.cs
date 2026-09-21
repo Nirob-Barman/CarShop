@@ -1,29 +1,26 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Car;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Car.Queries.GetCarById
 {
     public class GetCarByIdQueryHandler : IRequestHandler<GetCarByIdQuery, Result<CarDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetCarByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetCarByIdQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<CarDto>> Handle(GetCarByIdQuery request, CancellationToken cancellationToken)
         {
-            var cars = await _unitOfWork.Repository<CarEntity>().GetAllWithIncludesAsync(
-                predicate: c => c.Id == request.Id,
-                selector: c => c,
-                c => c.Brand!
-            );
-            var car = cars.FirstOrDefault();
+            var car = await _context.Cars
+                .Include(c => c.Brand)
+                .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
             if (car == null)
                 return Result<CarDto>.Fail("Car not found");
 

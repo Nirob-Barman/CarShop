@@ -1,7 +1,5 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
 using System.Text.Json;
@@ -10,20 +8,20 @@ namespace CarShop.Application.Features.TestDrive.Commands.UpdateStatus
 {
     public class UpdateStatusCommandHandler : IRequestHandler<UpdateStatusCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        public UpdateStatusCommandHandler(IUnitOfWork unitOfWork, IAuditLogService auditLogService, IUserContextService userContextService)
+        public UpdateStatusCommandHandler(IApplicationDbContext context, IAuditLogService auditLogService, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
 
         public async Task<Result<string>> Handle(UpdateStatusCommand request, CancellationToken cancellationToken)
         {
-            var booking = await _unitOfWork.Repository<TestDriveBooking>().GetByIdAsync(request.BookingId);
+            var booking = await _context.TestDriveBookings.FindAsync(request.BookingId);
             if (booking == null)
                 return Result<string>.Fail("Booking not found.");
 
@@ -40,8 +38,8 @@ namespace CarShop.Application.Features.TestDrive.Commands.UpdateStatus
             if (!changed)
                 return Result<string>.Fail("Could not update status.");
 
-            _unitOfWork.Repository<TestDriveBooking>().Update(booking);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.TestDriveBookings.Update(booking);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("TestDrive", "StatusUpdate",
                 _userContextService.UserId, _userContextService.Email,

@@ -1,18 +1,17 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using FluentValidation;
-using CommentEntity = CarShop.Domain.Entities.Comment;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Comment.Commands.AddReview
 {
     public class AddReviewCommandValidator : AbstractValidator<AddReviewCommand>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public AddReviewCommandValidator(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public AddReviewCommandValidator(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
 
             RuleFor(x => x.Content)
@@ -28,7 +27,7 @@ namespace CarShop.Application.Features.Comment.Commands.AddReview
         private async Task<bool> NotAlreadyReviewed(AddReviewCommand command, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var alreadyReviewed = await _unitOfWork.Repository<CommentEntity>().AnyAsync(
+            var alreadyReviewed = await _context.Comments.AnyAsync(
                 c => c.CarId == command.CarId && c.UserId == userId && c.Rating.HasValue);
             return !alreadyReviewed;
         }

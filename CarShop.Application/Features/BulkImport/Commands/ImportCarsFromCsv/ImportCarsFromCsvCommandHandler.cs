@@ -1,22 +1,21 @@
 using CarShop.Application.DTOs.Import;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using BrandEntity = CarShop.Domain.Entities.Brand;
+using Microsoft.EntityFrameworkCore;
 using CarEntity = CarShop.Domain.Entities.Car;
 
 namespace CarShop.Application.Features.BulkImport.Commands.ImportCarsFromCsv
 {
     public class ImportCarsFromCsvCommandHandler : IRequestHandler<ImportCarsFromCsvCommand, Result<BulkImportResultDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        public ImportCarsFromCsvCommandHandler(IUnitOfWork unitOfWork, IAuditLogService auditLogService, IUserContextService userContextService)
+        public ImportCarsFromCsvCommandHandler(IApplicationDbContext context, IAuditLogService auditLogService, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
@@ -71,7 +70,7 @@ namespace CarShop.Application.Features.BulkImport.Commands.ImportCarsFromCsv
                     continue;
                 }
 
-                var brand = await _unitOfWork.Repository<BrandEntity>().FirstOrDefaultAsync(
+                var brand = await _context.Brands.FirstOrDefaultAsync(
                     b => b.Name != null && b.Name.ToLower() == brandName.ToLower());
 
                 if (brand == null)
@@ -95,8 +94,8 @@ namespace CarShop.Application.Features.BulkImport.Commands.ImportCarsFromCsv
 
             if (carsToAdd.Any())
             {
-                await _unitOfWork.Repository<CarEntity>().AddRangeAsync(carsToAdd);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await _context.Cars.AddRangeAsync(carsToAdd);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 await _auditLogService.LogAsync("Car", "BulkImport", _userContextService.UserId, _userContextService.Email,
                     $"Imported {result.SuccessCount} cars via CSV");

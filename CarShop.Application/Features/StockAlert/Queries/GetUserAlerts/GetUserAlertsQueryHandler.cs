@@ -1,31 +1,29 @@
 using CarShop.Application.DTOs.StockAlert;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using StockAlertEntity = CarShop.Domain.Entities.StockAlert;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.StockAlert.Queries.GetUserAlerts
 {
     public class GetUserAlertsQueryHandler : IRequestHandler<GetUserAlertsQuery, Result<IEnumerable<StockAlertDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public GetUserAlertsQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetUserAlertsQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<IEnumerable<StockAlertDto>>> Handle(GetUserAlertsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var alerts = await _unitOfWork.Repository<StockAlertEntity>().GetAllWithIncludesAsync(
-                predicate: s => s.UserId == userId && !s.IsTriggered,
-                selector: s => s,
-                s => s.Car!
-            );
+            var alerts = await _context.StockAlerts
+                .Include(s => s.Car)
+                .Where(s => s.UserId == userId && !s.IsTriggered)
+                .ToListAsync(cancellationToken);
 
             var dtos = alerts.Select(s => new StockAlertDto
             {

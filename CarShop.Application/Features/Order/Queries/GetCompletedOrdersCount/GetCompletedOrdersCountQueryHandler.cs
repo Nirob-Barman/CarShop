@@ -1,24 +1,23 @@
-using CarShop.Application.Interfaces.Persistence;
+using CarShop.Application.Interfaces;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Queries.GetCompletedOrdersCount
 {
     public class GetCompletedOrdersCountQueryHandler : IRequestHandler<GetCompletedOrdersCountQuery, Result<int>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetCompletedOrdersCountQueryHandler(IUnitOfWork unitOfWork)
+        public GetCompletedOrdersCountQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<int>> Handle(GetCompletedOrdersCountQuery request, CancellationToken cancellationToken)
         {
-            var count = await _unitOfWork.Repository<OrderEntity>()
+            var count = await _context.Orders
                 .CountAsync(o => o.Status == OrderStatus.Confirmed);
             return Result<int>.Ok(count);
         }

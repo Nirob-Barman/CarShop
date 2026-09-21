@@ -1,18 +1,18 @@
 using CarShop.Application.DTOs.AuditLog;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using CarShop.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Services
 {
     public class AuditLogService : IAuditLogService
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public AuditLogService(IUnitOfWork unitOfWork)
+        public AuditLogService(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task LogAsync(
@@ -42,15 +42,13 @@ namespace CarShop.Application.Services
                 Timestamp = DateTime.UtcNow
             };
 
-            await _unitOfWork.Repository<AuditLog>().AddAsync(log);
-            await _unitOfWork.SaveChangesAsync();
+            await _context.AuditLogs.AddAsync(log);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<Result<IEnumerable<AuditLogDto>>> GetLogsAsync(string? entityName = null, int page = 1, int pageSize = 50)
         {
-            var logs = await _unitOfWork.Repository<AuditLog>().GetAllAsync(
-                l => entityName == null || l.EntityName == entityName,
-                l => new AuditLogDto
+            var logs = await _context.AuditLogs.Where(l => entityName == null || l.EntityName == entityName).Select(l => new AuditLogDto
                 {
                     Id = l.Id,
                     EntityId = l.EntityId,
@@ -64,7 +62,7 @@ namespace CarShop.Application.Services
                     OldValues = l.OldValues,
                     NewValues = l.NewValues,
                     Timestamp = l.Timestamp
-                });
+                }).ToListAsync();
 
             var paged = logs.OrderByDescending(l => l.Timestamp)
                 .Skip((page - 1) * pageSize)
@@ -75,8 +73,9 @@ namespace CarShop.Application.Services
 
         public async Task<IEnumerable<string>> GetDistinctEntityNamesAsync()
         {
-            var names = await _unitOfWork.Repository<AuditLog>()
-                .GetAllAsync(_ => true, l => l.EntityName!);
+            var names = await _context.AuditLogs
+                .Select(l => l.EntityName!)
+                .ToListAsync();
             return names.Where(n => !string.IsNullOrEmpty(n)).Distinct().OrderBy(n => n);
         }
     }

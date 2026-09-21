@@ -1,35 +1,33 @@
 using CarShop.Application.DTOs.Notification;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Notification.Queries.GetUserNotifications
 {
     public class GetUserNotificationsQueryHandler : IRequestHandler<GetUserNotificationsQuery, Result<IEnumerable<AppNotificationDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public GetUserNotificationsQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetUserNotificationsQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<IEnumerable<AppNotificationDto>>> Handle(GetUserNotificationsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var notifications = await _unitOfWork.Repository<CarShop.Domain.Entities.AppNotification>().GetAllAsync(
-                n => n.UserId == userId,
-                n => new AppNotificationDto
+            var notifications = await _context.AppNotifications.Where(n => n.UserId == userId).Select(n => new AppNotificationDto
                 {
                     Id = n.Id,
                     Message = n.Message,
                     Link = n.Link,
                     IsRead = n.IsRead,
                     CreatedAt = n.CreatedAt
-                });
+                }).ToListAsync(cancellationToken);
 
             var ordered = notifications.OrderByDescending(n => n.CreatedAt);
             return Result<IEnumerable<AppNotificationDto>>.Ok(ordered);

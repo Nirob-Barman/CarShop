@@ -1,24 +1,25 @@
-using CarShop.Application.Interfaces.Persistence;
+using CarShop.Application.Interfaces;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CommentEntity = CarShop.Domain.Entities.Comment;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Comment.Queries.GetAverageRating
 {
     public class GetAverageRatingQueryHandler : IRequestHandler<GetAverageRatingQuery, Result<double>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetAverageRatingQueryHandler(IUnitOfWork unitOfWork)
+        public GetAverageRatingQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<double>> Handle(GetAverageRatingQuery request, CancellationToken cancellationToken)
         {
-            var comments = await _unitOfWork.Repository<CommentEntity>().GetAllAsync(
-                c => c.CarId == request.CarId && c.Rating.HasValue,
-                c => c.Rating!.Value);
+            var comments = await _context.Comments
+                .Where(c => c.CarId == request.CarId && c.Rating.HasValue)
+                .Select(c => c.Rating!.Value)
+                .ToListAsync(cancellationToken);
 
             var ratingList = comments.ToList();
             if (!ratingList.Any())

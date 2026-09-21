@@ -1,30 +1,29 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.PromoCode;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
-using PromoCodeEntity = CarShop.Domain.Entities.PromoCode;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
 {
     public class GetActivePromoCodesQueryHandler : IRequestHandler<GetActivePromoCodesQuery, Result<IEnumerable<PromoCodeDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
 
         private const string ActiveCodesKey = "promos:active";
 
-        public GetActivePromoCodesQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+        public GetActivePromoCodesQueryHandler(IApplicationDbContext context, ICacheService cacheService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
         }
 
         public async Task<Result<IEnumerable<PromoCodeDto>>> Handle(GetActivePromoCodesQuery request, CancellationToken cancellationToken)
         {
-            var redis = await _unitOfWork.Repository<IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
             var isRedisEnabled = redis != null && redis.IsEnabled;
 
             if (isRedisEnabled)
@@ -35,11 +34,10 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
             }
 
             var now   = DateTime.UtcNow;
-            var codes = await _unitOfWork.Repository<PromoCodeEntity>().GetAllAsync(
-                p => p.IsActive &&
+            var codes = await _context.PromoCodes.Where(p => p.IsActive &&
                      (!p.MaxUsages.HasValue || p.UsageCount < p.MaxUsages.Value) &&
-                     (!p.ExpiresAt.HasValue || p.ExpiresAt.Value > now),
-                p => new PromoCodeDto
+                     (!p.ExpiresAt.HasValue || p.ExpiresAt.Value > now))
+                .Select(p => new PromoCodeDto
                 {
                     Id                = p.Id,
                     Code              = p.Code,
@@ -49,7 +47,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
                     UsageCount        = p.UsageCount,
                     ExpiresAt         = p.ExpiresAt,
                     IsActive          = p.IsActive
-                });
+                }).ToListAsync(cancellationToken);
             var result = codes.OrderByDescending(p => p.DiscountPercent);
 
             if (isRedisEnabled)

@@ -1,22 +1,21 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
 namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
 {
     public class CancelBookingCommandHandler : IRequestHandler<CancelBookingCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        public CancelBookingCommandHandler(IUnitOfWork unitOfWork, IAuditLogService auditLogService, IUserContextService userContextService)
+        public CancelBookingCommandHandler(IApplicationDbContext context, IAuditLogService auditLogService, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
@@ -24,7 +23,7 @@ namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
         public async Task<Result<string>> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var booking = await _unitOfWork.Repository<TestDriveBooking>().FirstOrDefaultAsync(
+            var booking = await _context.TestDriveBookings.FirstOrDefaultAsync(
                 b => b.Id == request.BookingId && b.UserId == userId);
 
             if (booking == null)
@@ -35,8 +34,8 @@ namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
 
             var oldStatus = booking.Status;
             booking.Cancel();
-            _unitOfWork.Repository<TestDriveBooking>().Update(booking);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.TestDriveBookings.Update(booking);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("TestDrive", "Cancel",
                 _userContextService.UserId, _userContextService.Email,

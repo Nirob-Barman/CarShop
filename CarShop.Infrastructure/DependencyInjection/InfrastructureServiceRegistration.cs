@@ -31,7 +31,7 @@ namespace CarShop.Infrastructure.DependencyInjection
                 //options.ConfigurationOptions = new StackExchange.Redis.ConfigurationOptions
                 //{
                 //    EndPoints = { "clear-moray-16822.upstash.io:6379" },
-                //    Password = "AUG2AAIncDE3MjgyYmFmNWViMWI0YmY3YjBmNDA5ZjljNmEzMDI5YXAxMTY4MjI",
+                //    Password = "",
                 //    Ssl = true,
                 //    AbortOnConnectFail = false,
                 //    ConnectTimeout = 10000  // 10 seconds
@@ -39,6 +39,7 @@ namespace CarShop.Infrastructure.DependencyInjection
                 options.InstanceName = "CarShop:";
             });
 
+            services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<AppDbContext>());
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
@@ -46,12 +47,7 @@ namespace CarShop.Infrastructure.DependencyInjection
             services.AddScoped<IRoleManager, RoleManager>();
 
             services.AddHttpClient();
-            services.AddScoped<IUserContextService, UserContextService>();
-            //services.AddScoped<IBrandRepository, BrandRepository>();
-            //services.AddScoped<ICarRepository, CarRepository>();
-            //services.AddScoped<ICommentRepository, CommentRepository>();
-            //services.AddScoped<IOrderRepository, OrderRepository>();
-            //services.AddScoped<IIntegrationRepository, IntegrationRepository>();
+            services.AddScoped<IUserContextService, UserContextService>();            
 
             services.Configure<EmailSettings>(config.GetSection("EmailSettings"));
             services.AddScoped<IEmailService, EmailService>();

@@ -1,23 +1,23 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.PromoCode;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PromoCodeEntity = CarShop.Domain.Entities.PromoCode;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode
 {
     public class ValidatePromoCodeQueryHandler : IRequestHandler<ValidatePromoCodeQuery, Result<ValidatePromoCodeResult>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public ValidatePromoCodeQueryHandler(IUnitOfWork unitOfWork)
+        public ValidatePromoCodeQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<ValidatePromoCodeResult>> Handle(ValidatePromoCodeQuery request, CancellationToken cancellationToken)
         {
-            var promo = await _unitOfWork.Repository<PromoCodeEntity>().FirstOrDefaultAsync(
+            var promo = await _context.PromoCodes.FirstOrDefaultAsync(
                 p => p.Code == request.Code.ToUpper() && p.IsActive);
 
             if (promo == null)

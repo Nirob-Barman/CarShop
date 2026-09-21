@@ -1,17 +1,16 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using BrandEntity = CarShop.Domain.Entities.Brand;
 
 namespace CarShop.Application.Features.Brand.Commands.CreateBrand
 {
     public class CreateBrandCommandHandler : IRequestHandler<CreateBrandCommand, Result<int>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
@@ -19,12 +18,12 @@ namespace CarShop.Application.Features.Brand.Commands.CreateBrand
         private const string AllBrandsKey = "brands:all";
 
         public CreateBrandCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             ICacheService cacheService,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -33,11 +32,13 @@ namespace CarShop.Application.Features.Brand.Commands.CreateBrand
         public async Task<Result<int>> Handle(CreateBrandCommand request, CancellationToken cancellationToken)
         {
             var brand = new BrandEntity(request.Name!);
-            await _unitOfWork.Repository<BrandEntity>().AddAsync(brand);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.Brands.AddAsync(brand);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            var redis = await _unitOfWork.Repository<IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings
+                .Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled })
+                .FirstOrDefaultAsync(cancellationToken);
             if (redis != null && redis.IsEnabled)
                 await _cacheService.RemoveAsync(AllBrandsKey);
 

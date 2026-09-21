@@ -1,27 +1,26 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Wishlist;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Wishlist.Queries.GetTopWishlistedCars
 {
     public class GetTopWishlistedCarsQueryHandler : IRequestHandler<GetTopWishlistedCarsQuery, Result<IEnumerable<TopWishlistedCarDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetTopWishlistedCarsQueryHandler(IUnitOfWork unitOfWork)
+        public GetTopWishlistedCarsQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<IEnumerable<TopWishlistedCarDto>>> Handle(GetTopWishlistedCarsQuery request, CancellationToken cancellationToken)
         {
-            var allItems = await _unitOfWork.Repository<WishlistItem>().GetAllWithIncludesAsync(
-                predicate: _ => true,
-                selector: w => w,
-                w => w.Car!,
-                w => w.Car!.Brand!);
+            var allItems = await _context.WishlistItems
+                .Include(w => w.Car)
+                .ThenInclude(c => c!.Brand)
+                .ToListAsync(cancellationToken);
 
             var top = allItems
                 .GroupBy(w => w.CarId)

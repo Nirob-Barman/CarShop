@@ -1,16 +1,16 @@
-using CarShop.Application.Interfaces.Persistence;
+using CarShop.Application.Interfaces;
 using FluentValidation;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.PaymentGateway.Commands.CreateGateway
 {
     public class CreateGatewayCommandValidator : AbstractValidator<CreateGatewayCommand>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public CreateGatewayCommandValidator(IUnitOfWork unitOfWork)
+        public CreateGatewayCommandValidator(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
 
             RuleFor(x => x)
                 .MustAsync(BeUniqueSlug).WithMessage("A gateway with this slug already exists.");
@@ -18,7 +18,7 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.CreateGateway
 
         private async Task<bool> BeUniqueSlug(CreateGatewayCommand command, CancellationToken cancellationToken)
         {
-            var exists = await _unitOfWork.Repository<PaymentGatewayEntity>().AnyAsync(g => g.Slug == command.Dto.Slug);
+            var exists = await _context.PaymentGateways.AnyAsync(g => g.Slug == command.Dto.Slug);
             return !exists;
         }
     }

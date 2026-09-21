@@ -1,17 +1,15 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
-using PromoCodeEntity = CarShop.Domain.Entities.PromoCode;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
 {
     public class UpdatePromoCodeCommandHandler : IRequestHandler<UpdatePromoCodeCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
@@ -19,12 +17,12 @@ namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
         private const string ActiveCodesKey = "promos:active";
 
         public UpdatePromoCodeCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             ICacheService cacheService,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -33,7 +31,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
         public async Task<Result<string>> Handle(UpdatePromoCodeCommand request, CancellationToken cancellationToken)
         {
             var dto = request.Dto;
-            var promo = await _unitOfWork.Repository<PromoCodeEntity>().GetByIdAsync(request.Id);
+            var promo = await _context.PromoCodes.FindAsync(request.Id);
             if (promo == null) return Result<string>.Fail("Promo code not found.");
 
             var oldValues = JsonSerializer.Serialize(new
@@ -47,11 +45,11 @@ namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
             promo.MaxUsages          = dto.MaxUsages;
             promo.ExpiresAt          = dto.ExpiresAt;
 
-            _unitOfWork.Repository<PromoCodeEntity>().Update(promo);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PromoCodes.Update(promo);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            var redis = await _unitOfWork.Repository<IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
             if (redis != null && redis.IsEnabled)
                 await _cacheService.RemoveAsync(ActiveCodesKey);
 

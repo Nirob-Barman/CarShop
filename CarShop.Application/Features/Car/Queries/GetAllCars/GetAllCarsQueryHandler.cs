@@ -1,27 +1,26 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Car;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Car.Queries.GetAllCars
 {
     public class GetAllCarsQueryHandler : IRequestHandler<GetAllCarsQuery, Result<IEnumerable<CarDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetAllCarsQueryHandler(IUnitOfWork unitOfWork)
+        public GetAllCarsQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<IEnumerable<CarDto>>> Handle(GetAllCarsQuery request, CancellationToken cancellationToken)
         {
-            var cars = await _unitOfWork.Repository<CarEntity>().GetAllWithIncludesAsync(
-                selector: c => c,
-                c => c.Brand!
-            );
+            var cars = await _context.Cars
+                .Include(c => c.Brand)
+                .ToListAsync(cancellationToken);
             var result = cars.Select(CarMapper.ToDto);
             return Result<IEnumerable<CarDto>>.Ok(result);
         }

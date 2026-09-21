@@ -1,24 +1,23 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Payment;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
 
 namespace CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById
 {
     public class GetGatewayByIdQueryHandler : IRequestHandler<GetGatewayByIdQuery, Result<PaymentGatewayDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetGatewayByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetGatewayByIdQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<PaymentGatewayDto>> Handle(GetGatewayByIdQuery request, CancellationToken cancellationToken)
         {
-            var gateway = await _unitOfWork.Repository<PaymentGatewayEntity>().GetByIdAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
             if (gateway == null) return Result<PaymentGatewayDto>.Fail("Gateway not found.");
             return Result<PaymentGatewayDto>.Ok(PaymentGatewayMapper.ToDto(gateway));
         }

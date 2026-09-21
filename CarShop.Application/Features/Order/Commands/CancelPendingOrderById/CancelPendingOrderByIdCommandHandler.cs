@@ -1,40 +1,36 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
-using CarEntity = CarShop.Domain.Entities.Car;
-using OrderEntity = CarShop.Domain.Entities.Order;
 
 namespace CarShop.Application.Features.Order.Commands.CancelPendingOrderById
 {
     public class CancelPendingOrderByIdCommandHandler : IRequestHandler<CancelPendingOrderByIdCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
 
-        public CancelPendingOrderByIdCommandHandler(IUnitOfWork unitOfWork, IAuditLogService auditLogService)
+        public CancelPendingOrderByIdCommandHandler(IApplicationDbContext context, IAuditLogService auditLogService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
         }
 
         public async Task<Result<string>> Handle(CancelPendingOrderByIdCommand request, CancellationToken cancellationToken)
         {
-            var order = await _unitOfWork.Repository<OrderEntity>().GetByIdAsync(request.OrderId);
+            var order = await _context.Orders.FindAsync(request.OrderId);
 
             if (order == null || order.Status != OrderStatus.Pending)
                 return Result<string>.Ok(null, "Nothing to cancel.");
 
-            var car = await _unitOfWork.Repository<CarEntity>().GetByIdAsync(order.CarId);
-            if (car != null) { car.RestoreStock(order.Quantity); _unitOfWork.Repository<CarEntity>().Update(car); }
+            var car = await _context.Cars.FindAsync(order.CarId);
+            if (car != null) { car.RestoreStock(order.Quantity); _context.Cars.Update(car); }
 
             var oldStatus = order.Status;
             order.Cancel();
-            _unitOfWork.Repository<OrderEntity>().Update(order);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("Order", "Cancel",
                 order.UserId, null,

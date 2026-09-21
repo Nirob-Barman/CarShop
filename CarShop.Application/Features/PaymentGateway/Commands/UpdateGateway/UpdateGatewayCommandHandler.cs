@@ -1,26 +1,24 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
 
 namespace CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway
 {
     public class UpdateGatewayCommandHandler : IRequestHandler<UpdateGatewayCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IConfigEncryptor _encryptor;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public UpdateGatewayCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IConfigEncryptor encryptor,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _encryptor = encryptor;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -31,7 +29,7 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway
             var dto = request.Dto;
             var newConfig = request.NewConfig;
 
-            var gateway = await _unitOfWork.Repository<PaymentGatewayEntity>().GetByIdAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
             if (gateway == null) return Result<string>.Fail("Gateway not found.");
 
             var oldValues = JsonSerializer.Serialize(new
@@ -72,8 +70,8 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway
                 gateway.Config = _encryptor.Encrypt(JsonSerializer.Serialize(merged));
             }
 
-            _unitOfWork.Repository<PaymentGatewayEntity>().Update(gateway);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PaymentGateways.Update(gateway);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PaymentGateway", "Update",
                 _userContextService.UserId, _userContextService.Email,

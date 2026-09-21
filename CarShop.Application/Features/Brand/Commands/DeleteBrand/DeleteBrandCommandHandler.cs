@@ -1,17 +1,15 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
-using BrandEntity = CarShop.Domain.Entities.Brand;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Brand.Commands.DeleteBrand
 {
     public class DeleteBrandCommandHandler : IRequestHandler<DeleteBrandCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
@@ -20,12 +18,12 @@ namespace CarShop.Application.Features.Brand.Commands.DeleteBrand
         private static string BrandKey(int id) => $"brands:{id}";
 
         public DeleteBrandCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             ICacheService cacheService,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -33,16 +31,18 @@ namespace CarShop.Application.Features.Brand.Commands.DeleteBrand
 
         public async Task<Result<string>> Handle(DeleteBrandCommand request, CancellationToken cancellationToken)
         {
-            var brand = await _unitOfWork.Repository<BrandEntity>().GetByIdAsync(request.Id);
+            var brand = await _context.Brands.FindAsync(request.Id);
             if (brand == null)
                 return Result<string>.Fail("Brand not found.");
 
             var oldValues = JsonSerializer.Serialize(new { brand.Id, brand.Name });
-            _unitOfWork.Repository<BrandEntity>().Remove(brand);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.Brands.Remove(brand);
+            await _context.SaveChangesAsync(cancellationToken);
 
-            var redis = await _unitOfWork.Repository<IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings
+                .Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled })
+                .FirstOrDefaultAsync(cancellationToken);
             if (redis != null && redis.IsEnabled)
             {
                 await _cacheService.RemoveAsync(AllBrandsKey);

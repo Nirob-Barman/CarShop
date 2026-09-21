@@ -1,26 +1,25 @@
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CommentEntity = CarShop.Domain.Entities.Comment;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Comment.Queries.HasUserReviewed
 {
     public class HasUserReviewedQueryHandler : IRequestHandler<HasUserReviewedQuery, Result<bool>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public HasUserReviewedQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public HasUserReviewedQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<bool>> Handle(HasUserReviewedQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var hasReviewed = await _unitOfWork.Repository<CommentEntity>().AnyAsync(
+            var hasReviewed = await _context.Comments.AnyAsync(
                 c => c.CarId == request.CarId && c.UserId == userId && c.Rating.HasValue);
 
             return Result<bool>.Ok(hasReviewed);

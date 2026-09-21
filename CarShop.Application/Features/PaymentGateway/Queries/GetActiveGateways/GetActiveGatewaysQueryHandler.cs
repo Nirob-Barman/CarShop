@@ -1,25 +1,27 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Payment;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.PaymentGateway.Queries.GetActiveGateways
 {
     public class GetActiveGatewaysQueryHandler : IRequestHandler<GetActiveGatewaysQuery, Result<IEnumerable<PaymentGatewayDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetActiveGatewaysQueryHandler(IUnitOfWork unitOfWork)
+        public GetActiveGatewaysQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<IEnumerable<PaymentGatewayDto>>> Handle(GetActiveGatewaysQuery request, CancellationToken cancellationToken)
         {
-            var gateways = await _unitOfWork.Repository<PaymentGatewayEntity>()
-                .GetAllAsync(g => g.IsActive, g => PaymentGatewayMapper.ToDto(g));
+            var gateways = await _context.PaymentGateways
+                .Where(g => g.IsActive)
+                .Select(g => PaymentGatewayMapper.ToDto(g))
+                .ToListAsync(cancellationToken);
             return Result<IEnumerable<PaymentGatewayDto>>.Ok(gateways.OrderBy(g => g.SortOrder));
         }
     }

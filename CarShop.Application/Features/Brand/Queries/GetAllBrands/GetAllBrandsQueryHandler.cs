@@ -1,30 +1,29 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Brand;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
-using BrandEntity = CarShop.Domain.Entities.Brand;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Brand.Queries.GetAllBrands
 {
     public class GetAllBrandsQueryHandler : IRequestHandler<GetAllBrandsQuery, Result<IEnumerable<BrandDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
 
         private const string AllBrandsKey = "brands:all";
 
-        public GetAllBrandsQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+        public GetAllBrandsQueryHandler(IApplicationDbContext context, ICacheService cacheService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
         }
 
         public async Task<Result<IEnumerable<BrandDto>>> Handle(GetAllBrandsQuery request, CancellationToken cancellationToken)
         {
-            var redis = await _unitOfWork.Repository<IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
             var isRedisEnabled = redis != null && redis.IsEnabled;
             if (isRedisEnabled)
             {
@@ -33,7 +32,7 @@ namespace CarShop.Application.Features.Brand.Queries.GetAllBrands
                     return Result<IEnumerable<BrandDto>>.Ok(cached);
             }
 
-            var brands = await _unitOfWork.Repository<BrandEntity>().GetAllAsync();
+            var brands = await _context.Brands.ToListAsync();
             var result = brands.Select(b => new BrandDto { Id = b.Id, Name = b.Name });
             if (isRedisEnabled)
                 await _cacheService.SetAsync(AllBrandsKey, result, TimeSpan.FromDays(1));

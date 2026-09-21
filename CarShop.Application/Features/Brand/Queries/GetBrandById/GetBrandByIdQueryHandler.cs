@@ -1,29 +1,31 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.Brand;
 using CarShop.Application.Interfaces.Cache;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using BrandEntity = CarShop.Domain.Entities.Brand;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Brand.Queries.GetBrandById
 {
     public class GetBrandByIdQueryHandler : IRequestHandler<GetBrandByIdQuery, Result<BrandDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly ICacheService _cacheService;
 
         private static string BrandKey(int id) => $"brands:{id}";
 
-        public GetBrandByIdQueryHandler(IUnitOfWork unitOfWork, ICacheService cacheService)
+        public GetBrandByIdQueryHandler(IApplicationDbContext context, ICacheService cacheService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _cacheService = cacheService;
         }
 
         public async Task<Result<BrandDto>> Handle(GetBrandByIdQuery request, CancellationToken cancellationToken)
         {
-            var redis = await _unitOfWork.Repository<CarShop.Domain.Entities.IntegrationSetting>()
-                .FirstOrDefaultAsync(s => s.ServiceName == "Redis", s => new { s.IsEnabled });
+            var redis = await _context.IntegrationSettings
+                .Where(s => s.ServiceName == "Redis")
+                .Select(s => new { s.IsEnabled })
+                .FirstOrDefaultAsync(cancellationToken);
             var isRedisEnabled = redis != null && redis.IsEnabled;
             if (isRedisEnabled)
             {
@@ -32,7 +34,7 @@ namespace CarShop.Application.Features.Brand.Queries.GetBrandById
                     return Result<BrandDto>.Ok(cached);
             }
 
-            var brand = await _unitOfWork.Repository<BrandEntity>().GetByIdAsync(request.Id);
+            var brand = await _context.Brands.FindAsync(request.Id);
             if (brand == null)
                 return Result<BrandDto>.Fail("Brand not found");
 

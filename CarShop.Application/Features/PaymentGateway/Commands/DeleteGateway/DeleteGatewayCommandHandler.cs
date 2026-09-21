@@ -1,31 +1,29 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
 
 namespace CarShop.Application.Features.PaymentGateway.Commands.DeleteGateway
 {
     public class DeleteGatewayCommandHandler : IRequestHandler<DeleteGatewayCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public DeleteGatewayCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
 
         public async Task<Result<string>> Handle(DeleteGatewayCommand request, CancellationToken cancellationToken)
         {
-            var gateway = await _unitOfWork.Repository<PaymentGatewayEntity>().GetByIdAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
             if (gateway == null) return Result<string>.Fail("Gateway not found.");
 
             var oldValues = JsonSerializer.Serialize(new
@@ -34,8 +32,8 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.DeleteGateway
                 gateway.IsSandbox, gateway.SupportedCurrencies, gateway.SortOrder
             });
 
-            _unitOfWork.Repository<PaymentGatewayEntity>().Remove(gateway);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PaymentGateways.Remove(gateway);
+            await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PaymentGateway", "Delete",
                 _userContextService.UserId, _userContextService.Email,

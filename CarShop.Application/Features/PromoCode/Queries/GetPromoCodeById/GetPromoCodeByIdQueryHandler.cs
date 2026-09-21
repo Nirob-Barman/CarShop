@@ -1,23 +1,22 @@
+using CarShop.Application.Interfaces;
 using CarShop.Application.DTOs.PromoCode;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using PromoCodeEntity = CarShop.Domain.Entities.PromoCode;
 
 namespace CarShop.Application.Features.PromoCode.Queries.GetPromoCodeById
 {
     public class GetPromoCodeByIdQueryHandler : IRequestHandler<GetPromoCodeByIdQuery, Result<PromoCodeDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
 
-        public GetPromoCodeByIdQueryHandler(IUnitOfWork unitOfWork)
+        public GetPromoCodeByIdQueryHandler(IApplicationDbContext context)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
         }
 
         public async Task<Result<PromoCodeDto>> Handle(GetPromoCodeByIdQuery request, CancellationToken cancellationToken)
         {
-            var promo = await _unitOfWork.Repository<PromoCodeEntity>().GetByIdAsync(request.Id);
+            var promo = await _context.PromoCodes.FindAsync(request.Id);
             if (promo == null) return Result<PromoCodeDto>.Fail("Promo code not found.");
             return Result<PromoCodeDto>.Ok(new PromoCodeDto
             {

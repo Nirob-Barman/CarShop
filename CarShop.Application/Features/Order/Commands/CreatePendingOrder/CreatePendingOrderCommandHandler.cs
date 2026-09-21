@@ -1,31 +1,29 @@
 using CarShop.Application.Features.PromoCode.Commands.IncrementPromoCodeUsage;
 using CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
 using System.Text.Json;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
-using CarEntity = CarShop.Domain.Entities.Car;
 using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
 {
     public class CreatePendingOrderCommandHandler : IRequestHandler<CreatePendingOrderCommand, Result<(int OrderId, decimal FinalPrice, string CarTitle)>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IMediator _mediator;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
         public CreatePendingOrderCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IMediator mediator,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _mediator = mediator;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
@@ -35,17 +33,17 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
         {
             var userId = _userContextService.UserId!;
 
-            var car = await _unitOfWork.Repository<CarEntity>().GetByIdAsync(request.CarId);
+            var car = await _context.Cars.FindAsync(request.CarId);
             if (car == null) return Result<(int, decimal, string)>.Fail("Car not found.");
 
             // Cancel any existing pending order for this user + car to prevent stock double-hold
-            var existingPending = await _unitOfWork.Repository<OrderEntity>().FirstOrDefaultAsync(
+            var existingPending = await _context.Orders.FirstOrDefaultAsync(
                 o => o.UserId == userId && o.CarId == request.CarId && o.Status == OrderStatus.Pending);
             if (existingPending != null)
             {
                 existingPending.Cancel();
                 car.RestoreStock(existingPending.Quantity);  // restore the previously held stock
-                _unitOfWork.Repository<OrderEntity>().Update(existingPending);
+                _context.Orders.Update(existingPending);
             }
 
             if (car.Quantity <= 0) return Result<(int, decimal, string)>.Fail("Car is out of stock.");
@@ -83,8 +81,8 @@ namespace CarShop.Application.Features.Order.Commands.CreatePendingOrder
                 FinalPrice     = finalPrice
             };
 
-            await _unitOfWork.Repository<OrderEntity>().AddAsync(order);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.Orders.AddAsync(order);
+            await _context.SaveChangesAsync(cancellationToken);
 
             if (promoCodeId.HasValue)
                 await _mediator.Send(new IncrementPromoCodeUsageCommand(promoCodeId.Value));

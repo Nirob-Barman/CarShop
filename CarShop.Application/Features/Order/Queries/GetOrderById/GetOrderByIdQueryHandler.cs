@@ -1,30 +1,27 @@
 using CarShop.Application.DTOs.Order;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using OrderEntity = CarShop.Domain.Entities.Order;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Order.Queries.GetOrderById
 {
     public class GetOrderByIdQueryHandler : IRequestHandler<GetOrderByIdQuery, Result<OrderDto>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public GetOrderByIdQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetOrderByIdQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<OrderDto>> Handle(GetOrderByIdQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var order  = (await _unitOfWork.Repository<OrderEntity>().GetAllWithIncludesAsync(
-                o => o.Id == request.OrderId && o.UserId == userId,
-                o => o,
-                o => o.Car!)).FirstOrDefault();
+            var order = await _context.Orders.Include(o => o.Car)
+                .FirstOrDefaultAsync(o => o.Id == request.OrderId && o.UserId == userId, cancellationToken);
 
             if (order == null)
                 return Result<OrderDto>.Fail("Order not found.");

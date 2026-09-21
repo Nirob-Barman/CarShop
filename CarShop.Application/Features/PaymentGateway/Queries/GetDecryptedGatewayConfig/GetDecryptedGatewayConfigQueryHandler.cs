@@ -1,25 +1,23 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using MediatR;
-using PaymentGatewayEntity = CarShop.Domain.Entities.PaymentGateway;
 
 namespace CarShop.Application.Features.PaymentGateway.Queries.GetDecryptedGatewayConfig
 {
     public class GetDecryptedGatewayConfigQueryHandler : IRequestHandler<GetDecryptedGatewayConfigQuery, Dictionary<string, string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IConfigEncryptor _encryptor;
 
-        public GetDecryptedGatewayConfigQueryHandler(IUnitOfWork unitOfWork, IConfigEncryptor encryptor)
+        public GetDecryptedGatewayConfigQueryHandler(IApplicationDbContext context, IConfigEncryptor encryptor)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _encryptor = encryptor;
         }
 
         public async Task<Dictionary<string, string>> Handle(GetDecryptedGatewayConfigQuery request, CancellationToken cancellationToken)
         {
-            var gateway = await _unitOfWork.Repository<PaymentGatewayEntity>().GetByIdAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
             if (gateway == null) return [];
 
             Dictionary<string, string> result = [];

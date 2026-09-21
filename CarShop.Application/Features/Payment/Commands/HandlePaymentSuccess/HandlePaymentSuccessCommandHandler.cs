@@ -3,33 +3,28 @@ using CarShop.Application.Features.Order.Commands.MarkOrderAsPaid;
 using CarShop.Application.Features.PaymentGateway.Queries.GetDecryptedGatewayConfig;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Identity;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using CarShop.Domain.Enums;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
-using OrderEntity = CarShop.Domain.Entities.Order;
-using PaymentTransactionEntity = CarShop.Domain.Entities.PaymentTransaction;
 
 namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
 {
     public class HandlePaymentSuccessCommandHandler : IRequestHandler<HandlePaymentSuccessCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IPaymentProcessorFactory _processorFactory;
         private readonly IMediator _mediator;
         private readonly IEmailService _emailService;
         private readonly IIdentityService _identityService;
 
         public HandlePaymentSuccessCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IPaymentProcessorFactory processorFactory,
             IMediator mediator,
             IEmailService emailService,
             IIdentityService identityService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _processorFactory = processorFactory;
             _mediator = mediator;
             _emailService = emailService;
@@ -38,8 +33,8 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
 
         public async Task<Result<string>> Handle(HandlePaymentSuccessCommand request, CancellationToken cancellationToken)
         {
-            var transaction = await _unitOfWork.Repository<PaymentTransactionEntity>()
-                .GetByIdAsync(request.TransactionDbId);
+            var transaction = await _context.PaymentTransactions
+                .FindAsync(request.TransactionDbId);
 
             if (transaction == null)
                 return Result<string>.Fail("Transaction not found.");
@@ -53,16 +48,16 @@ namespace CarShop.Application.Features.Payment.Commands.HandlePaymentSuccess
             var verifyResult = await processor.VerifyAsync(request.SessionRefOverride ?? transaction.SessionRef ?? request.TransactionDbId.ToString(), config);
 
             transaction.RecordVerificationResult(verifyResult.Success, verifyResult.ProviderTransactionId, verifyResult.RawResponse);
-            _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PaymentTransactions.Update(transaction);
+            await _context.SaveChangesAsync(cancellationToken);
 
             if (!verifyResult.Success)
                 return Result<string>.Fail("Payment verification failed.");
 
             await _mediator.Send(new MarkOrderAsPaidCommand(transaction.OrderId), cancellationToken);
 
-            var order = await _unitOfWork.Repository<OrderEntity>().GetByIdAsync(transaction.OrderId);
-            var car   = order != null ? await _unitOfWork.Repository<CarEntity>().GetByIdAsync(order.CarId) : null;
+            var order = await _context.Orders.FindAsync(transaction.OrderId);
+            var car   = order != null ? await _context.Cars.FindAsync(order.CarId) : null;
 
             if (order?.UserId != null)
             {

@@ -4,9 +4,7 @@ using CarShop.Application.Features.Order.Commands.SetOrderGateway;
 using CarShop.Application.Features.PaymentGateway.Queries.GetDecryptedGatewayConfig;
 using CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
 using PaymentTransactionEntity = CarShop.Domain.Entities.PaymentTransaction;
 
@@ -14,16 +12,16 @@ namespace CarShop.Application.Features.Payment.Commands.InitiatePayment
 {
     public class InitiatePaymentCommandHandler : IRequestHandler<InitiatePaymentCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IPaymentProcessorFactory _processorFactory;
         private readonly IMediator _mediator;
 
         public InitiatePaymentCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IPaymentProcessorFactory processorFactory,
             IMediator mediator)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _processorFactory = processorFactory;
             _mediator = mediator;
         }
@@ -57,8 +55,8 @@ namespace CarShop.Application.Features.Payment.Commands.InitiatePayment
                 Currency         = "USD",
                 CreatedAt        = DateTime.UtcNow
             };
-            await _unitOfWork.Repository<PaymentTransactionEntity>().AddAsync(transaction);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.PaymentTransactions.AddAsync(transaction);
+            await _context.SaveChangesAsync(cancellationToken);
 
             var config = await _mediator.Send(new GetDecryptedGatewayConfigQuery(request.GatewayId), cancellationToken);
             var processor = _processorFactory.GetProcessor(gateway.Slug);
@@ -75,14 +73,14 @@ namespace CarShop.Application.Features.Payment.Commands.InitiatePayment
             {
                 await _mediator.Send(new CancelPendingOrderByIdCommand(orderId), cancellationToken);
                 transaction.MarkFailed();
-                _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                _context.PaymentTransactions.Update(transaction);
+                await _context.SaveChangesAsync(cancellationToken);
                 return Result<string>.Fail(initResult.Error ?? "Payment initiation failed.");
             }
 
             transaction.SessionRef = initResult.SessionRef;
-            _unitOfWork.Repository<PaymentTransactionEntity>().Update(transaction);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            _context.PaymentTransactions.Update(transaction);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Result<string>.Ok(initResult.RedirectUrl!);
         }

@@ -1,28 +1,26 @@
 using CarShop.Application.Features.Notification.Commands.CreateNotification;
 using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Identity;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
 using MediatR;
-using CarEntity = CarShop.Domain.Entities.Car;
-using StockAlertEntity = CarShop.Domain.Entities.StockAlert;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts
 {
     public class TriggerStockAlertsCommandHandler : IRequestHandler<TriggerStockAlertsCommand, Result<string>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IEmailService _emailService;
         private readonly IMediator _mediator;
         private readonly IIdentityService _identityService;
 
         public TriggerStockAlertsCommandHandler(
-            IUnitOfWork unitOfWork,
+            IApplicationDbContext context,
             IEmailService emailService,
             IMediator mediator,
             IIdentityService identityService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _emailService = emailService;
             _mediator = mediator;
             _identityService = identityService;
@@ -30,18 +28,18 @@ namespace CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts
 
         public async Task<Result<string>> Handle(TriggerStockAlertsCommand request, CancellationToken cancellationToken)
         {
-            var car = await _unitOfWork.Repository<CarEntity>().GetByIdAsync(request.CarId);
+            var car = await _context.Cars.FindAsync(request.CarId);
             if (car == null)
                 return Result<string>.Ok(null, "Car not found.");
 
-            var alerts = await _unitOfWork.Repository<StockAlertEntity>().GetAllAsync(
-                s => s.CarId == request.CarId && !s.IsTriggered,
-                s => s);
+            var alerts = await _context.StockAlerts
+                .Where(s => s.CarId == request.CarId && !s.IsTriggered)
+                .ToListAsync(cancellationToken);
 
             foreach (var alert in alerts)
             {
                 alert.Trigger();
-                _unitOfWork.Repository<StockAlertEntity>().Update(alert);
+                _context.StockAlerts.Update(alert);
 
                 await _mediator.Send(new CreateNotificationCommand(
                     alert.UserId,
@@ -63,7 +61,7 @@ namespace CarShop.Application.Features.StockAlert.Commands.TriggerStockAlerts
                 catch { /* ignore email failures */ }
             }
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
 
             return Result<string>.Ok(null, "Stock alerts triggered.");
         }

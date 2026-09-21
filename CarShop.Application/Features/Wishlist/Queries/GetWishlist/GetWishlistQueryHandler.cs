@@ -1,31 +1,29 @@
 using CarShop.Application.DTOs.Wishlist;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Application.Wrappers;
-using CarShop.Domain.Entities;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarShop.Application.Features.Wishlist.Queries.GetWishlist
 {
     public class GetWishlistQueryHandler : IRequestHandler<GetWishlistQuery, Result<IEnumerable<WishlistItemDto>>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IUserContextService _userContextService;
 
-        public GetWishlistQueryHandler(IUnitOfWork unitOfWork, IUserContextService userContextService)
+        public GetWishlistQueryHandler(IApplicationDbContext context, IUserContextService userContextService)
         {
-            _unitOfWork = unitOfWork;
+            _context = context;
             _userContextService = userContextService;
         }
 
         public async Task<Result<IEnumerable<WishlistItemDto>>> Handle(GetWishlistQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var items = await _unitOfWork.Repository<WishlistItem>().GetAllWithIncludesAsync(
-                predicate: w => w.UserId == userId,
-                selector: w => w,
-                w => w.Car!
-            );
+            var items = await _context.WishlistItems
+                .Include(w => w.Car)
+                .Where(w => w.UserId == userId)
+                .ToListAsync(cancellationToken);
 
             var dtos = items.Select(w => new WishlistItemDto
             {
