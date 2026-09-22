@@ -21,23 +21,21 @@ namespace CarShop.Application.Features.TestDrive.Queries.GetUserBookings
         {
             var userId = _userContextService.UserId!;
             var bookings = await _context.TestDriveBookings.AsNoTracking()
-                .Include(b => b.Car)
                 .Where(b => b.UserId == userId)
-                .ToListAsync(cancellationToken);
+                .OrderByDescending(b => b.CreatedAt)
+                .Select(b => new TestDriveBookingDto
+                {
+                    Id = b.Id,
+                    UserId = b.UserId,
+                    CarId = b.CarId,
+                    CarTitle = b.Car != null ? b.Car.Title : null,
+                    BookingDate = b.BookingDate,
+                    Notes = b.Notes,
+                    Status = b.Status.ToString(),
+                    CreatedAt = b.CreatedAt
+                }).ToListAsync(cancellationToken);
 
-            var dtos = bookings.OrderByDescending(b => b.CreatedAt).Select(b => new TestDriveBookingDto
-            {
-                Id = b.Id,
-                UserId = b.UserId,
-                CarId = b.CarId,
-                CarTitle = b.Car?.Title,
-                BookingDate = b.BookingDate,
-                Notes = b.Notes,
-                Status = b.Status.ToString(),
-                CreatedAt = b.CreatedAt
-            });
-
-            return Result<IEnumerable<TestDriveBookingDto>>.Ok(dtos);
+            return Result<IEnumerable<TestDriveBookingDto>>.Ok(bookings);
         }
     }
 }
