@@ -20,9 +20,12 @@ namespace CarShop.Application.Features.PaymentGateway.Queries.GetActiveGateways
         {
             var gateways = await _context.PaymentGateways.AsNoTracking()
                 .Where(g => g.IsActive)
-                .Select(g => PaymentGatewayMapper.ToDto(g))
+                .OrderBy(g => g.SortOrder)
                 .ToListAsync(cancellationToken);
-            return Result<IEnumerable<PaymentGatewayDto>>.Ok(gateways.OrderBy(g => g.SortOrder));
+
+            var result = gateways.Select(PaymentGatewayMapper.ToDto);
+
+            return Result<IEnumerable<PaymentGatewayDto>>.Ok(result);
         }
     }
 }

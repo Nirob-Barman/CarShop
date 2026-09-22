@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.PaymentGateway.Queries.GetDecryptedGatewa
 
         public async Task<Dictionary<string, string>> Handle(GetDecryptedGatewayConfigQuery request, CancellationToken cancellationToken)
         {
-            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id, cancellationToken);
             if (gateway == null) return [];
 
             Dictionary<string, string> result = [];

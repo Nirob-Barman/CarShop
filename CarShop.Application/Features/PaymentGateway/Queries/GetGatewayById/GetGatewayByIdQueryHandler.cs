@@ -17,7 +17,7 @@ namespace CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById
 
         public async Task<Result<PaymentGatewayDto>> Handle(GetGatewayByIdQuery request, CancellationToken cancellationToken)
         {
-            var gateway = await _context.PaymentGateways.FindAsync(request.Id);
+            var gateway = await _context.PaymentGateways.FindAsync(request.Id, cancellationToken);
             if (gateway == null) return Result<PaymentGatewayDto>.Fail("Gateway not found.");
             return Result<PaymentGatewayDto>.Ok(PaymentGatewayMapper.ToDto(gateway));
         }
