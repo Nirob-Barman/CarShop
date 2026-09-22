@@ -21,13 +21,7 @@ namespace CarShop.Application.Features.Comment.Commands.AddReview
             var userId   = _userContextService.UserId!;
             var userName = _userContextService.Email ?? "User";
 
-            var comment = new CommentEntity(request.Content!, request.Rating)
-            {
-                CarId = request.CarId,
-                UserId = userId,
-                UserName = userName.Trim(),
-                CreatedAt = DateTime.UtcNow
-            };
+            var comment = CommentEntity.Create(request.Content!, request.Rating, request.CarId, userId, userName);
 
             await _context.Comments.AddAsync(comment);
             await _context.SaveChangesAsync(cancellationToken);
