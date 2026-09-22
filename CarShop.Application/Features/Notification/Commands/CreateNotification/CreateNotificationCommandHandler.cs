@@ -1,5 +1,6 @@
 using CarShop.Application.Interfaces;
 using CarShop.Application.Wrappers;
+using CarShop.Domain.Entities;
 using MediatR;
 
 namespace CarShop.Application.Features.Notification.Commands.CreateNotification
@@ -15,13 +16,7 @@ namespace CarShop.Application.Features.Notification.Commands.CreateNotification
 
         public async Task<Result<string>> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
         {
-            var notification = new CarShop.Domain.Entities.AppNotification
-            {
-                UserId = request.UserId,
-                Message = request.Message,
-                Link = request.Link,
-                CreatedAt = DateTime.UtcNow
-            };
+            var notification = AppNotification.Create(request.UserId, request.Message, request.Link);
 
             await _context.AppNotifications.AddAsync(notification);
             await _context.SaveChangesAsync(cancellationToken);
