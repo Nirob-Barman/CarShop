@@ -9,7 +9,6 @@ namespace CarShop.Application.DTOs.Car
         [Required(ErrorMessage = "Car title is required.")]
         [StringLength(100, ErrorMessage = "Car title cannot be longer than 100 characters.")]
         public string? Title { get; set; }
-        //[Required(ErrorMessage = "Description is required.")]
         [StringLength(500, ErrorMessage = "Description cannot be longer than 500 characters.")]
         public string? Description { get; set; }
         [Range(0.01, double.MaxValue, ErrorMessage = "Price must be a positive number.")]

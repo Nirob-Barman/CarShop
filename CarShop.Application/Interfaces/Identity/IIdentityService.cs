@@ -1,10 +1,7 @@
 using CarShop.Domain.Entities;
 
 namespace CarShop.Application.Interfaces.Identity
-{
-    /// <summary>
-    /// Application port for account identity operations. ASP.NET Core Identity types stay in Infrastructure.
-    /// </summary>
+{    
     public interface IIdentityService
     {
         Task<(bool Succeeded, string? UserId, List<string> Errors)> CreateAsync(AppUser user, string password);
