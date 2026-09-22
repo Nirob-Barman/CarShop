@@ -17,20 +17,20 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetAllPromoCodes
 
         public async Task<Result<IEnumerable<PromoCodeDto>>> Handle(GetAllPromoCodesQuery request, CancellationToken cancellationToken)
         {
-            var codes = await _context.PromoCodes.AsNoTracking().ToListAsync();
-            var dtos = codes.Select(p => new PromoCodeDto
-            {
-                Id = p.Id,
-                Code = p.Code,
-                DiscountPercent = p.DiscountPercent,
-                MaxDiscountAmount = p.MaxDiscountAmount,
-                MaxUsages = p.MaxUsages,
-                UsageCount = p.UsageCount,
-                ExpiresAt = p.ExpiresAt,
-                IsActive = p.IsActive,
-                CreatedAt = p.CreatedAt
-            });
-            return Result<IEnumerable<PromoCodeDto>>.Ok(dtos);
+            var codes = await _context.PromoCodes.AsNoTracking()
+                .Select(p => new PromoCodeDto
+                {
+                    Id = p.Id,
+                    Code = p.Code,
+                    DiscountPercent = p.DiscountPercent,
+                    MaxDiscountAmount = p.MaxDiscountAmount,
+                    MaxUsages = p.MaxUsages,
+                    UsageCount = p.UsageCount,
+                    ExpiresAt = p.ExpiresAt,
+                    IsActive = p.IsActive,
+                    CreatedAt = p.CreatedAt
+                }).ToListAsync(cancellationToken);
+            return Result<IEnumerable<PromoCodeDto>>.Ok(codes);
         }
     }
 }

@@ -21,6 +21,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
             var codes = await _context.PromoCodes.AsNoTracking().Where(p => p.IsActive &&
                      (!p.MaxUsages.HasValue || p.UsageCount < p.MaxUsages.Value) &&
                      (!p.ExpiresAt.HasValue || p.ExpiresAt.Value > now))
+                .OrderByDescending(p => p.DiscountPercent)
                 .Select(p => new PromoCodeDto
                 {
                     Id                = p.Id,
@@ -32,9 +33,8 @@ namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
                     ExpiresAt         = p.ExpiresAt,
                     IsActive          = p.IsActive
                 }).ToListAsync(cancellationToken);
-            var result = codes.OrderByDescending(p => p.DiscountPercent);
 
-            return Result<IEnumerable<PromoCodeDto>>.Ok(result);
+            return Result<IEnumerable<PromoCodeDto>>.Ok(codes);
         }
     }
 }

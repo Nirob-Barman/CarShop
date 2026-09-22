@@ -18,7 +18,7 @@ namespace CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode
         public async Task<Result<ValidatePromoCodeResult>> Handle(ValidatePromoCodeQuery request, CancellationToken cancellationToken)
         {
             var promo = await _context.PromoCodes.AsNoTracking().FirstOrDefaultAsync(
-                p => p.Code == request.Code.ToUpper() && p.IsActive);
+                p => p.Code == request.Code.ToUpper() && p.IsActive, cancellationToken);
 
             if (promo == null)
                 return Result<ValidatePromoCodeResult>.Fail("Invalid or inactive promo code.");
