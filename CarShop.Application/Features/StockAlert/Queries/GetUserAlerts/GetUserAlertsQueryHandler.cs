@@ -21,22 +21,19 @@ namespace CarShop.Application.Features.StockAlert.Queries.GetUserAlerts
         {
             var userId = _userContextService.UserId!;
             var alerts = await _context.StockAlerts.AsNoTracking()
-                .Include(s => s.Car)
                 .Where(s => s.UserId == userId && !s.IsTriggered)
-                .ToListAsync(cancellationToken);
+                .Select(s => new StockAlertDto
+                {
+                    Id = s.Id,
+                    CarId = s.CarId,
+                    CarTitle = s.Car != null ? s.Car.Title : null,
+                    CarImageUrl = s.Car != null ? s.Car.ImageUrl : null,
+                    IsTriggered = s.IsTriggered,
+                    SubscribedAt = s.SubscribedAt,
+                    TriggeredAt = s.TriggeredAt
+                }).ToListAsync(cancellationToken);
 
-            var dtos = alerts.Select(s => new StockAlertDto
-            {
-                Id = s.Id,
-                CarId = s.CarId,
-                CarTitle = s.Car?.Title,
-                CarImageUrl = s.Car?.ImageUrl,
-                IsTriggered = s.IsTriggered,
-                SubscribedAt = s.SubscribedAt,
-                TriggeredAt = s.TriggeredAt
-            });
-
-            return Result<IEnumerable<StockAlertDto>>.Ok(dtos);
+            return Result<IEnumerable<StockAlertDto>>.Ok(alerts);
         }
     }
 }
