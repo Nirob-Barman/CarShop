@@ -33,22 +33,17 @@ namespace CarShop.Application.Features.Car.Commands.UpdateCar
                 return Result<string>.Fail("Car not found.");
 
             var oldValues = JsonSerializer.Serialize(CarMapper.ToDto(car));
-            var dto = request.Dto;
 
             if (request.File != null)
             {
                 if (!string.IsNullOrEmpty(car.ImageUrl))
                     await _fileStorage.DeleteFileAsync(car.ImageUrl);
 
-                dto.ImageUrl = await _fileStorage.UploadFileAsync(request.File.Content!, request.File.FileName!, "uploads/car");
-            }
-            else
-            {
-                // No new image uploaded — keep the existing one
-                dto.ImageUrl = car.ImageUrl;
+                var imageUrl = await _fileStorage.UploadFileAsync(request.File.Content!, request.File.FileName!, "uploads/car");
+                car.ChangeImage(imageUrl);
             }
 
-            CarMapper.UpdateEntity(car, dto);
+            car.Update(request.Title, request.Description, request.Price, request.Quantity, request.BrandId);
             await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("Car", "Update", _userContextService.UserId, _userContextService.Email,

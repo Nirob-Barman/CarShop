@@ -4,5 +4,13 @@ using MediatR;
 
 namespace CarShop.Application.Features.Car.Queries.SearchCars
 {
-    public record SearchCarsQuery(CarSearchDto SearchDto) : IRequest<Result<PagedResult<CarDto>>>;
+    public record SearchCarsQuery(
+        string? BrandName,
+        string? Keyword,
+        decimal? MinPrice,
+        decimal? MaxPrice,
+        string SortBy,
+        int Page,
+        int PageSize
+    ) : IRequest<Result<PagedResult<CarDto>>>;
 }

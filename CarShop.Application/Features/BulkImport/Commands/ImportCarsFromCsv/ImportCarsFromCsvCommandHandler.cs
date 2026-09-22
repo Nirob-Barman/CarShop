@@ -80,14 +80,16 @@ namespace CarShop.Application.Features.BulkImport.Commands.ImportCarsFromCsv
                     continue;
                 }
 
-                carsToAdd.Add(new CarEntity
-                {
-                    Title = title,
-                    Description = description,
-                    Price = price,
-                    Quantity = quantity,
-                    BrandId = brand.Id
-                });
+                carsToAdd.Add(
+                    CarEntity.Create(
+                        title,
+                        description,
+                        price,
+                        quantity,
+                        brand.Id
+                    )
+                );
+
 
                 result.SuccessCount++;
             }

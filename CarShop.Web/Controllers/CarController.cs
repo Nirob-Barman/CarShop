@@ -72,8 +72,17 @@ namespace CarShop.Web.Controllers
                 };
             }
 
-            var dto = CarMapper.ToDto(model);
-            var result = await _mediator.Send(new CreateCarCommand(dto, fileDto));
+            var result = await _mediator.Send(
+                new CreateCarCommand(
+                    model.Title!,
+                    model.Description,
+                    model.Price,
+                    model.Quantity,
+                    model.BrandId,
+                    fileDto
+                )
+            );
+
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
@@ -134,15 +143,24 @@ namespace CarShop.Web.Controllers
                 };
             }
 
-            var dto = CarMapper.ToDto(model);
-            var result = await _mediator.Send(new UpdateCarCommand(id, dto, fileDto));
+            var result = await _mediator.Send(
+                new UpdateCarCommand(
+                    id,
+                    model.Title!,
+                    model.Description,
+                    model.Price,
+                    model.Quantity,
+                    model.BrandId,
+                    fileDto
+                )
+            );
+
             if (!result.Success)
             {
                 TempData["ErrorMessage"] = result.Message;
                 return View(model);
             }
 
-            //TempData["SuccessMessage"] = result.Message;
             return RedirectToAction("Index");
         }
 
@@ -224,18 +242,19 @@ namespace CarShop.Web.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> AllCars(string? brandName, string? keyword, decimal? minPrice, decimal? maxPrice, string? sortBy, int page = 1)
         {
-            var searchDto = new CarShop.Application.DTOs.Car.CarSearchDto
-            {
-                BrandName = brandName,
-                Keyword = keyword,
-                MinPrice = minPrice,
-                MaxPrice = maxPrice,
-                SortBy = sortBy ?? "newest",
-                Page = page,
-                PageSize = 10
-            };
+            var result = await _mediator.Send(
+                new SearchCarsQuery(
+                    brandName,
+                    keyword,
+                    minPrice,
+                    maxPrice,
+                    sortBy ?? "newest",
+                    page,
+                    10
+                )
+            );
 
-            var result = await _mediator.Send(new SearchCarsQuery(searchDto));
+
             var brandList = await _mediator.Send(new GetAllBrandsQuery());
 
             ViewBag.Brands = BrandMapper.ToViewModels(brandList.Data!);

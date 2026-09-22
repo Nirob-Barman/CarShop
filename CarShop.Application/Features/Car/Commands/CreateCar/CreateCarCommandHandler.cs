@@ -4,6 +4,7 @@ using CarShop.Application.Interfaces.FileStorage;
 using CarShop.Application.Mappers;
 using CarShop.Application.Wrappers;
 using MediatR;
+using CarEntity = CarShop.Domain.Entities.Car;
 
 namespace CarShop.Application.Features.Car.Commands.CreateCar
 {
@@ -28,14 +29,21 @@ namespace CarShop.Application.Features.Car.Commands.CreateCar
 
         public async Task<Result<int>> Handle(CreateCarCommand request, CancellationToken cancellationToken)
         {
-            var dto = request.Dto;
-
+            string? imageUrl = null;
             if (request.File != null)
             {
-                dto.ImageUrl = await _fileStorage.UploadFileAsync(request.File.Content!, request.File.FileName!, "uploads/car");
+                imageUrl = await _fileStorage.UploadFileAsync(request.File.Content!, request.File.FileName!, "uploads/car");
             }
 
-            var car = CarMapper.ToEntity(dto);
+            var car = CarEntity.Create(
+                request.Title,
+                request.Description,
+                request.Price,
+                request.Quantity,
+                request.BrandId,
+                imageUrl
+            );
+
             await _context.Cars.AddAsync(car);
             await _context.SaveChangesAsync(cancellationToken);
 

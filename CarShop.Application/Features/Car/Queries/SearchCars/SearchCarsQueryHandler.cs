@@ -18,22 +18,20 @@ namespace CarShop.Application.Features.Car.Queries.SearchCars
 
         public async Task<Result<PagedResult<CarDto>>> Handle(SearchCarsQuery request, CancellationToken cancellationToken)
         {
-            var searchDto = request.SearchDto;
-
             var cars = await _context.Cars.AsNoTracking().Include(c => c.Brand).Where(c =>
-                    (string.IsNullOrEmpty(searchDto.Keyword) ||
-                        (c.Title != null && c.Title.ToLower().Contains(searchDto.Keyword.ToLower())) ||
-                        (c.Description != null && c.Description.ToLower().Contains(searchDto.Keyword.ToLower()))) &&
-                    (string.IsNullOrEmpty(searchDto.BrandName) ||
-                        (c.Brand != null && c.Brand.Name != null && c.Brand.Name.ToLower() == searchDto.BrandName.ToLower())) &&
-                    (!searchDto.MinPrice.HasValue || c.Price >= searchDto.MinPrice.Value) &&
-                    (!searchDto.MaxPrice.HasValue || c.Price <= searchDto.MaxPrice.Value))
+                    (string.IsNullOrEmpty(request.Keyword) ||
+                        (c.Title != null && c.Title.ToLower().Contains(request.Keyword.ToLower())) ||
+                        (c.Description != null && c.Description.ToLower().Contains(request.Keyword.ToLower()))) &&
+                    (string.IsNullOrEmpty(request.BrandName) ||
+                        (c.Brand != null && c.Brand.Name != null && c.Brand.Name.ToLower() == request.BrandName.ToLower())) &&
+                    (!request.MinPrice.HasValue || c.Price >= request.MinPrice.Value) &&
+                    (!request.MaxPrice.HasValue || c.Price <= request.MaxPrice.Value))
                 .ToListAsync(cancellationToken);
 
             var carList = cars.ToList();
 
             // Sorting
-            carList = searchDto.SortBy?.ToLower() switch
+            carList = request.SortBy?.ToLower() switch
             {
                 "price_asc" => carList.OrderBy(c => c.Price).ToList(),
                 "price_desc" => carList.OrderByDescending(c => c.Price).ToList(),
@@ -42,8 +40,8 @@ namespace CarShop.Application.Features.Car.Queries.SearchCars
             };
 
             var totalCount = carList.Count;
-            var page = searchDto.Page < 1 ? 1 : searchDto.Page;
-            var pageSize = searchDto.PageSize < 1 ? 10 : searchDto.PageSize;
+            var page = request.Page < 1 ? 1 : request.Page;
+            var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
 
             var pagedItems = carList
                 .Skip((page - 1) * pageSize)
