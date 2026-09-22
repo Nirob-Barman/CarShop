@@ -20,11 +20,14 @@ namespace CarShop.Application.Features.Car.Queries.GetCarById
         {
             var car = await _context.Cars.AsNoTracking()
                 .Include(c => c.Brand)
-                .FirstOrDefaultAsync(c => c.Id == request.Id, cancellationToken);
+                .Where(c => c.Id == request.Id)
+                .Select(CarMapper.ToDtoExpression)
+                .FirstOrDefaultAsync(cancellationToken);
+
             if (car == null)
                 return Result<CarDto>.Fail("Car not found");
 
-            return Result<CarDto>.Ok(CarMapper.ToDto(car));
+            return Result<CarDto>.Ok(car);
         }
     }
 }

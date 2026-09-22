@@ -18,14 +18,13 @@ namespace CarShop.Application.Features.Car.Queries.GetCarsByIds
 
         public async Task<Result<IEnumerable<CarDto>>> Handle(GetCarsByIdsQuery request, CancellationToken cancellationToken)
         {
-            var idList = request.Ids.ToList();
             var cars = await _context.Cars.AsNoTracking()
                 .Include(c => c.Brand)
-                .Where(c => idList.Contains(c.Id))
+                .Where(c => request.Ids.Contains(c.Id))
+                .Select(CarMapper.ToDtoExpression)
                 .ToListAsync(cancellationToken);
 
-            var result = cars.Select(CarMapper.ToDto);
-            return Result<IEnumerable<CarDto>>.Ok(result);
+            return Result<IEnumerable<CarDto>>.Ok(cars);
         }
     }
 }

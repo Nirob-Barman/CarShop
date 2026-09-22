@@ -20,10 +20,9 @@ namespace CarShop.Application.Features.Car.Queries.GetAllCars
         {
             var cars = await _context.Cars
                 .AsNoTracking()
-                .Include(c => c.Brand)
+                .Select(CarMapper.ToDtoExpression)
                 .ToListAsync(cancellationToken);
-            var result = cars.Select(CarMapper.ToDto);
-            return Result<IEnumerable<CarDto>>.Ok(result);
+            return Result<IEnumerable<CarDto>>.Ok(cars);
         }
     }
 }

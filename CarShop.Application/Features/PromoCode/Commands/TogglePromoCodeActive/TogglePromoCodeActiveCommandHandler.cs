@@ -10,20 +10,15 @@ namespace CarShop.Application.Features.PromoCode.Commands.TogglePromoCodeActive
     public class TogglePromoCodeActiveCommandHandler : IRequestHandler<TogglePromoCodeActiveCommand, Result<string>>
     {
         private readonly IApplicationDbContext _context;
-        private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        private const string ActiveCodesKey = "promos:active";
-
         public TogglePromoCodeActiveCommandHandler(
             IApplicationDbContext context,
-            ICacheService cacheService,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
             _context = context;
-            _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
@@ -37,11 +32,6 @@ namespace CarShop.Application.Features.PromoCode.Commands.TogglePromoCodeActive
             promo.ToggleActive();
             _context.PromoCodes.Update(promo);
             await _context.SaveChangesAsync(cancellationToken);
-
-            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
-                .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
-            if (redis != null && redis.IsEnabled)
-                await _cacheService.RemoveAsync(ActiveCodesKey);
 
             await _auditLogService.LogAsync("PromoCode", promo.IsActive ? "Activate" : "Deactivate",
                 _userContextService.UserId, _userContextService.Email,

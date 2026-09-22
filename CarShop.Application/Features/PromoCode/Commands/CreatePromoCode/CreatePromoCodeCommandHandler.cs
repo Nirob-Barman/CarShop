@@ -1,9 +1,7 @@
 using System.Text.Json;
 using CarShop.Application.Interfaces;
-using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Wrappers;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using PromoCodeEntity = CarShop.Domain.Entities.PromoCode;
 
 namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
@@ -11,20 +9,15 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
     public class CreatePromoCodeCommandHandler : IRequestHandler<CreatePromoCodeCommand, Result<string>>
     {
         private readonly IApplicationDbContext _context;
-        private readonly ICacheService _cacheService;
         private readonly IAuditLogService _auditLogService;
         private readonly IUserContextService _userContextService;
 
-        private const string ActiveCodesKey = "promos:active";
-
         public CreatePromoCodeCommandHandler(
             IApplicationDbContext context,
-            ICacheService cacheService,
             IAuditLogService auditLogService,
             IUserContextService userContextService)
         {
             _context = context;
-            _cacheService = cacheService;
             _auditLogService = auditLogService;
             _userContextService = userContextService;
         }
@@ -45,11 +38,6 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
 
             await _context.PromoCodes.AddAsync(promo);
             await _context.SaveChangesAsync(cancellationToken);
-
-            var redis = await _context.IntegrationSettings.Where(s => s.ServiceName == "Redis")
-                .Select(s => new { s.IsEnabled }).FirstOrDefaultAsync(cancellationToken);
-            if (redis != null && redis.IsEnabled)
-                await _cacheService.RemoveAsync(ActiveCodesKey);
 
             await _auditLogService.LogAsync("PromoCode", "Create",
                 _userContextService.UserId, _userContextService.Email,
