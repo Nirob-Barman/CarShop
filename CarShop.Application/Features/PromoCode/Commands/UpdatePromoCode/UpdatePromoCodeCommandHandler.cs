@@ -23,7 +23,6 @@ namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
 
         public async Task<Result<string>> Handle(UpdatePromoCodeCommand request, CancellationToken cancellationToken)
         {
-            var dto = request.Dto;
             var promo = await _context.PromoCodes.FindAsync(request.Id);
             if (promo == null) return Result<string>.Fail("Promo code not found.");
 
@@ -35,7 +34,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
             
             try
             {
-                promo.Update(dto.DiscountPercent, dto.MaxDiscountAmount, dto.MaxUsages, dto.ExpiresAt);
+                promo.Update(request.DiscountPercent, request.MaxDiscountAmount, request.MaxUsages, request.ExpiresAt);
                 _context.PromoCodes.Update(promo);
                 await _context.SaveChangesAsync(cancellationToken);
             }

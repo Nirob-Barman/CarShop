@@ -13,7 +13,7 @@ namespace CarShop.Web.Controllers
     [Authorize]
     public class PaymentController : Controller
     {
-        private readonly IMediator              _mediator;
+        private readonly IMediator _mediator;
 
         public PaymentController(IMediator mediator)
         {
@@ -54,11 +54,11 @@ namespace CarShop.Web.Controllers
                 }
             }
 
-            ViewBag.Car        = car;
-            ViewBag.PromoCode  = promoCode;
+            ViewBag.Car = car;
+            ViewBag.PromoCode = promoCode;
             ViewBag.FinalPrice = finalPrice;
-            ViewBag.Discount   = discount;
-            ViewBag.Gateways   = gateways;
+            ViewBag.Discount = discount;
+            ViewBag.Gateways = gateways;
             return View();
         }
 

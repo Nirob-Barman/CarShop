@@ -6,6 +6,7 @@ using CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode;
 using CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes;
 using CarShop.Application.Features.PromoCode.Queries.GetAllPromoCodes;
 using CarShop.Application.Features.PromoCode.Queries.GetPromoCodeById;
+using CarShop.Web.ViewModels.PromoCode;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -35,19 +36,28 @@ namespace CarShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(PromoCodeDto dto)
+        public async Task<IActionResult> Create(PromoCodeViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(dto);
+                return View(model);
 
-            var result = await _mediator.Send(new CreatePromoCodeCommand(dto));
+            var result = await _mediator.Send(
+                new CreatePromoCodeCommand(
+                    model.Code,
+                    model.DiscountPercent,
+                    model.MaxDiscountAmount,
+                    model.MaxUsages,
+                    model.ExpiresAt
+                )
+            );
+
             if (result.Success)
             {
                 TempData["SuccessMessage"] = result.Message;
                 return RedirectToAction("Index");
             }
             TempData["ErrorMessage"] = result.Errors?.FirstOrDefault() ?? "Failed to create promo code.";
-            return View(dto);
+            return View(model);
         }
 
         [HttpGet]
@@ -60,9 +70,16 @@ namespace CarShop.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, PromoCodeDto dto)
+        public async Task<IActionResult> Edit(int id, PromoCodeViewModel model)
         {
-            var result = await _mediator.Send(new UpdatePromoCodeCommand(id, dto));
+            var result = await _mediator.Send(new UpdatePromoCodeCommand(
+                id, 
+                model.Code,
+                model.DiscountPercent,
+                model.MaxDiscountAmount,
+                model.MaxUsages,
+                model.ExpiresAt));
+
             if (result.Success)
                 TempData["SuccessMessage"] = result.Message;
             else

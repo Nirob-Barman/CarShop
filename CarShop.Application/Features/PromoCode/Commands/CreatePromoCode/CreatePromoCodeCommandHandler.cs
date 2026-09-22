@@ -24,9 +24,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
 
         public async Task<Result<string>> Handle(CreatePromoCodeCommand request, CancellationToken cancellationToken)
         {
-            var dto = request.Dto;
-
-            var promo = PromoCodeEntity.Create(dto.Code, dto.DiscountPercent, dto.MaxDiscountAmount, dto.MaxUsages, dto.ExpiresAt);
+            var promo = PromoCodeEntity.Create(request.Code, request.DiscountPercent, request.MaxDiscountAmount, request.MaxUsages, request.ExpiresAt);
 
             await _context.PromoCodes.AddAsync(promo);
             await _context.SaveChangesAsync(cancellationToken);

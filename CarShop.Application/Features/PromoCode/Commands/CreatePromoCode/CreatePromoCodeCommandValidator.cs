@@ -14,12 +14,12 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
 
             RuleFor(x => x)
                 .MustAsync(BeUniqueCode).WithMessage("A promo code with this code already exists.")
-                .When(x => !string.IsNullOrWhiteSpace(x.Dto.Code));
+                .When(x => !string.IsNullOrWhiteSpace(x.Code));
         }
 
         private async Task<bool> BeUniqueCode(CreatePromoCodeCommand command, CancellationToken cancellationToken)
         {
-            var exists = await _context.PromoCodes.AnyAsync(p => p.Code == command.Dto.Code.ToUpper());
+            var exists = await _context.PromoCodes.AnyAsync(p => p.Code == command.Code.ToUpper());
             return !exists;
         }
     }
