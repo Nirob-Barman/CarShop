@@ -16,16 +16,11 @@ namespace CarShop.Application.Features.Comment.Queries.GetAverageRating
 
         public async Task<Result<double>> Handle(GetAverageRatingQuery request, CancellationToken cancellationToken)
         {
-            var comments = await _context.Comments.AsNoTracking()
+            var averageRating = await _context.Comments.AsNoTracking()
                 .Where(c => c.CarId == request.CarId && c.Rating.HasValue)
-                .Select(c => c.Rating!.Value)
-                .ToListAsync(cancellationToken);
+                .AverageAsync(c => (double?)c.Rating, cancellationToken);
 
-            var ratingList = comments.ToList();
-            if (!ratingList.Any())
-                return Result<double>.Ok(0);
-
-            return Result<double>.Ok(ratingList.Average());
+            return Result<double>.Ok(averageRating ?? 0);
         }
     }
 }
