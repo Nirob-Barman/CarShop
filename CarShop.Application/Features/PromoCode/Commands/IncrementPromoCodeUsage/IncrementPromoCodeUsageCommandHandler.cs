@@ -19,11 +19,17 @@ namespace CarShop.Application.Features.PromoCode.Commands.IncrementPromoCodeUsag
             if (promo == null)
                 return Result<string>.Fail("Promo code not found.");
 
-            promo.RecordUsage();
-            _context.PromoCodes.Update(promo);
-            await _context.SaveChangesAsync(cancellationToken);
+            try
+            {
+                promo.RecordUsage();
+                await _context.SaveChangesAsync(cancellationToken);
 
-            return Result<string>.Ok(null, "Usage incremented.");
+                return Result<string>.Ok(null, "Usage incremented.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Result<string>.Fail(ex.Message);
+            }
         }
     }
 }

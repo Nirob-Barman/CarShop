@@ -30,7 +30,6 @@ namespace CarShop.Application.Features.PromoCode.Commands.TogglePromoCodeActive
 
             var oldIsActive = promo.IsActive;
             promo.ToggleActive();
-            _context.PromoCodes.Update(promo);
             await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PromoCode", promo.IsActive ? "Activate" : "Deactivate",

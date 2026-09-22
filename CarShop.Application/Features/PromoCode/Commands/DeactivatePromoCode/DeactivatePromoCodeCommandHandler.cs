@@ -31,7 +31,6 @@ namespace CarShop.Application.Features.PromoCode.Commands.DeactivatePromoCode
 
             var oldIsActive = promo.IsActive;
             promo.Deactivate();
-            _context.PromoCodes.Update(promo);
             await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PromoCode", "Deactivate",

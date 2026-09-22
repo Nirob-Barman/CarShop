@@ -26,15 +26,7 @@ namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
         {
             var dto = request.Dto;
 
-            var promo = new PromoCodeEntity
-            {
-                Code = dto.Code.ToUpper(),
-                DiscountPercent = dto.DiscountPercent,
-                MaxDiscountAmount = dto.MaxDiscountAmount,
-                MaxUsages = dto.MaxUsages,
-                ExpiresAt = dto.ExpiresAt,
-                CreatedAt = DateTime.UtcNow
-            };
+            var promo = PromoCodeEntity.Create(dto.Code, dto.DiscountPercent, dto.MaxDiscountAmount, dto.MaxUsages, dto.ExpiresAt);
 
             await _context.PromoCodes.AddAsync(promo);
             await _context.SaveChangesAsync(cancellationToken);

@@ -32,14 +32,17 @@ namespace CarShop.Application.Features.PromoCode.Commands.UpdatePromoCode
                 promo.DiscountPercent, promo.MaxDiscountAmount,
                 promo.MaxUsages, promo.ExpiresAt
             });
-
-            promo.DiscountPercent    = dto.DiscountPercent;
-            promo.MaxDiscountAmount  = dto.MaxDiscountAmount;
-            promo.MaxUsages          = dto.MaxUsages;
-            promo.ExpiresAt          = dto.ExpiresAt;
-
-            _context.PromoCodes.Update(promo);
-            await _context.SaveChangesAsync(cancellationToken);
+            
+            try
+            {
+                promo.Update(dto.DiscountPercent, dto.MaxDiscountAmount, dto.MaxUsages, dto.ExpiresAt);
+                _context.PromoCodes.Update(promo);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                return Result<string>.Fail($"Failed to update promo code: {ex.Message}");
+            }
 
             await _auditLogService.LogAsync("PromoCode", "Update",
                 _userContextService.UserId, _userContextService.Email,
