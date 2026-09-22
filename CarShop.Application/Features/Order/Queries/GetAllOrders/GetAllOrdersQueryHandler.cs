@@ -23,17 +23,19 @@ namespace CarShop.Application.Features.Order.Queries.GetAllOrders
         {
             OrderStatus? statusFilter = Enum.TryParse<OrderStatus>(request.Status, ignoreCase: true, out var parsed) ? parsed : null;
 
-            var allOrders = await _context.Orders.AsNoTracking().Include(o => o.Car)
-                .Where(o => statusFilter == null || o.Status == statusFilter)
+            var query = _context.Orders
+                .AsNoTracking()
+                .Where(o => statusFilter == null || o.Status == statusFilter);
+
+            var orders = await query.Include(o => o.Car)
+                .OrderByDescending(o => o.OrderedAt)
+                .Skip((request.Page - 1) * request.PageSize).Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 
-            var ordered = allOrders.OrderByDescending(o => o.OrderedAt).ToList();
-            var totalCount = ordered.Count;
-
-            var pagedItems = ordered.Skip((request.Page - 1) * request.PageSize).Take(request.PageSize).ToList();
+            var totalCount = await query.CountAsync(cancellationToken);
 
             var dtos = new List<OrderDto>();
-            foreach (var o in pagedItems)
+            foreach (var o in orders)
             {
                 var user = await _identityService.FindByIdAsync(o.UserId ?? "");
                 dtos.Add(new OrderDto

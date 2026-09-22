@@ -18,7 +18,7 @@ namespace CarShop.Application.Features.Order.Queries.GetCompletedOrdersCount
         public async Task<Result<int>> Handle(GetCompletedOrdersCountQuery request, CancellationToken cancellationToken)
         {
             var count = await _context.Orders
-                .CountAsync(o => o.Status == OrderStatus.Confirmed);
+                .CountAsync(o => o.Status == OrderStatus.Confirmed, cancellationToken);
             return Result<int>.Ok(count);
         }
     }
