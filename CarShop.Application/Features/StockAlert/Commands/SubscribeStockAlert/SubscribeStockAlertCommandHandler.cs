@@ -28,12 +28,7 @@ namespace CarShop.Application.Features.StockAlert.Commands.SubscribeStockAlert
             if (car == null)
                 return Result<string>.Fail("Car not found.");
 
-            var alert = new StockAlertEntity
-            {
-                UserId = userId,
-                CarId = request.CarId,
-                SubscribedAt = DateTime.UtcNow
-            };
+            var alert = StockAlertEntity.Create(userId, request.CarId);
 
             await _context.StockAlerts.AddAsync(alert);
             await _context.SaveChangesAsync(cancellationToken);
