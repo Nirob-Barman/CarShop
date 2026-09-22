@@ -5,13 +5,6 @@ namespace CarShop.Web.ViewModels.Mappers
 {
     public static class AccountMapper
     {
-        public static EditProfileDto ToDto(ProfileViewModel vm)
-            => new EditProfileDto
-            {
-                FullName = vm?.FullName,
-                Address = vm?.Address,
-            };
-
         public static ChangePasswordDto ToDto(ChangePasswordViewModel vm)
             => new ChangePasswordDto
             {
@@ -19,9 +12,6 @@ namespace CarShop.Web.ViewModels.Mappers
                 NewPassword = vm.NewPassword,
                 ConfirmPassword = vm.ConfirmPassword
             };
-
-        public static ForgotPasswordDto ToDto(ForgotPasswordViewModel vm)
-            => new ForgotPasswordDto { Email = vm.Email };
 
         public static ResetPasswordDto ToDto(ResetPasswordViewModel vm)
             => new ResetPasswordDto

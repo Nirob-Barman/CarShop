@@ -22,8 +22,8 @@ namespace CarShop.Application.Features.User.Commands.UpdateProfile
             if (user == null)
                 return Result<bool>.Fail("User not found.");
 
-            user.FullName = request.Model.FullName;
-            user.Address = request.Model.Address;
+            user.FullName = request.FullName;
+            user.Address = request.Address;
 
             var updateResult = await _identityService.UpdateAsync(user);
             if (!updateResult.Succeeded)

@@ -1,9 +1,10 @@
-using CarShop.Application.DTOs.Identity;
 using CarShop.Application.Wrappers;
 using MediatR;
 
 namespace CarShop.Application.Features.User.Commands.ChangePassword
 {
-    public record ChangePasswordCommand(ChangePasswordDto Model)
+    public record ChangePasswordCommand(
+        string CurrentPassword,
+        string NewPassword)
         : IRequest<Result<bool>>;
 }

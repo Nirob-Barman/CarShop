@@ -18,23 +18,21 @@ namespace CarShop.Application.Features.User.Commands.ChangePassword
 
         public async Task<Result<bool>> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
         {
-            var model = request.Model;
-
-            if (string.IsNullOrWhiteSpace(model.CurrentPassword))
+            if (string.IsNullOrWhiteSpace(request.CurrentPassword))
             {
-                return Result<bool>.FailField(nameof(model.CurrentPassword), "Password fields cannot be empty.");
+                return Result<bool>.FailField(nameof(request.CurrentPassword), "Password fields cannot be empty.");
             }
 
-            if (string.IsNullOrWhiteSpace(model.NewPassword))
+            if (string.IsNullOrWhiteSpace(request.NewPassword))
             {
-                return Result<bool>.FailField(nameof(model.NewPassword), "Password fields cannot be empty.");
+                return Result<bool>.FailField(nameof(request.NewPassword), "Password fields cannot be empty.");
             }
 
             var user = await _identityService.FindByIdAsync(_userContextService.UserId!);
             if (user == null)
                 return Result<bool>.Fail("User not found.");
 
-            var result = await _identityService.ChangePasswordAsync(user.Id!, model.CurrentPassword, model.NewPassword);
+            var result = await _identityService.ChangePasswordAsync(user.Id!, request.CurrentPassword, request.NewPassword);
 
             if (!result.Succeeded)
             {

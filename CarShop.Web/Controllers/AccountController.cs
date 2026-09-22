@@ -54,7 +54,6 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var dto = AccountMapper.ToDto(model);
             var result = await _mediator.Send(new RegisterCommand(
                 model.FullName,
                 model.Email,
@@ -155,9 +154,10 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View("Profile", model);
 
-            var dto = AccountMapper.ToDto(model);
-
-            var result = await _mediator.Send(new UpdateProfileCommand(dto));
+            var result = await _mediator.Send(new UpdateProfileCommand(
+                model.FullName!,
+                model.Email!,
+                model.Address!));
 
             if (!result.Success)
             {
@@ -192,8 +192,9 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
 
-            var dto = AccountMapper.ToDto(model);
-            var result = await _mediator.Send(new ChangePasswordCommand(dto));
+            var result = await _mediator.Send(new ChangePasswordCommand(
+                model.CurrentPassword!,
+                model.NewPassword!));
 
             if (result.Success)
             {
@@ -228,8 +229,7 @@ namespace CarShop.Web.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            var dto = AccountMapper.ToDto(model);
-            var result = await _mediator.Send(new GeneratePasswordResetTokenCommand(dto.Email!));
+            var result = await _mediator.Send(new GeneratePasswordResetTokenCommand(model.Email!));
 
             if (!result.Success)
             {
@@ -261,8 +261,7 @@ namespace CarShop.Web.Controllers
         {
             if (!ModelState.IsValid) return View(model);
 
-            var dto = AccountMapper.ToDto(model);
-            var result = await _mediator.Send(new ResetPasswordCommand(dto.Email!, dto.Token!, dto.NewPassword!));
+            var result = await _mediator.Send(new ResetPasswordCommand(model.Email!, model.Token!, model.NewPassword!));
 
             if (!result.Success)
             {
