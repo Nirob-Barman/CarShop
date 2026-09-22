@@ -60,10 +60,10 @@ namespace CarShop.Web.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            FileUploadDto? fileDto = null;
+            FileUpload? file = null;
             if (image != null && image.Length > 0)
             {
-                fileDto = new FileUploadDto
+                file = new FileUpload
                 {
                     Content = image.OpenReadStream(),
                     FileName = image.FileName,
@@ -79,7 +79,7 @@ namespace CarShop.Web.Controllers
                     model.Price,
                     model.Quantity,
                     model.BrandId,
-                    fileDto
+                    file
                 )
             );
 
@@ -89,7 +89,6 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
 
-            //TempData["SuccessMessage"] = result.Message;
             return RedirectToAction("Index");
         }
 
@@ -99,12 +98,6 @@ namespace CarShop.Web.Controllers
         {
             var carResult = await _mediator.Send(new GetCarByIdQuery(id));
             var brandResult = await _mediator.Send(new GetAllBrandsQuery());
-
-            //if (!carResult.Success || carResult.Data == null)
-            //{
-            //    TempData["ErrorMessage"] = carResult.Message ?? "Car not found.";
-            //    return RedirectToAction("Index");
-            //}
 
             ViewBag.Brands = BrandMapper.ToViewModels(brandResult.Data!);
             var vm = CarMapper.ToViewModel(carResult.Data!);
@@ -130,11 +123,11 @@ namespace CarShop.Web.Controllers
 
             var existingCar = existingCarResult.Data;
 
-            FileUploadDto? fileDto = null;
+            FileUpload? file = null;
 
             if (image != null && image.Length > 0)
             {
-                fileDto = new FileUploadDto
+                file = new FileUpload
                 {
                     Content = image.OpenReadStream(),
                     FileName = image.FileName,
@@ -151,7 +144,7 @@ namespace CarShop.Web.Controllers
                     model.Price,
                     model.Quantity,
                     model.BrandId,
-                    fileDto
+                    file
                 )
             );
 

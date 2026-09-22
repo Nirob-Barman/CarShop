@@ -1,4 +1,3 @@
-using CarShop.Application.DTOs.Car;
 using CarShop.Application.DTOs.File;
 using CarShop.Application.Wrappers;
 using MediatR;
@@ -12,6 +11,6 @@ namespace CarShop.Application.Features.Car.Commands.UpdateCar
         decimal Price,
         int Quantity,
         int BrandId,
-        FileUploadDto? File
+        FileUpload? File
     ) : IRequest<Result<string>>;
 }

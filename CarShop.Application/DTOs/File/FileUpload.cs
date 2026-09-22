@@ -1,6 +1,6 @@
 ﻿namespace CarShop.Application.DTOs.File
 {
-    public class FileUploadDto
+    public class FileUpload
     {
         public Stream? Content { get; set; }
         public string? FileName { get; set; }
