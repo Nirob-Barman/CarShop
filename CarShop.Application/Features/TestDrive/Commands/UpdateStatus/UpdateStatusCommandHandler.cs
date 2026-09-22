@@ -38,7 +38,6 @@ namespace CarShop.Application.Features.TestDrive.Commands.UpdateStatus
             if (!changed)
                 return Result<string>.Fail("Could not update status.");
 
-            _context.TestDriveBookings.Update(booking);
             await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("TestDrive", "StatusUpdate",

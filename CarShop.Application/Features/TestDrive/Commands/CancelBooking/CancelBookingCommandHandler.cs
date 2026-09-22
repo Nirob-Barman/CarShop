@@ -34,7 +34,6 @@ namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
 
             var oldStatus = booking.Status;
             booking.Cancel();
-            _context.TestDriveBookings.Update(booking);
             await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("TestDrive", "Cancel",

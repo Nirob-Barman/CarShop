@@ -27,14 +27,11 @@ namespace CarShop.Application.Features.TestDrive.Commands.BookTestDrive
             if (car == null)
                 return Result<string>.Fail("Car not found.");
 
-            var booking = new TestDriveBooking
-            {
-                UserId = userId,
-                CarId = request.CarId,
-                BookingDate = request.BookingDate,
-                Notes = request.Notes,
-                CreatedAt = DateTime.UtcNow
-            };
+            var booking = TestDriveBooking.Create(
+                userId,
+                request.CarId,
+                request.BookingDate,
+                request.Notes);
 
             await _context.TestDriveBookings.AddAsync(booking);
             await _context.SaveChangesAsync(cancellationToken);
