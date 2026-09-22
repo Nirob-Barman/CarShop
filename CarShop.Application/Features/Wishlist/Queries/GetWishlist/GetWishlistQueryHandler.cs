@@ -21,22 +21,21 @@ namespace CarShop.Application.Features.Wishlist.Queries.GetWishlist
         {
             var userId = _userContextService.UserId!;
             var items = await _context.WishlistItems.AsNoTracking()
-                .Include(w => w.Car)
                 .Where(w => w.UserId == userId)
-                .ToListAsync(cancellationToken);
+                .Select(w => new WishlistItemDto
+                {
+                    Id = w.Id,
+                    CarId = w.CarId,
+                    CarTitle = w.Car != null ? w.Car.Title : null,
+                    CarPrice = w.Car != null ? w.Car.Price : 0,
+                    CarImageUrl = w.Car != null ? w.Car.ImageUrl : null,
+                    BrandName = w.Car != null && w.Car.Brand != null
+                        ? w.Car.Brand.Name
+                        : null,
+                    AddedAt = w.AddedAt
+                }).ToListAsync(cancellationToken);
 
-            var dtos = items.Select(w => new WishlistItemDto
-            {
-                Id = w.Id,
-                CarId = w.CarId,
-                CarTitle = w.Car?.Title,
-                CarPrice = w.Car?.Price ?? 0,
-                CarImageUrl = w.Car?.ImageUrl,
-                BrandName = w.Car?.Brand?.Name,
-                AddedAt = w.AddedAt
-            });
-
-            return Result<IEnumerable<WishlistItemDto>>.Ok(dtos);
+            return Result<IEnumerable<WishlistItemDto>>.Ok(items);
         }
     }
 }

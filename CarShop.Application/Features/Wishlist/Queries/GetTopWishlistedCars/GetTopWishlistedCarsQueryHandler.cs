@@ -17,24 +17,29 @@ namespace CarShop.Application.Features.Wishlist.Queries.GetTopWishlistedCars
 
         public async Task<Result<IEnumerable<TopWishlistedCarDto>>> Handle(GetTopWishlistedCarsQuery request, CancellationToken cancellationToken)
         {
-            var allItems = await _context.WishlistItems.AsNoTracking()
-                .Include(w => w.Car)
-                .ThenInclude(c => c!.Brand)
-                .ToListAsync(cancellationToken);
-
-            var top = allItems
-                .GroupBy(w => w.CarId)
+            var top = await _context.WishlistItems.AsNoTracking()
+                .GroupBy(w => new
+                {
+                    w.CarId,
+                    w.Car!.Title,
+                    w.Car.Price,
+                    w.Car.ImageUrl,
+                    BrandName = w.Car.Brand != null
+                        ? w.Car.Brand.Name
+                        : null
+                })
                 .Select(g => new TopWishlistedCarDto
                 {
-                    CarId = g.Key,
-                    CarTitle = g.First().Car?.Title,
-                    CarPrice = g.First().Car?.Price ?? 0,
-                    CarImageUrl = g.First().Car?.ImageUrl,
-                    BrandName = g.First().Car?.Brand?.Name,
+                    CarId = g.Key.CarId,
+                    CarTitle = g.Key.Title,
+                    CarPrice = g.Key.Price,
+                    CarImageUrl = g.Key.ImageUrl,
+                    BrandName = g.Key.BrandName,
                     WishlistCount = g.Count()
                 })
                 .OrderByDescending(x => x.WishlistCount)
-                .Take(request.Count);
+                .Take(request.Count)
+                .ToListAsync(cancellationToken);
 
             return Result<IEnumerable<TopWishlistedCarDto>>.Ok(top);
         }
