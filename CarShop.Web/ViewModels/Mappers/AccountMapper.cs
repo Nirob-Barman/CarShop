@@ -14,14 +14,6 @@ namespace CarShop.Web.ViewModels.Mappers
             Password = vm.Password,
         };
 
-        public static LoginDto ToDto(LoginViewModel vm)
-            => new LoginDto
-            {
-                Email = vm.Email,
-                Password = vm.Password,
-                RememberMe = vm.RememberMe,
-            };
-
         public static EditProfileDto ToDto(ProfileViewModel vm)
             => new EditProfileDto
             {

@@ -89,8 +89,10 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
 
-            var dto = AccountMapper.ToDto(model);
-            var result = await _mediator.Send(new LoginCommand(dto));
+            var result = await _mediator.Send(new LoginCommand(
+                model.Email,
+                model.Password,
+                model.RememberMe));
 
             if (!result.Success)
             {

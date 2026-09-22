@@ -15,20 +15,18 @@ namespace CarShop.Application.Features.Auth.Commands.Login
 
         public async Task<Result<string>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            var model = request.Model;
-
-            var user = await _identityService.FindByEmailAsync(model.Email!);
+            var user = await _identityService.FindByEmailAsync(request.Email!);
             if (user == null)
-                return Result<string>.FailField(nameof(model.Email), "This email is not registered.");
+                return Result<string>.FailField(nameof(request.Email), "This email is not registered.");
 
             if (user.IsBanned)
                 return Result<string>.Fail("Your account has been banned. Please contact support.");
 
-            var isPasswordValid = await _identityService.CheckPasswordSignInAsync(user, model.Password!);
+            var isPasswordValid = await _identityService.CheckPasswordSignInAsync(user, request.Password!);
             if (!isPasswordValid)
-                return Result<string>.FailField(nameof(model.Password), "Incorrect password.");
+                return Result<string>.FailField(nameof(request.Password), "Incorrect password.");
 
-            await _identityService.SignInAsync(user, isPersistent: model.RememberMe);
+            await _identityService.SignInAsync(user, isPersistent: request.RememberMe);
 
             return Result<string>.Ok("Success", "Login successful");
         }
