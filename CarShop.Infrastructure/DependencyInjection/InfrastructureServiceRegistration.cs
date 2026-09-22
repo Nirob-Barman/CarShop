@@ -3,12 +3,10 @@ using CarShop.Application.Interfaces;
 using CarShop.Application.Interfaces.Cache;
 using CarShop.Application.Interfaces.FileStorage;
 using CarShop.Application.Interfaces.Identity;
-using CarShop.Application.Interfaces.Persistence;
 using CarShop.Infrastructure.FileStorage;
 using CarShop.Infrastructure.Payments;
 using CarShop.Infrastructure.Identity;
 using CarShop.Infrastructure.Persistence;
-using CarShop.Infrastructure.Persistence.Repositories;
 using CarShop.Infrastructure.Services;
 using CarShop.Infrastructure.Services.Caching;
 using Microsoft.AspNetCore.Identity;
@@ -40,8 +38,6 @@ namespace CarShop.Infrastructure.DependencyInjection
             });
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<AppDbContext>());
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 
             services.AddScoped<IIdentityService, IdentityService>();
             services.AddScoped<IRoleManager, RoleManager>();
