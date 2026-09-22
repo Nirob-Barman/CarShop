@@ -28,7 +28,6 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.ToggleGatewayActi
 
             var oldIsActive = gateway.IsActive;
             gateway.ToggleActive();
-            _context.PaymentGateways.Update(gateway);
             await _context.SaveChangesAsync(cancellationToken);
 
             await _auditLogService.LogAsync("PaymentGateway", gateway.IsActive ? "Enable" : "Disable",

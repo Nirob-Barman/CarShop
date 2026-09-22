@@ -38,17 +38,17 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway
                 gateway.IsSandbox, gateway.SupportedCurrencies, gateway.SortOrder
             });
 
-            gateway.Name                = dto.Name;
-            gateway.GatewayFamily       = string.IsNullOrWhiteSpace(dto.GatewayFamily)
-                ? GatewayConfigSchema.GetFamilyKey(gateway.Slug)
-                : dto.GatewayFamily.ToLowerInvariant();
-            gateway.Type                = dto.Type;
-            gateway.LogoUrl             = dto.LogoUrl;
-            gateway.IsActive            = dto.IsActive;
-            gateway.IsSandbox           = dto.IsSandbox;
-            gateway.SupportedCurrencies = dto.SupportedCurrencies;
-            gateway.SortOrder           = dto.SortOrder;
-            gateway.UpdatedAt           = DateTime.UtcNow;
+            gateway.Update(
+                name: dto.Name,
+                gatewayFamily: string.IsNullOrWhiteSpace(dto.GatewayFamily)
+                    ? GatewayConfigSchema.GetFamilyKey(gateway.Slug)
+                    : dto.GatewayFamily,
+                type: dto.Type,
+                logoUrl: dto.LogoUrl,
+                isActive: dto.IsActive,
+                isSandbox: dto.IsSandbox,
+                supportedCurrencies: dto.SupportedCurrencies,
+                sortOrder: dto.SortOrder);
 
             if (newConfig != null && newConfig.Any(kv => !string.IsNullOrWhiteSpace(kv.Value)))
             {
@@ -67,7 +67,7 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.UpdateGateway
                     if (!string.IsNullOrWhiteSpace(kv.Value))
                         merged[kv.Key] = kv.Value;
 
-                gateway.Config = _encryptor.Encrypt(JsonSerializer.Serialize(merged));
+                gateway.UpdateConfig(_encryptor.Encrypt(JsonSerializer.Serialize(merged)));
             }
 
             _context.PaymentGateways.Update(gateway);

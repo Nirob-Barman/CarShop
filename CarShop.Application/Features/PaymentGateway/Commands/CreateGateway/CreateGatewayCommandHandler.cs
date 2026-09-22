@@ -30,23 +30,21 @@ namespace CarShop.Application.Features.PaymentGateway.Commands.CreateGateway
             var dto = request.Dto;
             var config = request.Config;
 
-            var gateway = new PaymentGatewayEntity
-            {
-                Name                = dto.Name,
-                GatewayFamily       = string.IsNullOrWhiteSpace(dto.GatewayFamily)
+            var gateway = PaymentGatewayEntity.Create(
+                name: dto.Name,
+                gatewayFamily: string.IsNullOrWhiteSpace(dto.GatewayFamily)
                     ? GatewayConfigSchema.GetFamilyKey(dto.Slug)
-                    : dto.GatewayFamily.ToLowerInvariant(),
-                Slug                = dto.Slug.ToLower(),
-                Type                = dto.Type,
-                LogoUrl             = dto.LogoUrl,
-                IsActive            = dto.IsActive,
-                IsSandbox           = dto.IsSandbox,
-                SupportedCurrencies = dto.SupportedCurrencies,
-                SortOrder           = dto.SortOrder,
-                Config              = config.Count > 0 ? _encryptor.Encrypt(JsonSerializer.Serialize(config)) : null,
-                CreatedAt           = DateTime.UtcNow,
-                UpdatedAt           = DateTime.UtcNow
-            };
+                    : dto.GatewayFamily,
+                slug: dto.Slug,
+                type: dto.Type,
+                logoUrl: dto.LogoUrl,
+                isActive: dto.IsActive,
+                isSandbox: dto.IsSandbox,
+                supportedCurrencies: dto.SupportedCurrencies,
+                sortOrder: dto.SortOrder,
+                config: config.Count > 0
+                    ? _encryptor.Encrypt(JsonSerializer.Serialize(config))
+                    : null);
 
             await _context.PaymentGateways.AddAsync(gateway);
             await _context.SaveChangesAsync(cancellationToken);
