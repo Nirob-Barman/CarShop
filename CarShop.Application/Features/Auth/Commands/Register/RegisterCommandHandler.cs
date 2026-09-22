@@ -19,16 +19,14 @@ namespace CarShop.Application.Features.Auth.Commands.Register
 
         public async Task<Result<string>> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {
-            var model = request.Model;
-
             var user = new AppUser
             {
-                Email = model.Email,
-                FullName = model.FullName,
-                Address = model.Address
+                Email = request.Email,
+                FullName = request.FullName,
+                Address = request.Address
             };
 
-            var (succeeded, userId, errors) = await _identityService.CreateAsync(user, model.Password!);
+            var (succeeded, userId, errors) = await _identityService.CreateAsync(user, request.Password!);
 
             if (!succeeded)
                 return Result<string>.Fail(errors!, "Registration failed");
@@ -43,8 +41,8 @@ namespace CarShop.Application.Features.Auth.Commands.Register
                 return Result<string>.Fail("Failed to assign default role to user.");
             }
 
-            var welcomeMessage = $"Hello {model.FullName},<br>Welcome to CarShop! Thank you for registering.";
-            await _emailService.SendEmailAsync(model.Email!, "Welcome to CarShop", welcomeMessage);
+            var welcomeMessage = $"Hello {request.FullName},<br>Welcome to CarShop! Thank you for registering.";
+            await _emailService.SendEmailAsync(request.Email!, "Welcome to CarShop", welcomeMessage);
 
             return Result<string>.Ok(userId, "Registration successful");
         }

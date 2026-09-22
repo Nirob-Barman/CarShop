@@ -5,15 +5,6 @@ namespace CarShop.Web.ViewModels.Mappers
 {
     public static class AccountMapper
     {
-        public static RegisterDto ToDto(RegisterViewModel vm)
-        => new RegisterDto
-        {
-            Address = vm.Address,
-            FullName = vm.FullName,
-            Email = vm.Email,
-            Password = vm.Password,
-        };
-
         public static EditProfileDto ToDto(ProfileViewModel vm)
             => new EditProfileDto
             {

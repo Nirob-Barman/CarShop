@@ -55,7 +55,11 @@ namespace CarShop.Web.Controllers
                 return View(model);
 
             var dto = AccountMapper.ToDto(model);
-            var result = await _mediator.Send(new RegisterCommand(dto));
+            var result = await _mediator.Send(new RegisterCommand(
+                model.FullName,
+                model.Email,
+                model.Password,
+                model.Address));
 
             if (!result.Success)
             {
@@ -63,7 +67,6 @@ namespace CarShop.Web.Controllers
                 return View(model);
             }
 
-            //TempData["SuccessMessage"] = "Registration successful. You can now log in.";
             return RedirectToAction("Login");
         }
 
