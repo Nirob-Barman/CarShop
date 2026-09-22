@@ -20,7 +20,10 @@ namespace CarShop.Application.Features.Notification.Queries.GetUserNotifications
         public async Task<Result<IEnumerable<AppNotificationDto>>> Handle(GetUserNotificationsQuery request, CancellationToken cancellationToken)
         {
             var userId = _userContextService.UserId!;
-            var notifications = await _context.AppNotifications.AsNoTracking().Where(n => n.UserId == userId).Select(n => new AppNotificationDto
+            var notifications = await _context.AppNotifications.AsNoTracking()
+                .Where(n => n.UserId == userId)
+                .OrderByDescending(n => n.CreatedAt)
+                .Select(n => new AppNotificationDto
                 {
                     Id = n.Id,
                     Message = n.Message,
@@ -29,8 +32,7 @@ namespace CarShop.Application.Features.Notification.Queries.GetUserNotifications
                     CreatedAt = n.CreatedAt
                 }).ToListAsync(cancellationToken);
 
-            var ordered = notifications.OrderByDescending(n => n.CreatedAt);
-            return Result<IEnumerable<AppNotificationDto>>.Ok(ordered);
+            return Result<IEnumerable<AppNotificationDto>>.Ok(notifications);
         }
     }
 }

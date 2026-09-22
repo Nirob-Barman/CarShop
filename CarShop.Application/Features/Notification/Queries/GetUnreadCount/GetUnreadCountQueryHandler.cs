@@ -20,7 +20,7 @@ namespace CarShop.Application.Features.Notification.Queries.GetUnreadCount
         {
             var userId = _userContextService.UserId!;
             var count = await _context.AppNotifications.CountAsync(
-                n => n.UserId == userId && !n.IsRead);
+                n => n.UserId == userId && !n.IsRead, cancellationToken);
             return Result<int>.Ok(count);
         }
     }
