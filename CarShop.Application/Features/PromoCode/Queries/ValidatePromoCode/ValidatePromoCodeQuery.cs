@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PromoCode.Queries.ValidatePromoCode
 {
-    public class ValidatePromoCodeQuery : IRequest<Result<ValidatePromoCodeResult>>
-    {
-        public string Code { get; set; }
-
-        public ValidatePromoCodeQuery(string code)
-        {
-            Code = code;
-        }
-    }
+    public record ValidatePromoCodeQuery(string Code)
+        : IRequest<Result<ValidatePromoCodeResult>>;
 }

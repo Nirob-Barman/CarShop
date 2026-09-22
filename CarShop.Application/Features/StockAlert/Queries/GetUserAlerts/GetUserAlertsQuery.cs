@@ -4,7 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.StockAlert.Queries.GetUserAlerts
 {
-    public class GetUserAlertsQuery : IRequest<Result<IEnumerable<StockAlertDto>>>
-    {
-    }
+    public record GetUserAlertsQuery
+        : IRequest<Result<IEnumerable<StockAlertDto>>>;
 }

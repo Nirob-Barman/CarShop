@@ -3,13 +3,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Auth.Queries.EmailExists
 {
-    public class EmailExistsQuery : IRequest<Result<bool>>
-    {
-        public string Email { get; set; }
-
-        public EmailExistsQuery(string email)
-        {
-            Email = email;
-        }
-    }
+    public record EmailExistsQuery(string Email) : IRequest<Result<bool>>;
 }

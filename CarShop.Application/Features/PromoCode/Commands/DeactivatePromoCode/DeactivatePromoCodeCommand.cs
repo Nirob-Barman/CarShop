@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PromoCode.Commands.DeactivatePromoCode
 {
-    public class DeactivatePromoCodeCommand : IRequest<Result<string>>
-    {
-        public int Id { get; set; }
-
-        public DeactivatePromoCodeCommand(int id)
-        {
-            Id = id;
-        }
-    }
+    public record DeactivatePromoCodeCommand(int Id)
+        : IRequest<Result<string>>;
 }

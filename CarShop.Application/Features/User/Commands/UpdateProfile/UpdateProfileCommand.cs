@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.User.Commands.UpdateProfile
 {
-    public class UpdateProfileCommand : IRequest<Result<bool>>
-    {
-        public EditProfileDto Model { get; set; }
-
-        public UpdateProfileCommand(EditProfileDto model)
-        {
-            Model = model;
-        }
-    }
+    public record UpdateProfileCommand(EditProfileDto Model)
+        : IRequest<Result<bool>>;
 }

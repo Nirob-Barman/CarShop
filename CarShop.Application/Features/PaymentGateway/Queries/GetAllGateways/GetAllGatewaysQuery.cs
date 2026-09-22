@@ -4,7 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PaymentGateway.Queries.GetAllGateways
 {
-    public class GetAllGatewaysQuery : IRequest<Result<IEnumerable<PaymentGatewayDto>>>
-    {
-    }
+    public record GetAllGatewaysQuery
+        : IRequest<Result<IEnumerable<PaymentGatewayDto>>>;
 }

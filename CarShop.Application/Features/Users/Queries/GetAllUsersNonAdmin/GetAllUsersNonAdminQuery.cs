@@ -4,7 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Users.Queries.GetAllUsersNonAdmin
 {
-    public class GetAllUsersNonAdminQuery : IRequest<Result<List<UserWithRoleDto>>>
-    {
-    }
+    public record GetAllUsersNonAdminQuery
+        : IRequest<Result<List<UserWithRoleDto>>>;
 }

@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Roles.Commands.DeleteRole
 {
-    public class DeleteRoleCommand : IRequest<Result<bool>>
-    {
-        public string RoleName { get; set; }
-
-        public DeleteRoleCommand(string roleName)
-        {
-            RoleName = roleName;
-        }
-    }
+    public record DeleteRoleCommand(string RoleName)
+        : IRequest<Result<bool>>;
 }

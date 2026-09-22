@@ -3,13 +3,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Brand.Commands.DeleteBrand
 {
-    public class DeleteBrandCommand : IRequest<Result<string>>
-    {
-        public int Id { get; set; }
-
-        public DeleteBrandCommand(int id)
-        {
-            Id = id;
-        }
-    }
+    public record DeleteBrandCommand(int Id) : IRequest<Result<string>>;
 }

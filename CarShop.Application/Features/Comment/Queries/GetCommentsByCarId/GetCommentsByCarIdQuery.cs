@@ -4,13 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Comment.Queries.GetCommentsByCarId
 {
-    public class GetCommentsByCarIdQuery : IRequest<Result<IEnumerable<CommentDto>>>
-    {
-        public int CarId { get; set; }
-
-        public GetCommentsByCarIdQuery(int carId)
-        {
-            CarId = carId;
-        }
-    }
+    public record GetCommentsByCarIdQuery(int CarId) : IRequest<Result<IEnumerable<CommentDto>>>;
 }

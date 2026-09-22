@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Auth.Commands.Login
 {
-    public class LoginCommand : IRequest<Result<string>>
-    {
-        public LoginDto Model { get; set; }
+    public record LoginCommand(LoginDto Model) : IRequest<Result<string>>;
 
-        public LoginCommand(LoginDto model)
-        {
-            Model = model;
-        }
-    }
 }

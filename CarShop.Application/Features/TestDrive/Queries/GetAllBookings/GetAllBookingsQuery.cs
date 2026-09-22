@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.TestDrive.Queries.GetAllBookings
 {
-    public class GetAllBookingsQuery : IRequest<Result<IEnumerable<TestDriveBookingDto>>>
-    {
-        public string? Status { get; set; }
-
-        public GetAllBookingsQuery(string? status = null)
-        {
-            Status = status;
-        }
-    }
+    public record GetAllBookingsQuery(string? Status = null)
+        : IRequest<Result<IEnumerable<TestDriveBookingDto>>>;
 }

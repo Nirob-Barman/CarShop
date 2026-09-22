@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.User.Commands.ChangePassword
 {
-    public class ChangePasswordCommand : IRequest<Result<bool>>
-    {
-        public ChangePasswordDto Model { get; set; }
-
-        public ChangePasswordCommand(ChangePasswordDto model)
-        {
-            Model = model;
-        }
-    }
+    public record ChangePasswordCommand(ChangePasswordDto Model)
+        : IRequest<Result<bool>>;
 }

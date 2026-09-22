@@ -4,7 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Analytics.Queries.GetDashboard
 {
-    public class GetDashboardQuery : IRequest<Result<AnalyticsDashboardDto>>
-    {
-    }
+    public record GetDashboardQuery : IRequest<Result<AnalyticsDashboardDto>>;
 }

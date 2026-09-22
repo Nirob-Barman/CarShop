@@ -4,13 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Car.Queries.GetCarById
 {
-    public class GetCarByIdQuery : IRequest<Result<CarDto>>
-    {
-        public int Id { get; set; }
-
-        public GetCarByIdQuery(int id)
-        {
-            Id = id;
-        }
-    }
+    public record GetCarByIdQuery(int Id) : IRequest<Result<CarDto>>;
 }

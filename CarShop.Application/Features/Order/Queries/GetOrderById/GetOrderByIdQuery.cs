@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Order.Queries.GetOrderById
 {
-    public class GetOrderByIdQuery : IRequest<Result<OrderDto>>
-    {
-        public int OrderId { get; set; }
-
-        public GetOrderByIdQuery(int orderId)
-        {
-            OrderId = orderId;
-        }
-    }
+    public record GetOrderByIdQuery(int OrderId)
+        : IRequest<Result<OrderDto>>;
 }

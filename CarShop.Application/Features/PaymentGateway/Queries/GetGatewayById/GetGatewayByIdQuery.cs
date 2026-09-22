@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PaymentGateway.Queries.GetGatewayById
 {
-    public class GetGatewayByIdQuery : IRequest<Result<PaymentGatewayDto>>
-    {
-        public int Id { get; set; }
-
-        public GetGatewayByIdQuery(int id)
-        {
-            Id = id;
-        }
-    }
+    public record GetGatewayByIdQuery(int Id)
+        : IRequest<Result<PaymentGatewayDto>>;
 }

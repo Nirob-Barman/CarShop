@@ -4,7 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Brand.Queries.GetAllBrands
 {
-    public class GetAllBrandsQuery : IRequest<Result<IEnumerable<BrandDto>>>
-    {
-    }
+    public record GetAllBrandsQuery : IRequest<Result<IEnumerable<BrandDto>>>;
 }

@@ -4,7 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Notification.Queries.GetUserNotifications
 {
-    public class GetUserNotificationsQuery : IRequest<Result<IEnumerable<AppNotificationDto>>>
-    {
-    }
+    public record GetUserNotificationsQuery : IRequest<Result<IEnumerable<AppNotificationDto>>>;
 }

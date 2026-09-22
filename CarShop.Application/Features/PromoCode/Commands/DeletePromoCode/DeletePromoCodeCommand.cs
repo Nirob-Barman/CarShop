@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PromoCode.Commands.DeletePromoCode
 {
-    public class DeletePromoCodeCommand : IRequest<Result<string>>
-    {
-        public int Id { get; set; }
-
-        public DeletePromoCodeCommand(int id)
-        {
-            Id = id;
-        }
-    }
+    public record DeletePromoCodeCommand(int Id)
+        : IRequest<Result<string>>;
 }

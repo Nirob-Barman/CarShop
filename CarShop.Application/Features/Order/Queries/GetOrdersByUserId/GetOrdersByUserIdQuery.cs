@@ -4,7 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Order.Queries.GetOrdersByUserId
 {
-    public class GetOrdersByUserIdQuery : IRequest<Result<IEnumerable<OrderDto>>>
-    {
-    }
+    public record GetOrdersByUserIdQuery
+        : IRequest<Result<IEnumerable<OrderDto>>>;
 }

@@ -3,13 +3,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Comment.Queries.HasUserReviewed
 {
-    public class HasUserReviewedQuery : IRequest<Result<bool>>
-    {
-        public int CarId { get; set; }
-
-        public HasUserReviewedQuery(int carId)
-        {
-            CarId = carId;
-        }
-    }
+    public record HasUserReviewedQuery(int CarId) : IRequest<Result<bool>>;
 }

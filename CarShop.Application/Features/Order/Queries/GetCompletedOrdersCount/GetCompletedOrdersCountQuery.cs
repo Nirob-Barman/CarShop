@@ -3,7 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Order.Queries.GetCompletedOrdersCount
 {
-    public class GetCompletedOrdersCountQuery : IRequest<Result<int>>
-    {
-    }
+    public record GetCompletedOrdersCountQuery
+        : IRequest<Result<int>>;
 }

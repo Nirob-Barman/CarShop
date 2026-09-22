@@ -4,17 +4,9 @@ using MediatR;
 
 namespace CarShop.Application.Features.Order.Queries.GetAllOrders
 {
-    public class GetAllOrdersQuery : IRequest<Result<PagedResult<OrderDto>>>
-    {
-        public string? Status { get; set; }
-        public int Page { get; set; }
-        public int PageSize { get; set; }
-
-        public GetAllOrdersQuery(string? status = null, int page = 1, int pageSize = 20)
-        {
-            Status = status;
-            Page = page;
-            PageSize = pageSize;
-        }
-    }
+    public record GetAllOrdersQuery(
+        string? Status = null,
+        int Page = 1,
+        int PageSize = 20)
+        : IRequest<Result<PagedResult<OrderDto>>>;
 }

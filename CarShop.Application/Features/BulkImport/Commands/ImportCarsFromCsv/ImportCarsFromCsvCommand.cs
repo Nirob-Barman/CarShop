@@ -4,13 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.BulkImport.Commands.ImportCarsFromCsv
 {
-    public class ImportCarsFromCsvCommand : IRequest<Result<BulkImportResultDto>>
-    {
-        public Stream CsvStream { get; set; }
-
-        public ImportCarsFromCsvCommand(Stream csvStream)
-        {
-            CsvStream = csvStream;
-        }
-    }
+    public record ImportCarsFromCsvCommand(Stream CsvStream) : IRequest<Result<BulkImportResultDto>>;
 }

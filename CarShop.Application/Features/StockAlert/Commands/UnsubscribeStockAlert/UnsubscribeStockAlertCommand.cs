@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.StockAlert.Commands.UnsubscribeStockAlert
 {
-    public class UnsubscribeStockAlertCommand : IRequest<Result<string>>
-    {
-        public int CarId { get; set; }
-
-        public UnsubscribeStockAlertCommand(int carId)
-        {
-            CarId = carId;
-        }
-    }
+    public record UnsubscribeStockAlertCommand(int CarId)
+        : IRequest<Result<string>>;
 }

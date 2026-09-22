@@ -4,7 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.User.Queries.GetProfile
 {
-    public class GetProfileQuery : IRequest<Result<EditProfileDto>>
-    {
-    }
+    public record GetProfileQuery
+        : IRequest<Result<EditProfileDto>>;
 }

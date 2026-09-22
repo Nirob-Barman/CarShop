@@ -4,7 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Wishlist.Queries.GetWishlist
 {
-    public class GetWishlistQuery : IRequest<Result<IEnumerable<WishlistItemDto>>>
-    {
-    }
+    public record GetWishlistQuery : IRequest<Result<IEnumerable<WishlistItemDto>>>;
 }

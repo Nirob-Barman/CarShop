@@ -3,13 +3,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Notification.Commands.MarkAsRead
 {
-    public class MarkAsReadCommand : IRequest<Result<string>>
-    {
-        public int NotificationId { get; set; }
-
-        public MarkAsReadCommand(int notificationId)
-        {
-            NotificationId = notificationId;
-        }
-    }
+    public record MarkAsReadCommand(int NotificationId) : IRequest<Result<string>>;
 }

@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.TestDrive.Commands.CancelBooking
 {
-    public class CancelBookingCommand : IRequest<Result<string>>
-    {
-        public int BookingId { get; set; }
-
-        public CancelBookingCommand(int bookingId)
-        {
-            BookingId = bookingId;
-        }
-    }
+    public record CancelBookingCommand(int BookingId)
+        : IRequest<Result<string>>;
 }

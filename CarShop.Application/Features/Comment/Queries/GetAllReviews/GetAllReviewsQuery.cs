@@ -4,7 +4,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Comment.Queries.GetAllReviews
 {
-    public class GetAllReviewsQuery : IRequest<Result<IEnumerable<CommentDto>>>
-    {
-    }
+    public record GetAllReviewsQuery : IRequest<Result<IEnumerable<CommentDto>>>;
 }

@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PaymentGateway.Commands.ToggleGatewayActive
 {
-    public class ToggleGatewayActiveCommand : IRequest<Result<string>>
-    {
-        public int Id { get; set; }
-
-        public ToggleGatewayActiveCommand(int id)
-        {
-            Id = id;
-        }
-    }
+    public record ToggleGatewayActiveCommand(int Id)
+        : IRequest<Result<string>>;
 }

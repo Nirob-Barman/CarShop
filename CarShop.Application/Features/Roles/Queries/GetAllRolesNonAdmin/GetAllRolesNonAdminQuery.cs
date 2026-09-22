@@ -3,7 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Roles.Queries.GetAllRolesNonAdmin
 {
-    public class GetAllRolesNonAdminQuery : IRequest<Result<List<string>>>
-    {
-    }
+    public record GetAllRolesNonAdminQuery
+        : IRequest<Result<List<string>>>;
 }

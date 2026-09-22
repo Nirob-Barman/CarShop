@@ -4,13 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PromoCode.Commands.CreatePromoCode
 {
-    public class CreatePromoCodeCommand : IRequest<Result<string>>
-    {
-        public PromoCodeDto Dto { get; set; }
-
-        public CreatePromoCodeCommand(PromoCodeDto dto)
-        {
-            Dto = dto;
-        }
-    }
+    public record CreatePromoCodeCommand(PromoCodeDto Dto)
+        : IRequest<Result<string>>;
 }

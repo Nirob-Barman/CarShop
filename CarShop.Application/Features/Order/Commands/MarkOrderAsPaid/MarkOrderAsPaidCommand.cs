@@ -3,13 +3,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.Order.Commands.MarkOrderAsPaid
 {
-    public class MarkOrderAsPaidCommand : IRequest<Result<string>>
-    {
-        public int OrderId { get; set; }
-
-        public MarkOrderAsPaidCommand(int orderId)
-        {
-            OrderId = orderId;
-        }
-    }
+    public record MarkOrderAsPaidCommand(int OrderId)
+        : IRequest<Result<string>>;
 }

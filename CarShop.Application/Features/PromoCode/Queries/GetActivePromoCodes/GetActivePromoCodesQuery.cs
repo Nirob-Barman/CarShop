@@ -4,7 +4,6 @@ using MediatR;
 
 namespace CarShop.Application.Features.PromoCode.Queries.GetActivePromoCodes
 {
-    public class GetActivePromoCodesQuery : IRequest<Result<IEnumerable<PromoCodeDto>>>
-    {
-    }
+    public record GetActivePromoCodesQuery
+        : IRequest<Result<IEnumerable<PromoCodeDto>>>;
 }
