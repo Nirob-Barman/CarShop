@@ -18,40 +18,69 @@ namespace CarShop.Application.Features.Car.Queries.SearchCars
 
         public async Task<Result<PagedResult<CarDto>>> Handle(SearchCarsQuery request, CancellationToken cancellationToken)
         {
-            var cars = await _context.Cars.AsNoTracking().Include(c => c.Brand).Where(c =>
-                    (string.IsNullOrEmpty(request.Keyword) ||
-                        (c.Title != null && c.Title.ToLower().Contains(request.Keyword.ToLower())) ||
-                        (c.Description != null && c.Description.ToLower().Contains(request.Keyword.ToLower()))) &&
-                    (string.IsNullOrEmpty(request.BrandName) ||
-                        (c.Brand != null && c.Brand.Name != null && c.Brand.Name.ToLower() == request.BrandName.ToLower())) &&
-                    (!request.MinPrice.HasValue || c.Price >= request.MinPrice.Value) &&
-                    (!request.MaxPrice.HasValue || c.Price <= request.MaxPrice.Value))
-                .ToListAsync(cancellationToken);
+            // Pagination
+            var page = request.Page < 1 ? 1 : request.Page;
+            var pageSize = request.PageSize < 1 ? 10 : Math.Min(request.PageSize, 100);
 
-            var carList = cars.ToList();
+            var query = _context.Cars.AsNoTracking();
+
+            // Filtering
+            if (!string.IsNullOrWhiteSpace(request.Keyword))
+            {
+                var keyword = request.Keyword.Trim();
+
+                query = query.Where(c =>
+                    (c.Title != null && c.Title.Contains(keyword)) ||
+                    (c.Description != null && c.Description.Contains(keyword)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.BrandName))
+            {
+                var brandName = request.BrandName.Trim();
+
+                query = query.Where(c =>
+                    c.Brand != null &&
+                    c.Brand.Name != null &&
+                    c.Brand.Name == brandName);
+            }
+
+            if (request.MinPrice.HasValue)
+            {
+                query = query.Where(c => c.Price >= request.MinPrice.Value);
+            }
+
+            if (request.MaxPrice.HasValue)
+            {
+                query = query.Where(c => c.Price <= request.MaxPrice.Value);
+            }
+
+            var totalCount = await query.CountAsync(cancellationToken);
 
             // Sorting
-            carList = request.SortBy?.ToLower() switch
+            var sortBy = request.SortBy?.Trim().ToLowerInvariant();
+            query = sortBy switch
             {
-                "price_asc" => carList.OrderBy(c => c.Price).ToList(),
-                "price_desc" => carList.OrderByDescending(c => c.Price).ToList(),
-                "title" => carList.OrderBy(c => c.Title).ToList(),
-                _ => carList.OrderByDescending(c => c.Id).ToList() // "newest" default
+                "price_asc" =>
+                    query.OrderBy(c => c.Price).ThenByDescending(c => c.Id),
+
+                "price_desc" =>
+                    query.OrderByDescending(c => c.Price).ThenByDescending(c => c.Id),
+
+                "title" =>
+                    query.OrderBy(c => c.Title).ThenByDescending(c => c.Id),
+
+                _ =>
+                    query.OrderByDescending(c => c.Id)
             };
 
-            var totalCount = carList.Count;
-            var page = request.Page < 1 ? 1 : request.Page;
-            var pageSize = request.PageSize < 1 ? 10 : request.PageSize;
-
-            var pagedItems = carList
+            var items = await query
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(CarMapper.ToDto)
-                .ToList();
+                .Select(CarMapper.ToDtoExpression).ToListAsync(cancellationToken);
 
             return Result<PagedResult<CarDto>>.Ok(new PagedResult<CarDto>
             {
-                Items = pagedItems,
+                Items = items,
                 TotalCount = totalCount,
                 Page = page,
                 PageSize = pageSize

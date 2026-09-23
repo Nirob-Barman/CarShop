@@ -41,7 +41,7 @@ CarShop is a full-featured, production-ready car sales platform built with ASP.N
 - **CQRS + MediatR** — Application layer organized as Commands/Queries/Handlers under `Application/Features/{Feature}/`, not a traditional service layer; controllers depend only on `IMediator`
 - **FluentValidation pipeline** — a shared MediatR pipeline behavior validates commands before they reach their handler
 - **Rich domain entities** — status/workflow fields are typed enums, not magic strings, and are mutated only through guarded methods (`order.Cancel()`, `car.DecrementStock()`, `promoCode.ToggleActive()`) rather than public setters
-- **Unit of Work + Generic Repository** — `_unitOfWork.Repository<T>()` throughout; no direct DbContext injection
+- **Entity Framework Core** — Uses `DbContext` and Entity Framework Core for database access and persistence.
 - **Result<T> wrapper** — consistent `Ok`/`Fail`/`FailField` returns from every Command/Query handler
 - **Strategy pattern** — payment processors resolved by gateway slug via `PaymentProcessorFactory`
 - **Config encryption** — gateway API keys encrypted at rest via ASP.NET Data Protection
