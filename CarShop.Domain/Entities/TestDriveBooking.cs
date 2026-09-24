@@ -12,7 +12,10 @@ namespace CarShop.Domain.Entities
         public DateTime CreatedAt { get; private set; }
         public Car? Car { get; private set; }
 
+        private TestDriveBooking()
+        {
 
+        }
         private TestDriveBooking(
             string userId,
             int carId,
