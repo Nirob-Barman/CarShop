@@ -28,14 +28,9 @@ namespace CarShop.Application.Features.Wishlist.Commands.AddToWishlist
             if (car == null)
                 return Result<string>.Fail("Car not found.");
 
-            var item = new WishlistItem
-            {
-                UserId = userId,
-                CarId = request.CarId,
-                AddedAt = DateTime.UtcNow
-            };
+            var wishlistItem = WishlistItem.Create(userId, request.CarId);
 
-            await _context.WishlistItems.AddAsync(item);
+            await _context.WishlistItems.AddAsync(wishlistItem);
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result<string>.Ok(null, "Added to wishlist.");
