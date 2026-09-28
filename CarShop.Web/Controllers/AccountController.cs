@@ -282,25 +282,19 @@ namespace CarShop.Web.Controllers
             return Challenge(properties, provider);
         }
 
-        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null)
         {
-            if (remoteError != null)
-            {
-                TempData["ErrorMessage"] = $"Error from external provider: {remoteError}";
-                return RedirectToAction(nameof(Login));
-            }
-
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                TempData["ErrorMessage"] = "External sign-in failed. Please try again.";
+                TempData["ErrorMessage"] = "Google sign-in failed. Please try again.";
                 return RedirectToAction("Login");
             }
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
             if (string.IsNullOrEmpty(email))
             {
-                TempData["ErrorMessage"] = $"Could not retrieve email from {info.LoginProvider}.";
+                TempData["ErrorMessage"] = "Could not retrieve email from Google.";
                 return RedirectToAction("Login");
             }
 
@@ -310,18 +304,11 @@ namespace CarShop.Web.Controllers
 
             if (!result.Success)
             {
-                TempData["ErrorMessage"] = result.Message ?? $"Could not sign in with {info.LoginProvider}.";
+                TempData["ErrorMessage"] = result.Message ?? "Could not sign in with Google.";
                 return RedirectToAction("Login");
             }
 
             return RedirectToLocal(returnUrl);
-        }
-
-        [HttpGet]
-        public IActionResult ExternalLoginDenied()
-        {
-            TempData["ErrorMessage"] = "Facebook sign-in was cancelled or permission was denied.";
-            return RedirectToAction(nameof(Login));
         }
 
         [HttpGet]

@@ -22,7 +22,7 @@ namespace CarShop.Application.Features.Auth.Commands.ExternalRegisterAndSignIn
             var (succeeded, isNewUser, userId, errors) = await _identityService.ExternalLoginSignInAsync(
                 request.Email, fullName, request.Provider, request.ProviderKey, request.Provider);
             if (!succeeded)
-                return Result<string>.Fail(errors, $"Could not sign in with {request.Provider}.");
+                return Result<string>.Fail(errors, "Could not sign in with Google.");
 
             if (isNewUser)
             {

@@ -75,15 +75,6 @@ namespace CarShop.Infrastructure.DependencyInjection
                     options.ClientId     = config["Authentication:Google:ClientId"]!;
                     options.ClientSecret = config["Authentication:Google:ClientSecret"]!;
                     options.CallbackPath = "/google/callback";
-                })
-                .AddFacebook(options =>
-                {
-                    options.AppId = config["Authentication:Facebook:AppId"]!;
-                    options.AppSecret = config["Authentication:Facebook:AppSecret"]!;
-                    options.AccessDeniedPath = "/Account/ExternalLoginDenied";
-
-                    options.Fields.Add("email");
-                    options.Fields.Add("name");
                 });
 
             services.ConfigureApplicationCookie(options =>
