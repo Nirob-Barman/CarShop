@@ -3,5 +3,5 @@ using MediatR;
 
 namespace CarShop.Application.Features.Auth.Commands.GeneratePasswordResetToken
 {
-    public record GeneratePasswordResetTokenCommand(string Email) : IRequest<Result<string>>;
+    public record GeneratePasswordResetTokenCommand(string Email, string BaseUrl) : IRequest<Result<string>>;
 }

@@ -224,25 +224,19 @@ namespace CarShop.Web.Controllers
         public IActionResult ForgotPassword() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [EnableRateLimiting("auth")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
-
-            var result = await _mediator.Send(new GeneratePasswordResetTokenCommand(model.Email!));
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+            var result = await _mediator.Send(new GeneratePasswordResetTokenCommand(model.Email!, baseUrl!));
 
             if (!result.Success)
             {
-                TempData["ErrorMessage"] = string.Join(", ", result.Errors!);
+                TempData["ErrorMessage"] = result.Message;
                 return View(model);
             }
-
-            var token = result.Data;
-            var resetLink = Url.Action("ResetPassword", "Account", new { email = model.Email, token = token }, Request.Scheme);
-
-            // TODO: replace with real email sending
-            // For development: log or display link; in production send via IEmailService
-            // await _emailService.SendEmailAsync(model.Email, "Reset Password", $"<a href='{resetLink}'>Click here</a>");
 
             ViewBag.EmailSent = true;
             return View(model);
@@ -257,6 +251,7 @@ namespace CarShop.Web.Controllers
 
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
