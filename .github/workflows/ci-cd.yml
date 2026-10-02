@@ -10,7 +10,69 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_and_deploy:
+  build_test:
+    name: Build and Test
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+  security:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Check vulnerable packages
+        run: dotnet list package --vulnerable --include-transitive
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+
+      - name: Build for CodeQL
+        run: dotnet build --configuration Release
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  deploy:
+    name: Deploy
+    needs:
+      - build_test
+      - security  
+    
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +85,6 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
         
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
-
-      - name: Test
-        run: dotnet test --configuration Release --no-build
-
       - name: Publish
         run: dotnet publish --configuration Release --output ./publish --runtime win-x86
         
