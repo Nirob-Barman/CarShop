@@ -3,8 +3,9 @@ namespace CarShop.Domain.Entities
     public class Brand : BaseEntity
     {
         public string? Name { get; private set; }
-
-        public ICollection<Car>? Cars { get; set; }
+        
+        private readonly List<Car> _cars = [];
+        public IReadOnlyCollection<Car> Cars => _cars.AsReadOnly();
 
         public Brand(string name)
         {

@@ -11,8 +11,9 @@ namespace CarShop.Domain.Entities
 
         public int BrandId { get; private set; }
         public Brand? Brand { get; private set; }
-
-        public ICollection<Comment>? Comments { get; private set; }
+                
+        private readonly List<Comment> _comments = [];
+        public IReadOnlyCollection<Comment> Comments => _comments.AsReadOnly();
 
         private Car(
             string title,

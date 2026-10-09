@@ -13,8 +13,10 @@ namespace CarShop.Domain.Entities
         public string? Config { get; private set; }
         public int SortOrder { get; private set; } = 0;
 
-        public ICollection<PaymentTransaction> Transactions { get; private set; } = [];
-        public ICollection<Order> Orders { get; private set; } = [];
+        private readonly List<PaymentTransaction> _transactions = [];
+        private readonly List<Order> _orders = [];
+        public IReadOnlyCollection<PaymentTransaction> Transactions => _transactions.AsReadOnly();
+        public IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
         private PaymentGateway(
             string name,
